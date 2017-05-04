@@ -15,11 +15,11 @@ Commands:
 
 
   ```bash
-  pyenv install --list   # 查询可以安装的 python 版本
+  $ pyenv install --list   # 查询可以安装的 python 版本
 
-  pyenv install 2.7.10   # python 的版本号
-  pyenv install miniconda2-latest # 安装 miniconda
-  pyenv install pypy2-5.7.1       # 安装 pypy
+  $ pyenv install 2.7.10   # python 的版本号
+  $ pyenv install miniconda2-latest # 安装 miniconda
+  $ pyenv install pypy2-5.7.1       # 安装 pypy
   ```
 
 + `pyenv version` 与 `pyenv versions`
@@ -35,7 +35,6 @@ Commands:
     miniconda2-latest
     miniconda2-latest/envs/miniconda  # 2: 注意上面的 1, 它是 2 的 symlink; 2 使用的是 pyenv virtualenv 创建的
     pypy-5.7.1
-   
   ```
 
 + `pyenv global` 
@@ -63,8 +62,6 @@ Commands:
   miniconda2-latest
   (miniconda2-latest) $ cd ..  # 上一层目录由于没有 .python-verison 文件, (miniconda2-latest) 提示符会消失.
   ```
-
-  ​
 
 + `pyenv virtualenv` 与 `pyenv virtualenvs`
 
@@ -105,8 +102,6 @@ $ conda info --envs   # 上面和这个命令作用是相同的, 列出所有的
 # 删除 environ : https://conda.io/docs/using/envs.html#remove-an-environment
 $ conda remove --name <name> --all  # 具体看手册
 ```
-
-
 
 ## 插点小曲
 
