@@ -12,4 +12,9 @@
     unzip -tq Compress.zip # -q 表示 quiet, 不会将检测的结果给打印出来.
     ```
 
-    ​
+
+## 2017-05-07
+
++ termux:api failed
+
+  在权限管理中, 设置 termux:API 可以自启动;
