@@ -1,12 +1,14 @@
-# Reading Notes
+# Image Super-Resolution Using Deep Convolutional Networks
 
 ## 2017 年 5 月 3 日
 
 ### Image Super-Resolution Using Deep Convolutional Networks
 
-这是 Chao Dong, Kaiming He 在 2016 年发表在 PAMI 上的文章. 应该是第一篇用 CNN 用来做 SR 的文章.
+文章地址: [http://ieeexplore.ieee.org/document/7115171/](http://ieeexplore.ieee.org/document/7115171/)
 
 homepage: http://mmlab.ie.cuhk.edu.hk/projects/SRCNN.html
+
+这是 Chao Dong, Kaiming He 在 2016 年发表在 PAMI 上的文章. 应该是第一篇用 CNN 用来做 SR 的文章.
 
 #### Introduction
 
