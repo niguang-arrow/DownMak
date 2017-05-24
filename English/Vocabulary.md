@@ -4,5 +4,11 @@
 
     (compound: to make a difficult situation worse by add more elements)
 
++   exclusively 
+
+    +   Graphics on Linux is almost exclusively implemented using the X windows system.
+
++   ​
+
     ​
 
