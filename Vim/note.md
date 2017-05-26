@@ -30,4 +30,15 @@ vim -S pyclewn-2.3.vmb  #安装时
   # 查看是否支持 python, 否则使用 Vundle 安装 YCM 时会出现问题.
   ```
 
-  ​
++ 消除全屏之后底部的 border. 出现这个问题的原因是 Vim 计算窗口使用的是行数, 而 Window Manager 使用的是 pixel. 解决方法是调整字体的大小, 同时参考如下网站修改窗口的背景颜色 [http://www.kianryan.co.uk/2012/09/gvim-on-ubuntu-running-in-fullscreen/](http://www.kianryan.co.uk/2012/09/gvim-on-ubuntu-running-in-fullscreen/)  在 .gtkrc-2.0 文件中使用:
+
+  ```bash
+  style "vimfix" {
+    bg[NORMAL] = "#1d1d1d" # Set the background to your vim theme background.
+  }
+  widget "vim-main-window.*GtkForm" style "vimfix"
+  ```
+
+  然后字体的 Source Code Pro for powerlines 改为 12.8
+
+  Terminal 下改为 12.6
