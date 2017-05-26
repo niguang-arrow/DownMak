@@ -12,7 +12,7 @@ Benchmark: https://github.com/huangzehao/Super-Resolution.Benckmark
 
  * https://github.com/junhocho/SRGAN
 
-*   https://github.com/leehomyc/Photo-Realistic-Super-Resoluton
+* https://github.com/leehomyc/Photo-Realistic-Super-Resoluton
 
 #### Introduction
 
@@ -49,9 +49,45 @@ Benchmark: https://github.com/huangzehao/Super-Resolution.Benckmark
 
 +   判别器 D 的设计遵循了 DCGAN 文章提出的结构设计, 使用 LeakyReLU 激活函数而且整个网络避免使用 max-pooling. 判别器包含 8 个卷积层, kernel 数量从 64 变化到 512(和 VGG 网络一样). s2 表示 Stride 为 2. s2 都是在 feature maps 要变化为 2 倍时才使用. 
 
-+   **Perceptual loss function**: 
++   **Perceptual loss function**: content loss + $10^{-3}$ * adversarial loss
+
+Experiments
+
++   Benchmark 数据集: Set5, Set14, BSD100. 测试集 BSD300.
+
++   在计算 PSNR[dB] 时都只计算 Y 通道, 同时图片进行了 center-cropped, 将边沿的 4-pixel 给去除了.
+
++   对比算法: nearest, neighbor, bicubic, SRCNN, SelfExSR, DRCN.
+
++   本文的实验结果放在了 [https://twitter.app.box.com/s/lcue6vlrd01ljkdtdkhmfvk7vtjhetog](https://twitter.app.box.com/s/lcue6vlrd01ljkdtdkhmfvk7vtjhetog) 我下载在了 `/home/ieric/Downloads/超分辨率代码/CVPR_SRGAN_SRResNet_results_4x.zip`,
+
+    关于本文的实现还可以看看 [https://github.com/david-gpu/srez](https://github.com/david-gpu/srez), 但这个只做了人脸的超分辨率.
+
++   本文的网络使用 ImageNet 中 350, 000 张图片进行训练. 使用 bicubic kernel 对 HR 进行 x4 的下采样获得 LR 图片. 
+
++   For each mini-batch we crop 16 random 96x96 sub images of distinct training images.
+
+    +   Apply the generator model to images of arbitrary size since it's fully convolutional.
+    +   SRResNet: Adam: $\beta_1 = 0.9$. learning rate: $10^{-4}$, update iterations: $10^6$.
+    +   在训练 SRGAN 时需注意: **During test time we turn batch-normalization update off to obtain an output that deterministically depends only on the input.**
+
+#### Discussion and future work
+
++   本文的重心是超分辨率图像的 perceptual quality.
++   We speculate that the ResNet design has a subtantial impact on the performance of deeper networks.
++   选择合适的 content loss 对 photo-realistic SR 问题很重要.
++   另一方面作者注意到, 要根据实际的应用场景选择合适的 loss. 比如使用 perceptual loss 虽然产生的图像细节很真实, 但是对于医学图像或者监视图就不合适了.
+
+#### Conclusion
+
++   本文描述了深度残差网络 SRResNet, 它在公开的标准测试数据集上产生新的 State-of-the-art 效果. 文章还着重描述了基于 PSNR 的图像超分辨率的局限, 并且介绍了 SRGAN 网络, 该网络通过训练 GAN 并引进了 content loss 以及 adversarial loss. 通过使用 MOS(Mean opinion score) 测试(使用人来评判图片), 我们证实了 SRGAN 在较大的缩放尺度(x4)的情况下恢复出来的超分辨率图像比对比的算法(SRCNN, SelfExSR, DRCN等)等恢复出来的效果要好.
++   注意最后一句作者的英文描述: Using extensive MOS testing, we have confirmed that SRGAN reconstructions for large upscaling factor (4x) are, by a considerable margin, more photo-realistic that reconstructions obtained with state-of-the-art methods.
 
 #### Sentence
+
++   最好的结果用黑体加粗: Highest measures(PSNR[dB], SSIM, MOS) in bold.
++   We confirmed the superior perceptual performance of SRGAN using MOS testing.
+
 
 +   注意下面这个句子: Our ultimate goal is to train a generating function $G$ that estimates for a given LR input image its corresponding HR counterpart. (注意 estimate 与 for 摆放的位置)
 
@@ -64,6 +100,8 @@ Benchmark: https://github.com/huangzehao/Super-Resolution.Benckmark
 
 +   Of particular relevance for our paper are the works by Johnson et al. [31] and Bruna et al. [4], who rely on a loss function closer to perceptual similarity to recover visually more convincing HR images.
 
++   Of particular importance when aiming for phote-realistic solutions to the SR problem is the choice of the content loss as illustrated in Figure 6.
+
 #### Phrase
 
 +   be referred to as
@@ -72,8 +110,22 @@ Benchmark: https://github.com/huangzehao/Super-Resolution.Benckmark
 +   by a large margin
 +   downsampling operation
 +   Gaussian filter
++   attribute to 
+    +   ...some phenomena(phenomenons)... we attribute to the potential of deeper network layers to represent features of higher abstraction away from pixel space.
++   obtained with
 
 #### Vocabulary
+
++   surveillance [sə'veɪl(ə)ns; -'veɪəns] n 监督, 监视, 监控.
+
+
++   hallucinate  [hə'luːsɪneɪt] vt. 使产生幻觉, 出现幻觉
+    +   to see or hear things that are not really there.
+
+
++   speculate ['spekjʊleɪt] vt. 推测, 猜测, 思索
+    +   We speculate that the ResNet design has a substantial impact on the performance of deeper networks.
+
 
 +   exemplify [ɪg'zemplɪfaɪ; eg-] vt. 例证, 举例说明
     +   Reconstructions of varying perceptual quality are *exemplified* with corresponding PSNR in Figure 2
