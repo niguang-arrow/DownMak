@@ -217,14 +217,21 @@
   + jedi-vim: https://github.com/davidhalter/jedi-vim  自动补全.
 
 
-
 ## 2017 年 5 月 26 日 -- 消除 Vim 全屏后下方出现难看的边界
 
+配置好 Vim 后使用全屏会发现右侧和下方会出现令人难以忍受的白色边框(border), 应该想办法解决. 原因在于 Vim 计算窗口的大小是按照文字的行数来计算的, 而 Window Manager 是按照 pixel 来计算的. 这样的话, 有可能对应不上. 因此解决的方法是调整合适的字体大小来适应窗口, 同时参考如下网站修改窗口的背景颜色 [http://www.kianryan.co.uk/2012/09/gvim-on-ubuntu-running-in-fullscreen/](http://www.kianryan.co.uk/2012/09/gvim-on-ubuntu-running-in-fullscreen/)  在 `~/.gtkrc-2.0` 文件中使用:
+
 ```bash
-# .gtkrc-2.0 文件
+# ~/.gtkrc-2.0 文件
+style "vimfix" {
+  bg[NORMAL] = "#1d1d1d" # Set the background to your vim theme background.
+}
+widget "vim-main-window.*GtkForm" style "vimfix"
 ```
 
+然后字体的 Source Code Pro for powerlines 改为 12.8
 
+Terminal 下改为 12.6. 当然这是在笔记本上的设置, 台式机为另一种参数.
 
 
 
@@ -241,9 +248,11 @@
 ## 2017 年 5 月 26 日 -- 实现终端的色彩表示
 
 ```bash
+# 在 .vimrc 中使用该命令.
 set t_Co=256
 
 # 修改 .bashrc 文件实现提示符上色.
+#　只需要将　46 行左右的 force_color_prompt=yes 的注释给取消掉.
 ```
 
 
@@ -272,11 +281,17 @@ pip install powerline-status
 
 ## 2017 年 5 月 26 日 -- 安装 pyclewn 以及卸载
 
+-   卸载由 `*.vmb` 文件安装的插件:[http://pyclewn.sourceforge.net/install.html](http://pyclewn.sourceforge.net/install.html)
+
 ```bash
 # 不使用 Vundle 安装
+cd ~/.vim  # 因为卸载需要 .vmb 文件, 所以保存在 .vim 目录下以防万一
+pip install pyclewn
+python -c "import clewn; clewn.get_vimball()" # 会在 .vim 下生成 .vmb
+vim -S pyclewn-2.3.vmb  #安装时
+
+:RmVimball pyclewn-2.3.vmb #卸载时, 注意 .vmb 文件与 vim 运行时在同一目录
 ```
-
-
 
 
 
