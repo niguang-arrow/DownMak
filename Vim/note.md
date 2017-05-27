@@ -231,17 +231,125 @@ widget "vim-main-window.*GtkForm" style "vimfix"
 
 然后字体的 Source Code Pro for powerlines 改为 12.8
 
-Terminal 下改为 12.6. 当然这是在笔记本上的设置, 台式机为另一种参数.
+Terminal 下改为 12.6. 当然这是在笔记本上的设置, 台式机为另一种参数. 还有我的 vim 的主题使用的是 `molokai`
+
+```bash
+# 安装 molokai 主题插件
+Plugin 'tomasr/molokai'                    " theme
+
+colorscheme molokai  # 使用 molokai 插件.
+```
+
+
 
 
 
 ## 2017 年 5 月 26 日 -- 实现 Airline 的展示效果
 
++ 参考 [https://vi.stackexchange.com/questions/3359/how-to-fix-status-bar-symbols-in-airline-plugin](https://vi.stackexchange.com/questions/3359/how-to-fix-status-bar-symbols-in-airline-plugin) 中的第一个回答, 摘录下来:
+
+  注意下面有些字体需要先安装好, 才能看到. 也可以参考 airline 的手册, 上面有类似的命令. 下面的字体注意下载: https://github.com/powerline/fonts
+
+  > Actually I don't understand why your question is voted down. Honestly at first I too didn't understand what to need to be done to get this nice looking toolbar. Yes I know about README and other stuff, but I think it should be `getting started` or `minimum settings` sections in the help file.
+  >
+  > Anyway here are settings.
+  >
+  > ### Installing appropriate fonts
+  >
+  > You need to install fonts into your system with that symbols like branching, big triangles etc. They are not standard symbols so you need to install patched font. You can find a lot of patched fonts here [https://github.com/powerline/fonts](https://github.com/powerline/fonts).
+  >
+  > ### .vimrc settings
+  >
+  > Place this code into your .vimrc file:
+  >
+  > ```
+  > " air-line
+  > let g:airline_powerline_fonts = 1
+  >
+  > if !exists('g:airline_symbols')
+  >     let g:airline_symbols = {}
+  > endif
+  >
+  > " unicode symbols
+  > let g:airline_left_sep = '»'
+  > let g:airline_left_sep = '▶'
+  > let g:airline_right_sep = '«'
+  > let g:airline_right_sep = '◀'
+  > let g:airline_symbols.linenr = '␊'
+  > let g:airline_symbols.linenr = '␤'
+  > let g:airline_symbols.linenr = '¶'
+  > let g:airline_symbols.branch = '⎇'
+  > let g:airline_symbols.paste = 'ρ'
+  > let g:airline_symbols.paste = 'Þ'
+  > let g:airline_symbols.paste = '∥'
+  > let g:airline_symbols.whitespace = 'Ξ'
+  >
+  > " airline symbols
+  > let g:airline_left_sep = ''
+  > let g:airline_left_alt_sep = ''
+  > let g:airline_right_sep = ''
+  > let g:airline_right_alt_sep = ''
+  > let g:airline_symbols.branch = ''
+  > let g:airline_symbols.readonly = ''
+  > let g:airline_symbols.linenr = ''
+  > ```
+  >
+  > `Unicode symbols` section actually unnecessary here if you have already patched font but it give you a nice fallback if you try to use other font which doesn't have appropriate symbols.
+  >
+  > ### Font settings
+  >
+  > If you use vim in terminal you should install that font in the terminal, or if you use gui-version of vim (MacVim, GVim) you need to set font in `.vimrc`, for example: `set guifont=DejaVu\ Sans:s12`. More information you can find here `:help guifont`
+
+  注意最后的字体部分我设置的是 `set guifont=SourceCodePro for Powerline\ 12.8`, 给出我的 `.vimrc` 中关于这部分的配置.
+
 ```bash
 # powerline fonts
+# 在 https://github.com/powerline/fonts 处下载.
+"""" powerline 以及 airline 设置状态栏主题风格
+let g:airline_powerline_fonts = 1
+#let g:airline_theme='luna'
+let g:airline_theme='base16_monokai'
+
+let g:airline#extensions#tabline#buffer_nr_show = 1   " tabline 中 buffer 显示编号
+
+if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+endif
+
+" unicode symbols
+let g:airline_left_sep = '»'
+let g:airline_left_sep = '▶'
+let g:airline_right_sep = '«'
+let g:airline_right_sep = '◀'
+let g:airline_symbols.linenr = '␊'
+let g:airline_symbols.linenr = '␤'
+let g:airline_symbols.linenr = '¶'
+let g:airline_symbols.branch = '⎇'
+let g:airline_symbols.paste = 'ρ'
+let g:airline_symbols.paste = 'Þ'
+let g:airline_symbols.paste = '∥'
+let g:airline_symbols.whitespace = 'Ξ'
+
+" airline symbols
+let g:airline_left_sep = ''
+let g:airline_left_alt_sep = ''
+let g:airline_right_sep = ''
+let g:airline_right_alt_sep = ''
+let g:airline_symbols.branch = ''
+let g:airline_symbols.readonly = ''
+let g:airline_symbols.linenr = ''
+
+" 是否启用顶部tabline
+let g:airline#extensions#tabline#enabled = 1
+" 顶部tabline显示方式
+let g:airline#extensions#tabline#left_sep = ''
+let g:airline#extensions#tabline#left_alt_sep = ''
+"let g:Powerline_colorscheme='solarized256'
+
+" 设置 gvim 显示字体
+"set guifont=YaHei\ Consolas\ Hybrid\ 14
+set guifont=SourceCodePro\ for\ Powerline\ 12.8
 ```
-
-
 
 
 
@@ -257,25 +365,70 @@ set t_Co=256
 
 
 
-## 2017 年　5 月 27 日 -- 使用插件总结
-
-```bash
-vim-surround
-pyclewn
-Conque-Shell
-```
-
-
-
-
-
 ## 2017 年 5 月 26 日 -- 实现终端的 Powerlines
 
-```bash
-pip install powerline-status
++ 首先进入 https://powerline.readthedocs.io/en/latest/installation.html 安装必要的依赖项:
 
-# 修改 powerline.sh 文件
+```bash
+sudo apt-get install socat
+pip install psutil
+pip install hglib  # hglib pythono package and mercurial executable
+sudo apt-get install mercurial  
+# pygit2 python package
+# 但是在安装 pygit2 包之前需要先安装 git2.h
+# 进入网站 http://www.pygit2.org/install.html#quick-install
+$ cd Programs/
+$ wget https://github.com/libgit2/libgit2/archive/v0.25.1.tar.gz
+$ tar xzf v0.25.1.tar.gz
+$ cd libgit2-0.25.1/
+$ cmake .
+$ make
+$ sudo make install
+$ pip install pygit2
+# 安装完 pygit2 之后安装 bzr 等
+pip install bzr
+pip install pyuv
+pip install i3ipc
+# 最后的 xrandr 不需要安装, 系统中有了.
 ```
+
++ 依赖项安装好之后, 就可以安装 powerline-status 了:
+
+  ```bash
+  pip install powerline-status
+
+  # 安装完成之后需要使用 pip show powerline-status 看看 {repository_root} 在哪.
+  # https://powerline.readthedocs.io/en/latest/installation.html#generic-requirements
+  # 上面网站中最后的 Note 写了.
+  ```
+
++ 安装好 powerline-status 之后, 参考: [https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt](https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt) 中的提示, 在 `~/.bashrc` 中加入如下代码:
+
+  ```bash
+  # powerline https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt
+  PATH=~/.pyenv/versions/anaconda2-4.3.1/bin:$PATH
+  powerline-daemon -q
+  POWERLINE_BASH_CONTINUATION=1
+  POWERLINE_BASH_SELECT=1
+  repository_root=~/.pyenv/versions/anaconda2-4.3.1/lib/python2.7/site-packages
+  . ${repository_root}/powerline/bindings/bash/powerline.sh
+  ```
+
+  但是在 `source .bashrc` 之前, 需要到 `{repository_root}/powerline/bindings/bash/` 中对 `powerline.sh` 进行修改, 对第 95 行代码进行修改:
+
+  ```bash
+  cd ~/.pyenv/versions/anaconda2-4.3.1/lib/python2.7/site-packages/powerline/bindings/bash/
+  cp powerline.sh my.powerline.sh # make a copy
+  vim powerline.sh
+  # go to line 95
+  # edit
+  POWERLINE_CONFIG_COMMAND="~/.pyenv/versions/anaconda2-4.3.1/bin/powerline-config"
+  # 如果按照原文件 powerline.sh 中的内容, 上面 source .bashrc 之后会出现 powerline-config 路径有问题的错误,
+  # 改成上面的形式只有就不会有问题了. 同时还需注意这就是为什么 .bashrc 中还应加入
+  # PATH=~/.pyenv/versions/anaconda2-4.3.1/bin:$PATH 的原因.
+  ```
+
+  OK, 现在可以使用 `source .bashrc` 了!
 
 
 
@@ -294,6 +447,14 @@ vim -S pyclewn-2.3.vmb  #安装时
 ```
 
 
+
+## 2017 年　5 月 27 日 -- 使用插件总结
+
+```bash
+vim-surround
+pyclewn
+Conque-Shell
+```
 
 
 
