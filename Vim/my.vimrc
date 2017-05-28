@@ -48,6 +48,7 @@ Plugin 'kshenoy/vim-signature'            " 书签可视化
 Plugin 'vim-scripts/Conque-Shell'        " 在 vim 中使用交互式命令, 安装失败，使用 vmb文件安装成功
 Plugin 'majutsushi/tagbar'               " 基于标签的标识符列表
 "Plugin 'Shougo/neocomplete.vim'         " 强大的自动补全
+Plugin 'christoomey/vim-tmux-navigator'  " 实现 vim 和 tmux 无缝跳转
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -414,6 +415,18 @@ let g:tagbar_type_cpp = {
          \ 'union'     : 'u'
      \ }
 \ }
+
+" vim-tmux-navigator  (实现 vim 和 tmux 无缝跳转)
+"https://github.com/christoomey/vim-tmux-navigator
+"--------------------------
+" 默认使用以下快捷键
+"<ctrl-h> => Left
+"<ctrl-j> => Down
+"<ctrl-k> => Up
+"<ctrl-l> => Right
+"<ctrl-\> => Previous split
+"---------------------------
+
 
 " YouCompleteMe 自动补全神器的配置
 " YCM 补全菜单配色
