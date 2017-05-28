@@ -110,6 +110,7 @@ let g:airline#extensions#tabline#left_alt_sep = ''
 " 设置 gvim 显示字体
 "set guifont=YaHei\ Consolas\ Hybrid\ 14
 set t_Co=256 "设置terminal color: http://vim.wikia.com/wiki/Switch_color_schemes
+" set guifont=SourceCodePro\ for\ Powerline\ 12.8  " terminal 12.6
 set guifont=SourceCodePro\ for\ Powerline\ 13.8
 
 " 配色方案
