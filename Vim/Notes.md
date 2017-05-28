@@ -1,4 +1,4 @@
-# Vim
+# Vim + Zsh
 
 ## 2017 年 5 月 25 日
 
@@ -35,5 +35,15 @@
     :edit #5 # will switch to buffer number:edit can be also used to switch to a given buffer 
              # number if the argument begins with #.
     ```
+
+    ​
+
+## 2017 年 5 月 28 日
+
++   安装 zsh 以及 z 插件, 神器! 
+
+    首先参考: https://github.com/robbyrussell/oh-my-zsh
+
+    然后可以参考 [https://www.vultr.com/docs/boost-productivity-with-z-and-zsh-on-ubuntu](https://www.vultr.com/docs/boost-productivity-with-z-and-zsh-on-ubuntu)
 
     ​
