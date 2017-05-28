@@ -242,8 +242,6 @@ colorscheme molokai  # 使用 molokai 插件.
 
 
 
-
-
 ## 2017 年 5 月 26 日 -- 实现 Airline 的展示效果
 
 + 参考 [https://vi.stackexchange.com/questions/3359/how-to-fix-status-bar-symbols-in-airline-plugin](https://vi.stackexchange.com/questions/3359/how-to-fix-status-bar-symbols-in-airline-plugin) 中的第一个回答, 摘录下来:
@@ -276,7 +274,8 @@ colorscheme molokai  # 使用 molokai 插件.
   > let g:airline_right_sep = '«'
   > let g:airline_right_sep = '◀'
   > let g:airline_symbols.linenr = '␊'
-  > let g:airline_symbols.linenr = '␤'
+  > let g:airline_symbols.linenr = '
+  > '
   > let g:airline_symbols.linenr = '¶'
   > let g:airline_symbols.branch = '⎇'
   > let g:airline_symbols.paste = 'ρ'
@@ -322,7 +321,8 @@ let g:airline_left_sep = '▶'
 let g:airline_right_sep = '«'
 let g:airline_right_sep = '◀'
 let g:airline_symbols.linenr = '␊'
-let g:airline_symbols.linenr = '␤'
+let g:airline_symbols.linenr = '
+'
 let g:airline_symbols.linenr = '¶'
 let g:airline_symbols.branch = '⎇'
 let g:airline_symbols.paste = 'ρ'
@@ -446,7 +446,7 @@ vim -S pyclewn-2.3.vmb  #安装时
 :RmVimball pyclewn-2.3.vmb #卸载时, 注意 .vmb 文件与 vim 运行时在同一目录
 ```
 
-
++   注意 pyclewn 不能使用 Anaconda Python 安装, 因此我使用的是 pyenv 提供的 2.7.13 安装的, 同时为了使用科学计算, 我自己安装好了 numpy 等科学计算包.
 
 ## 2017 年　5 月 27 日 -- 使用插件总结
 
