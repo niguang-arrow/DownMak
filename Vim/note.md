@@ -1,4 +1,4 @@
-# Vim + YouCompleteMe
+# myVim + YCM
 
 ## 2017 年 5 月 26 日 -- 实现 YCM 的成功安装
 
