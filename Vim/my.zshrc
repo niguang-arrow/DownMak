@@ -1,6 +1,10 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+# qt
+export PATH=/home/ieric/Programs/Qt5.7.0/5.7/gcc_64/bin:$PATH
+export PATH=/home/ieric/Programs/Qt5.7.0/Tools/QtCreator/bin:$PATH
+
 # caffe path
 export PYTHONPATH=/home/ieric/Programs/caffe/python:$PYTHONPATH
 
