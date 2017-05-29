@@ -49,6 +49,7 @@ Plugin 'vim-scripts/Conque-Shell'        " 在 vim 中使用交互式命令, 安
 Plugin 'majutsushi/tagbar'               " 基于标签的标识符列表
 "Plugin 'Shougo/neocomplete.vim'         " 强大的自动补全
 Plugin 'christoomey/vim-tmux-navigator'  " 实现 vim 和 tmux 无缝跳转
+Plugin 'skywind3000/asyncrun.vim'  " 在 vim 内编译程序, c++, python 等
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -377,7 +378,7 @@ au BufNewFile,BufRead *.js, *.html, *.css
 let tagbar_right=1 
 " 设置显示／隐藏标签列表子窗口的快捷键。速记：identifier list by tag
 "nnoremap <Leader>ilt :TagbarToggle<CR> 
-nmap <F8> :TagbarToggle<CR>
+nmap <F9> :TagbarToggle<CR>
 " 设置标签子窗口的宽度 
 let tagbar_width=32 
 " tagbar 子窗口中不显示冗余帮助信息 
@@ -453,3 +454,29 @@ let g:ycm_min_num_of_chars_for_completion=1
 let g:ycm_cache_omnifunc=0
 " 语法关键字补全			
 let g:ycm_seed_identifiers_with_syntax=1
+
+
+" asyncrun.vim 的配置 (在 vim 内编译程序, c++, python 等)
+" Quick run via <F5>
+nnoremap <F5> :call <SID>compile_and_run()<CR>
+
+augroup SPACEVIM_ASYNCRUN
+    autocmd!
+    " Automatically open the quickfix window
+    autocmd User AsyncRunStart call asyncrun#quickfix_toggle(15, 1)
+augroup END
+
+function! s:compile_and_run()
+    exec 'w'
+    if &filetype == 'c'
+        exec "AsyncRun! gcc % -o %<; time ./%<"
+    elseif &filetype == 'cpp'
+       exec "AsyncRun! g++ -std=c++11 % -o %<; time ./%<"
+    elseif &filetype == 'java'
+       exec "AsyncRun! javac %; time java %<"
+    elseif &filetype == 'sh'
+       exec "AsyncRun! time bash %"
+    elseif &filetype == 'python'
+       exec "AsyncRun! time python %"
+    endif
+endfunction

@@ -120,7 +120,7 @@ Commands:
     ```bash
     pip install numpy
     pip install scipy
-    pip install matplotlib nose ipython jupyter sympy sklearn pandas
+    pip install matplotlib nose ipython jupyter sympy sklearn pandas ipdb
     pip install theano
     pip install keras
     pip install pillow # from PIL import Image
