@@ -1,5 +1,16 @@
 # Vim + Zsh
 
+## 2017 年 5 月 29 日
+
++ 格式 (format)
+dos/windows 跟 unix/linux 对于文件的结束是不一样的. vim 可以直接设定/更改格式用指令
+`:set fileformats=unix, dos` 可以改变文件的格式 (change format)
+
+`:set ff=unix` -> 设定文件成 unix 格式 (set file in unix format)
+`:set ff=dos` -> 设定文件成 dos 格式 (set file in dos format)
+`:set ff?` -> 检查当前文件格式 (check the format of current file)
+如果改变格式, 直接`:w` 存档就会存成新的格式了.
+
 ## 2017 年 5 月 25 日
 
 ### Buffers
