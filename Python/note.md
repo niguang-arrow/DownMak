@@ -115,7 +115,7 @@ Commands:
     sudo apt-get install gcc gfortran python-dev libblas-dev liblapack-dev cython
     ```
 
-    下面注明一些需要的科学计算相关的包:
+    下面注明一些需要的科学计算相关的包: (spyder 的安装参考下面 pyqt5 的安装)
 
     ```bash
     pip install numpy
@@ -127,6 +127,77 @@ Commands:
     ```
 
 
+## 实现 PyQt5 的安装
+
++   pyqt5 在 python2 下无法使用 pip 进行安装, 因此选择从源码安装;
+
++   首先要安装好 Qt: 参考 [http://www.wiz.cn/compile-client.html](http://www.wiz.cn/compile-client.html) (Ubuntu 下为知笔记的安装方式) 中的内容, 从 [https://download.qt.io/](https://download.qt.io/) (这个网站我在这里单独列出来) 下的 [http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run](http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run) 下载安装 Qt5.7 (目前最新是 5.8) 在 `~/Programs` 目录下(参考为知笔记的安装方法). 
+
++   安装好后在 `.zshrc` 中要有:
+
+    ```bash
+    # qt
+    export PATH=/home/ieric/Programs/Qt5.7.0/5.7/gcc_64/bin:$PATH
+    export PATH=/home/ieric/Programs/Qt5.7.0/Tools/QtCreator/bin:$PATH
+    ```
+
+    把 Qt 的路径加入到 PATH 目录中. `source` 之后, 使用下面的命令查看是否设置有效:
+
+    ```bash
+    $ qmake --version
+    QMake version 3.0
+    Using Qt version 5.7.0 in /home/ieric/Programs/Qt5.7.0/5.7/gcc_64/lib
+    ```
+
++   OK, 下面开始安装 pyqt5.
+
+    参考: [https://stackoverflow.com/questions/32080304/issues-with-building-pyqt5-on-ubuntu-14-04](https://stackoverflow.com/questions/32080304/issues-with-building-pyqt5-on-ubuntu-14-04)
+
++   首先需要安装 sip. 
+
+    +   官方的安装教程为 [http://pyqt.sourceforge.net/Docs/sip4/installation.html](http://pyqt.sourceforge.net/Docs/sip4/installation.html)
+
+    +   从 [https://riverbankcomputing.com/software/sip/download](https://riverbankcomputing.com/software/sip/download) 下载 `sip-4.19.2.tar.gz` 文件, 解压到 `~/Programs/sip-4.19.2` 目录下,
+
+        ```bash
+        $ cd ~/Programs/sip-4.19.2
+        # 可以看看 README, 但是不需要按照里面的方式安装, 因为没有 build.py 文件
+        # 下面开始安装
+        $ python config.py # 会产生 Makefile
+        $ make
+        $ make install
+        $ sip -V
+        4.19.2
+        $ python
+        >>> import sip
+        >>> print sip
+        <module 'sip' from '/home/ieric/.pyenv/versions/2.7.13/lib/python2.7/site-packages/sip.so'>
+        ```
+
+        虽然 `sip.so` 是在上面的目录下, 但是 `sip.h` 文件却是在 `/home/ieric/.pyenv/versions/2.7.13/include/python2.7/` 目录下. 提到这个是因为后面安装 pyqt5 需要用到.
+
++   下面开始安装 pyqt5.
+
+    +   官方的安装教程为 [http://pyqt.sourceforge.net/Docs/PyQt5/installation.html#building-and-installing-from-source](http://pyqt.sourceforge.net/Docs/PyQt5/installation.html#building-and-installing-from-source)
+
+    +   首先从 [https://www.riverbankcomputing.com/software/pyqt/download5](https://www.riverbankcomputing.com/software/pyqt/download5) 下载 `PyQt5_gpl-5.8.2.tar.gz` 并解压至 `~/Programs/PyQt5_gpl-5.8.2` 目录下,
+
+        ```bash
+        $ cd ~/Programs/PyQt5_gpl-5.8.2
+        # 可以使用 python config.py --help 查看有哪些选项
+        # 下面能这样写是参考 https://stackoverflow.com/questions/32080304/issues-with-building-pyqt5-on-ubuntu-14-04
+        $ python configure.py --sip-incdir=/home/ieric/.pyenv/versions/2.7.13/include/python2.7/
+        $ make  # 这个耗时特别久, 半个小时以上
+        $ make install
+        ```
+
+    +   安装成功后, 之后就可以安装 spyder 了, 并且 `jupyter qtconsole` 之类的都可以用了.
+
+        ```bash
+        $ pip install spyder
+        ```
+
+        ​
 
 ## Anaconda and Miniconda
 

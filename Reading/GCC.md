@@ -4,13 +4,13 @@
 
 >   We all want good software, but what does it mean for software to be “good”? Convenient features and reliability are what it means to be *technically* good, but that is not enough. Good software must also be *ethically* good: it has to respect the users’ freedom.
 >    As a user of software, you should have the right to run it as you see
-> fit, the right to study the source code and then change it as you see fit,
-> the right to redistribute copies of it to others, and the right to publish a
-> modified version so that you can contribute to building the community.
-> When a program respects your freedom in this way, we call it *free software*.
+>   fit, the right to study the source code and then change it as you see fit,
+>   the right to redistribute copies of it to others, and the right to publish a
+>   modified version so that you can contribute to building the community.
+>   When a program respects your freedom in this way, we call it *free software*.
 >
-> ​                                                      Richard M. Stallman
-> ​                                                            February 2004
+>   ​                                                      Richard M. Stallman
+>   ​                                                            February 2004
 
 ## Introduction
 
@@ -47,6 +47,12 @@
 + `C_INCLUDE_PATH` and `CPLUS_INCLUDE_PATH` : environment variables used to add additional INCLUDE search paths. This directory will be searched after any directories specified on the command line with the option `-I`, and before the standard default directories `/usr/local/include` and `/usr/include`.
 
 + `LIBRARY_PATH`: environment variables used to add additional LIBRARY search paths. This directory will be searched after any directories specified on the command line with the option `-L`, and before the standard default directories `/usr/local/lib` and `/usr/lib`.
+
++ `LD_LIBRARY_PATH`: environment variables used to add DYNAMIC LINKING LIBRARY search path.
+
++ `*.a` : archive file
+
++ `*.so`: shared object
 
 + Integers and floating-point numbers are stored in different formats
   in memory, and generally occupy different numbers of bytes.
@@ -237,11 +243,14 @@
 + **Shared libraries and static libraries**
 
   + ***shared library***: This type of library requires special treatment -- it must be loaded from disk before the executable will run.
+
   + External libraries are usually provided in two forms: ***static libraries***
     and ***shared libraries***. Static libraries are the `.a` files seen earlier. When a program is linked against a static library, the machine code from the object files for any external functions used by the program is copied from the library into the final executable.
+
   + ***Shared libraries*** are handled with a more advanced form of linking,
     *which makes the executable file smaller.* They use the extension `.so`,
     which stands for ***shared object***.
+
   + An executable file linked against a shared library contains only a small
     table of the functions it requires, instead of the complete machine code
     from the object files for the external functions. *Before the executable file starts running, the machine code for the external functions is copied into memory from the shared library file on disk by the operating system* -- a process referred to as ***dynamic linking***.
@@ -249,14 +258,99 @@
       Most operating systems also provide a virtual memory mechanism which
       allows one copy of a shared library in physical memory to be used by all running programs, saving memory as well as disk space.
     + Furthermore, shared libraries make it possible to update a library without recompiling the programs which use it (provided the interface to the library does not change).
-  + **Because of these advantages gcc compiles programs to use shared libraries by default on most systems, if they are available.** 
+
+  + **Because of these advantages gcc compiles programs to use shared libraries by default on most systems, if they are available.** When Whenever a static library `libNAME.a` would be used for linking with the option `-lNAME` the compiler first checks for an alternative shared library with the same name and a ‘.so’ extension.
+
+  + However, when the executable file is started its loader function must
+    find the shared library in order to load it into memory. By default the
+    loader searches for shared libraries only in a predefined set of system
+    directories, such as `/usr/local/lib` and `/usr/lib`. If the library is not located in one of these directories it must be added to the load path.
+
+  + The simplest way to set the load path is through the environment
+    variable `LD_LIBRARY_PATH`. It can also be set to login file.
+
+    ```bash
+    $ LD_LIBRARY_PATH=/opt/gdbm-1.8.3/lib
+    $ export LD_LIBRARY_PATH
+    $ ./a.out
+    Storing key-value pair... done.
+    ```
+
+    It is possible for the system administrator to set the `LD_LIBRARY_PATH`
+    variable for all users, by adding it to a default login script, such as
+    `/etc/profile`. On GNU systems, a system-wide path can also be defined
+    in the loader configuration file `/etc/ld.so.conf`.
+
+  + Alternatively, static linking can be forced with the `-static` option to gcc to avoid the use of shared libraries.
 
 
+    ```bash
+    $ gcc -Wall -static -I/opt/gdbm-1.8.3/include/
+    					-L/opt/gdbm-1.8.3/lib/ dbmain.c -lgdbm
+    ```
 
+    This creates an executable linked with the static library `libgdbm.a` which can be run without setting the environment variable `LD_LIBRARY_PATH` or putting shared libraries in the default directories. It's also possible to link directly with individual library files by specifying the full path to the library on the command line. For example, the following command will link directly with the static library `libgdbm.a`,
 
+    ```bash
+    $ gcc -Wall -I/opt/gdbm-1.8.3/include
+    			dbmain.c /opt/gdbm-1.8.3/lib/libgdbm.a
+    ```
 
+    and the command below will link with the shared library file `libgdbm.so`:
 
+    ```bash
+    $ gcc -Wall -I/opt/gdbm-1.8.3/include
+    			dbmain.c /opt/gdbm-1.8.3/lib/libgdbm.so
+    ```
 
+    In the latter case **it is still necessary to set the library load path when running the executable**.
+
+## C language standards
+
++   By default, gcc use *GNU C* instead of ANSI/ISO standard C. This dialect incorporates with official ANSI/ISO standard for the C language with several useful GNU extensions, such as nested functions and variable-size arrays.
++   options to control the dialect of C:
+    +   `-ansi`: diables GNU extensions which conflit with the ANSI/ISO standard. 
+    +   `-pedantic`: use `-pedantic` in combination with `-ansi` will cause gcc to reject all GNU C extensions, not just those that are incompatible with the ANSI/ISO standard.
+    +   `-std`: selecting a specific language standard.
++   GNU C Library (glibc)
+
+## Warning option in -Wall
+
++   `-Wcomment` (included in `-Wall`):
+
+    This option warns about nested comments.
+
+    ```bash
+    /* commented out
+    double x = 1.23 ; /* x-position */
+    */
+    ```
+
+    Nested comments can be a source of confusion—the safe way to
+    "comment out" a section of code containing comments is to surround it with the preprocessor directive `#if 0 ... #endif`:
+
+    ```bash
+    /* commented out */
+    #if 0
+    double x = 1.23 ; /* x-position */
+    #endif
+    ```
+
++   `-Wformat` (included in `-Wall`):
+
+    This option warns about the incorrect use of format strings in functions such as `printf` and `scanf`, where the format specifier does not agree with the type of the corresponding function argument.
+
++   `-Wunused` (included in `-Wall`)
+    This option warns about unused variables. When a variable is declared but not used this can be the result of another variable being
+    accidentally substituted in its place. If the variable is genuinely not
+    needed it can be removed from the source code.
+
++   `-Wimplicit` (included in `-Wall`)
+    This option warns about any functions that are used without being declared. The most common reason for a function to be used
+    without being declared is forgetting to include a header file.
+
++   `-Wreturn-type` (included in `-Wall`)
+    This option warns about functions that are defined without a return type but not declared void. It also catches empty return statements in functions that are not declared void.
 
 
 
