@@ -2,6 +2,15 @@
 
 ## 2017 年 5 月 31 日
 
++ 安装 glfw3
+
++ 参看 [http://www.glfw.org/docs/latest/compile_guide.html#compile_deps_x11](http://www.glfw.org/docs/latest/compile_guide.html#compile_deps_x11)
+
+  源码安装, 使用 `cmake .`, 如果要编译为动态链接库的话, 需要加上 `-DBUILD_SHARED_LIBS=ON` 选项.
+
+  根据上面的链接中的介绍, 应该还需要 `sudo apt-get install xorg-dev`.
+
+
 + 使用 glfw3
 
   参考 [https://stackoverflow.com/questions/17768008/how-to-build-install-glfw-3-and-use-it-in-a-linux-project](https://stackoverflow.com/questions/17768008/how-to-build-install-glfw-3-and-use-it-in-a-linux-project) 使用下面的选项成功编译, 
