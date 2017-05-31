@@ -5,8 +5,7 @@
 >   We all want good software, but what does it mean for software to be “good”? Convenient features and reliability are what it means to be *technically* good, but that is not enough. Good software must also be *ethically* good: it has to respect the users’ freedom.
 >    As a user of software, you should have the right to run it as you see
 >   fit, the right to study the source code and then change it as you see fit,
->   the right to redistribute copies of it to others, and the right to publish a
->   modified version so that you can contribute to building the community.
+>   the right to redistribute copies of it to others, and the right to publish a modified version so that you can contribute to building the community.
 >   When a program respects your freedom in this way, we call it *free software*.
 >
 >   ​                                                      Richard M. Stallman
@@ -53,6 +52,20 @@
 + `*.a` : archive file
 
 + `*.so`: shared object
+
++ `-DNAME`: The gcc option defines a preprocessor macro `NAME` from the
+  command line. 
+
++ `-E`: see the effect of the preprocessor on source files directly.
+
++ `-save-temps`: The preprocessed system header files usually generate a lot of output. This can be saved more conveniently in a `*.i` file using the gcc `-save-temps` option.
+
++ `-g`: GCC provides the `-g` debug option to store additional debugging information in object files and executables.
+
++ `-OLEVEL`: An optimization level is chosen with the command line option
+  `-OLEVEL`, where `LEVEL` is a number from 0 to 3. default is 0.
+
++ `cpp`: the GNU preprocessor 
 
 + Integers and floating-point numbers are stored in different formats
   in memory, and generally occupy different numbers of bytes.
@@ -352,13 +365,273 @@
 +   `-Wreturn-type` (included in `-Wall`)
     This option warns about functions that are defined without a return type but not declared void. It also catches empty return statements in functions that are not declared void.
 
++   .......
 
+## Using the preprocessor
 
+### Defining macros
 
++   preprocessor conditional `#ifdef`: check whether a macro is defined.
 
+    ```c
+    #ifdef TEST
+    	printf("Test mode\n");
+    #endif
+    ```
 
+    The gcc option `-DNAME` defines a preprocessor macro `NAME` from the
+    command line. If the program above is compiled with the commandline option `-DTEST`, the macro `TEST` will be defined and the resulting executable will print both messages:
 
+    ```bash
+    $ gcc -Wall -DTEST test.c
+    $ ./a.out
+    Test mode
+    ```
 
++   Macro are generally undefined, unless specified on the command line with the option `-D`, or in a source file (or library header file) with `#define`.
+
++   **The complete set of predefined macros can be listed by running the GNU preprocessor** `cpp` with the option `-dM` on an empty file:
+
+    ```bash
+    $ cpp -dM /dev/null
+    #define __i386__ 1
+    #define __i386 1
+    #define i386 1
+    #define __unix 1
+    #define __unix__ 1
+    #define __ELF__ 1
+    #define unix 1
+    .......
+    ```
+
++   **Macros with values**:
+
+    +   a macro can alse be given a concrete value. 
+
+        ```c
+        #include <stdio.h>
+        int
+        main (void)
+        {
+          printf("Value of NUM is %d\n", 10 * (NUM));
+          return 0;
+        }
+        ```
+
+        Note that macros are not expanded inside strings—only the occurrence of
+        `NUM` outside the string is substituted by the preprocessor. To define a macro with a value, the `-D` command-line option can be used in the form `-DNAME=VALUE`. For example, the following command line defines NUM to be 100 when compiling the program above:
+
+        ```bash
+        $ gcc -Wall -DNUM=100 test.c
+        $ ./a.out
+        Value of NUM is 1000
+
+        $ gcc -Wall -DNUM="2+2" test.c   # The importance of using parentheses
+        $ ./a.out
+        Ten times NUM is 40
+
+        $ gcc -Wall -DNUM test.c # use -D alone, then gcc uses default value of 1
+        $ ./a.out
+        Value of NUM is 1
+        ```
+
+        A macro can be defined to a empty value using quotes on the command line, `-DNAME=""`. Such a macro is still treated as defined by conditionals such as `#ifdef`, but expands to nothing.
+
+        A macro containing quotes can be defined using shell-escaped quote characters. For example, the command-line option `-DMESSAGE="\"Hello, World!\""`
+
++   Preprocessing source files
+
+    +   `-E`: see the effect of the preprocessor on source files directly.
+
+        ```bash
+        #define TEST "hello, world!"
+        const char str[] = TEST;
+
+        $ gcc -E test.c
+        # 1 "test.c"    # the form is  # line-number "source-file"
+
+        const char str[] = "hello, world!";
+        ```
+
+    +   **The ability to see the preprocessed source files can be useful for examining the effect of system header files, and finding declarations of system functions.** 
+
+        ```c
+        #include <stdio.h>
+        int
+        main (void)
+        {
+          printf ("Hello, world!\n");
+          return 0;
+        }
+        ```
+
+        It is possible to see the declarations from the included header file by
+        preprocessing the file with `gcc -E`:
+
+        ```bash
+        $ gcc -E test.c
+        # 1 "hello.c"
+        # 1 "/usr/include/stdio.h" 1 3
+        extern FILE *stdin;
+        extern FILE *stdout;
+        extern FILE *stderr;
+        extern int fprintf (FILE * __stream,
+        const char * __format, ...) ;
+        extern int printf (const char * __format, ...) ;
+        [ ... additional declarations ... ]
+        # 1 "hello.c" 2
+        int
+        main (void)
+        {
+          printf ("Hello, world!\n");
+          return 0;
+        }
+        ```
+
+        The preprocessed system header files usually generate a lot of output.
+        This can be redirected to a file, or saved more conveniently using the gcc `-save-temps` option:
+
+        ```bash
+        $ gcc -c -save-temps hello.c
+        ```
+
+        After running this command, the preprocessed output will be available
+        in the file `hello.i`. The `-save-temps` option also saves `.s` assembly
+        files and `.o` object files in addition to preprocessed `.i` files.
+
+## Compiling for debugging
+
+**Normally, an executable file does not contain any references to the original program source code, such as variable names or line-numbers—the executable file is simply the sequence of machine code instructions produced by the compiler. This is insufficient for debugging, since there is no easy way to find the cause of an error if the program crashes.**
+
+GCC provides the `-g` debug option to store additional debugging information in object files and executables. This debugging information allows errors to be traced back from a specific machine instruction to the corresponding line in the original source file. It also allows the execution of a program to be traced in a debugger, such as the GNU Debugger gdb (for more information, see “Debugging with GDB: The GNU Source-Level Debugger”, [Further reading], page 91). Using a debugger also allows the values of variables to be examined while the program is running.
+The debug option works by storing the names of functions and variables (and all the references to them), with their corresponding source code line-numbers, in a *symbol table* in object files and executables.
+
++   Examining core files
+
+    +   When a program exits abnormally the operating system can write out a core file, usually named ‘core’, which contains the in-memory state of the program at the time it crashed. Combined with information from the symbol table produced by ‘-g’, the core file can be used to find the line where the program stopped, and the values of its variables at that point.
+
+    +   Here is a simple program containing an invalid memory access bug,
+        which we will use to produce a core file:
+
+        ```c
+        int a (int *p);
+
+        int
+        main (void)
+        {
+          int *p = 0; /* null pointer */
+          return a (p);
+        }
+
+        int
+        a (int *p)
+        {
+          int y = *p;
+          return y;
+        }
+        ```
+
+        The program attempts to dereference a null pointer `p`, which is an invalid operation. On most systems, this will cause a crash. We use `-g` option to compile the program:
+
+        ```bash
+        $ gcc -Wall -g test.c
+        ```
+
+        Note that a null pointer will only cause a problem at run-time, so the option `-Wall` does not produce any warnings. But,
+
+        ```bash
+        $ ./a.out
+        Segmentation fault (core dumped)
+        ```
+
+        Whenever the error message `core dumped` is displayed, the operating system should produce a file called `core` in the current directory. This core file contains a complete copy of the pages of memory used by the program at the time it was terminated. Incidentally, the term *segmentation fault* refers to the fact that the program tried to access a restricted memory “segment” outside the area of memory which had been allocated to it.
+
+    +   `ulimit -c ` controls the maximum size of core files. If the size limit is zero, no core file are produced.
+
+    +   use `ulimit -c unlimited` to allow the core file to be of any size. **Note:** this setting only applies to the current shell. You can modify login file to set the limit for future sessions.
+
+    +   core files can be loaded into the GNU Debugger `gdb`:
+
+        ```bash
+        # $ gdb EXECUTABLE-FILE CORE-FILE
+        $ gdb a.out core
+        ```
+
+## Compiling with optimization
+
+### Source-level optimization
+
++   *Common Subexpression Elimination* (CSE): compute an expression in the source code with fewer instructions, by reusing already-computed results. It's performed automatically when optimization is turned on. (CSE is used internally, and do not affect real variables. The temporary variable `t` is only used as an illustration.)
+
+    ```c
+    x = cos(v)*(1+sin(u/2)) + sin(w)*(1-sin(u/2))
+      
+    % --> 
+    t = sin(u/2)
+    x = cos(v)*(1+t) + sin(w)*(1-t)
+    ```
+
++   *Function inlining*: increase the efficiency of frequently-called functions.
+
+    Whenever a function is used, a certain amount of extra time is required
+    for the CPU to carry out the call: it must store the function arguments
+    in the appropriate registers and memory locations, jump to the start of
+    the function (bringing the appropriate virtual memory pages into physical memory or the CPU cache if necessary), begin executing the code, and then return to the original point of execution when the function call is complete. This additional work is referred to as ***function-call overhead***. **Function inlining eliminates this overhead by replacing calls to a function by the code of the function itself (known as placing the code in-line)**.
+
+### Speed-space tradeoffs
+
++   speed-space tradeoff: The choice between speed and memory .
+
++   example: loop unrolling
+
+    ```c
+    for (i = 0; i < 8; i++)
+    {
+    	y[i] = i;
+    }	
+
+    % -->
+    y[0] = 0;
+    y[1] = 1;
+    y[2] = 2;
+    y[3] = 3;
+    y[4] = 4;
+    y[5] = 5;
+    y[6] = 6;
+    y[7] = 7;
+    ```
+
+    At the end of the loop, the test `i < 8` will have been performed 9 times, and a large fraction of the run time will have been spent checking it. Unrolling the loop will execute at maximum speed.
+
+## Scheduling
+
+The lowest level of optimization is *scheduling*, in which the compiler determines the best ordering of individual instructions. Most CPUs allow one or more new instructions to start executing before others have finished. Many CPUs also support pipelining, where multiple instructions execute in parallel on the same CPU.
+When scheduling is enabled, instructions must be arranged so that their results become available to later instructions at the right time, and to allow for maximum parallel execution. Scheduling improves the speed of an executable without increasing its size, but requires additional memory and time in the compilation process itself (due to its complexity).
+
+## Optimization levels
+
+In order to control compilation-time and compiler memory usage, and the trade-offs between speed and space for the resulting executable, GCC provides a range of general optimization levels, numbered from `0–3`, as well as individual options for specific types of optimization.
+
++   An optimization level is chosen with the command line option
+    `-OLEVEL`, where `LEVEL` is a number from 0 to 3.
+
+    +   `-O0` or no `-O` option (default): This is the best option to use when debugging a program.
+    +   `-O1` or `-O`: This level turns on the most common forms of optimization that
+        do not require any speed-space tradeoffs. 
+    +   `-O2`: This option turns on further optimizations, in addition to those used by ‘-O1’. These additional optimizations include instruction scheduling.
+    +   `-O3`: This option turns on more expensive optimizations, such as function inlining, in addition to all the optimizations of the lower levels `-O2` and `-O1`.
+    +   `-funroll-loops`: This option turns on loop-unrolling, and is independent of the other optimization options.
+    +   `-Os`: This option selects optimizations which reduce the size of an executable. The aim of this option is to produce the smallest possible executable, for systems constrained by memory or disk space.
+
++   For most purposes it is satisfactory to use `-O0` for debugging, and `-O2` for development and deployment.
+
++   the run-time of the program can be measured using the `time` command in the GNU Bash shell.
+
+    ```bash
+    $ time ./a.out
+    ```
+
+    ​
 
 
 
