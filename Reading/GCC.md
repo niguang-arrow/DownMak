@@ -958,58 +958,6 @@ This chapter describes in more detail how GCC transforms source files to an exec
     +   `ldd` command: examines an executable and displays a list of the shared libraries that a program needs.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Vocabulary
 
 + acronym  ['ækrənɪm] n. 首字母略缩词
