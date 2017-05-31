@@ -53,6 +53,8 @@
 
 + `*.so`: shared object
 
++ `-static`: static linking can be forced with the `-static` option to `gcc` to avoid the use of shared libraries.
+
 + `-DNAME`: The gcc option defines a preprocessor macro `NAME` from the
   command line. 
 
@@ -65,7 +67,9 @@
 + `-OLEVEL`: An optimization level is chosen with the command line option
   `-OLEVEL`, where `LEVEL` is a number from 0 to 3. default is 0.
 
-+ `cpp`: the GNU preprocessor 
++ `-v`: verbose. The output produced by `-v` can be useful whenever there is a problem with the compilation process itself. It displays the full directory paths used to search for header files and libraries, the predefined preprocessor symbols, and the object files and libraries used for linking.
+
++ `cpp`: the GNU preprocessor, convert `.c` file to `.i` file and `.cpp` file to `.ii` file.
 
 + Integers and floating-point numbers are stored in different formats
   in memory, and generally occupy different numbers of bytes.
@@ -297,25 +301,25 @@
   + Alternatively, static linking can be forced with the `-static` option to gcc to avoid the use of shared libraries.
 
 
-    ```bash
+    ​```bash
     $ gcc -Wall -static -I/opt/gdbm-1.8.3/include/
     					-L/opt/gdbm-1.8.3/lib/ dbmain.c -lgdbm
-    ```
-
+    ​```
+    
     This creates an executable linked with the static library `libgdbm.a` which can be run without setting the environment variable `LD_LIBRARY_PATH` or putting shared libraries in the default directories. It's also possible to link directly with individual library files by specifying the full path to the library on the command line. For example, the following command will link directly with the static library `libgdbm.a`,
-
-    ```bash
+    
+    ​```bash
     $ gcc -Wall -I/opt/gdbm-1.8.3/include
     			dbmain.c /opt/gdbm-1.8.3/lib/libgdbm.a
-    ```
-
+    ​```
+    
     and the command below will link with the shared library file `libgdbm.so`:
-
-    ```bash
+    
+    ​```bash
     $ gcc -Wall -I/opt/gdbm-1.8.3/include
     			dbmain.c /opt/gdbm-1.8.3/lib/libgdbm.so
-    ```
-
+    ​```
+    
     In the latter case **it is still necessary to set the library load path when running the executable**.
 
 ## C language standards
@@ -631,7 +635,369 @@ In order to control compilation-time and compiler memory usage, and the trade-of
     $ time ./a.out
     ```
 
-    ​
+### Optimization and compiler warnings
+
++   When optimization is turned on, GCC can produce additional warnings that do not appear when compiling without optimization. 
+
++   `-Wuninitialized` option only works when the program is compiled with optimization to enable *data-flow analysis*.
+
+    ```c
+    int
+    sign (int x)
+    {
+      int s;
+      if (x > 0)
+      s = 1;
+      else if (x < 0)
+      s = -1;
+      return s;
+    }
+    ```
+
+    The function has a bug when `x` is zero -- in this case the return value of the variable `s` will be undefined.
+
+    Compiling the program with the `-Wall` option alone does not produce any warnings, because data-flow analysis is not carried out without
+    optimization.
+
+    To produce a warning, the program must be compiled with `-Wall` and
+    optimization simultaneously. In practice, the optimization level `-O2` is
+    needed to give good warnings:
+
+    ```bash
+    $ gcc -Wall -O2 -c uninit.c
+    uninit.c: In function ‘sign’:
+    uninit.c:4: warning: ‘s’ might be used uninitialized in this function
+    ```
+
+## Compiling a C++ program
+
+### A simple C++ program
+
++   Attempting to link a C++ object file with the C compiler gcc will cause “undefined reference” errors for C++ standard library functions:
+
+    ```bash
+    $ g++ -Wall -c hello.cc
+    $ gcc hello.o            (should use g++)
+    hello.o: In function ‘main’:
+    hello.o(.text+0x1b): undefined reference to ‘std::cout’
+    .....
+    hello.o(.eh_frame+0x11):
+    undefined reference to ‘__gxx_personality_v0’
+    ```
+
+    Linking the same object file with g++ supplies all the necessary C++ libraries and will produce a working executable:
+
+    ```bash
+    $ g++ hello.o
+    $ ./a.out
+    Hello, world!
+    ```
+
+    A point that sometimes causes confusion is that gcc will actually compile
+    C++ source code when it detects a C++ file extension, but cannot then link the resulting object files.
+
+    ```bash
+    $ gcc -Wall -c hello.cc (succeeds, even for C++)
+    $ gcc hello.o
+    hello.o: In function ‘main’:
+    hello.o(.text+0x1b): undefined reference to ‘std::cout’
+    ```
+
+    In order to avoid this problem it is best to use g++ consistently for C++
+    programs, and gcc for C programs.
+
++   According to the C++ standard, the header files for the C++ library itself do not use a file extension.
+
+### Templates
+
++   Templates provide the ability to define C++ classes which support *generic programming* techniques.
+
++   `libstdc++` : the C++ standard library, which is supplied as part of the default GCC installation. If you distribute executables using the C++ standard library you need to ensure that the recipient has a compatible version of `libstdc++`, or link your program statically using the command-line
+
+    option `-static`.
+
++   STL: Standard Template Library
+
+## Platform-specific options
+
+These options control features such as hardware floating-point modes, and the use of special instructions for different CPUs. They can be selected with the `-m` option on the command line.
+
+
+
+## Troubleshooting
+
+### Help for command line options
+
+```bash
+$ gcc --help  # summary of the top-level GCC command-line options
+$ gcc -v --help  # complete list of options for gcc and its associated programs, such
+# as the GNU Linker and GNU Assembler; -v means verbose
+```
+
+The complete list of options produced by this command is extremely long—you may wish to page through it using the more command, or redirect the output to a file for reference:
+
+```bash
+$ gcc -v --help 2>&1 | more
+```
+
++   verion number: `$ gcc --version`
++   verbose compilation: `$ gcc -v -Wall hello.c`
+
+
+
+## Compiler-related tools
+
++   `ar`: the GNU archiver
++   `gprof`: the GNU profiling
++   `gcov`: the GNU coverage : coverage testing
+
+### Creating a library with the GNU archiver
+
++   The GNU archiver `ar` combines a collection of object files into a single archive file, also known as a library. An archive file is simply a convenient way of distributing a large number of related object files together.
+
++   An example: create a library `libhello.a` containing two functions `hello` and `bye`. 
+
+    ```c
+    // hello_fn.c
+    #include <stdio.h>
+    #include "hello.h"
+    void
+    hello (const char * name)
+    {
+    	printf ("Hello, %s!\n", name);
+    } 
+
+    // bye_fn.c
+    #include <stdio.h>
+    #include "hello.h"
+    void
+    bye (void)
+    {
+    	printf ("Goodbye!\n");
+    }
+
+    // hello.h
+    #ifndef HELLO_H
+    #define HELLO_H
+    void hello (const char * name);
+    void bye (void);
+    #endif
+    ```
+
+    Compile those two source file to object files `hello_fn.o` and `bye_fn.o`:
+
+    ```bash
+    $ gcc -Wall -c hello_fn.c
+    $ gcc -Wall -c bye_fn.c
+    ```
+
+    Combine these object files into a static library using the following command line:
+
+    ```bash
+    $ ar cr libhello.a hello_fn.o bye_fn.o
+    ```
+
+    The option `cr` stands for "create and replace". If the library does not exist, it is first created. If the library already exists, any original files in it with the same names are replaced by the new files specified on the command line. The first argument `libhello.a` is the name of the library. The remaining arguments are the names of the object files to be copied into the library.
+
++   **Note that `ar` does not require a prefix `-` for its options**.
+
++   The archiver ar also provides a “table of contents” option `t` to list
+    the object files in an existing library:
+
+    ```bash
+    $ ar t libhello.a
+    hello_fn.o
+    bye_fn.o
+    ```
+
+    **Note that when a library is distributed, the header files for the public functions and variables it provides should also be made available, so that the end-user can include them and obtain the correct prototypes.**
+
++   Now write a program using the functions in the newly created library:
+
+    ```c
+    // main.c
+    #include "hello.h"
+    int
+    main (void)
+    {
+      hello ("everyone");
+      bye ();
+      return 0;
+    }
+    ```
+
+    assuming the library `libhello.a` is stored in the current directory:
+
+    ```bash
+    $ gcc -Wall main.c libhello.a -o hello
+    ```
+
+    The main program is linked against the object files found in the library file `libhello.a` to produce the final executable.
+
++   The short-cut library linking option `-l` can also be used to link the program, without needing to specify the full filename of the library explicitly:
+
+    ```bash
+    $ gcc -Wall -L. main.c -lhello -o hello
+    ```
+
+    **Be Careful!!! Note that the order of the options is very important!** if you compile like this:
+
+    ```bash
+    $ gcc -Wall -L. -lhello main.c -o hello # or others ...
+    /tmp/cceFjycN.o: In function `main':
+    main.c:(.text+0xa): undefined reference to `hello'
+    main.c:(.text+0xf): undefined reference to `bye'
+    collect2: error: ld returned 1 exit status
+    ```
+
+### Using the profiler gprof
+
++   Wonderful tool! It's useful for measuring the performance of a program -- it records the number of calls to each function and the amount of time spent there, on a per-function basis.
+
++   To use profiling, the program must be compiled and linked with the `-pg` profiling option:
+
+    ```bash
+    $ gcc -Wall -c -pg collatz.c
+    $ gcc -Wall -pg collatz.o
+    $ ./a.out
+    (normal program output is displayed)
+    $ gprof a.out # main nseq and step are 3 functions in collatz.c
+    Flat profile:
+    Each sample counts as 0.01 seconds.
+     %      cumul.      self                self   total
+    time   seconds   seconds   calls     us/call us/call name
+    68.59     2.14      2.14   62135400     0.03    0.03 step
+    31.09     3.11      0.97   499999       1.94    6.22 nseq
+     0.32     3.12      0.01                             main
+    ```
+
+### Converage testing with gcov
+
++   The GNU coverage testing tool gcov analyses the number of times each line of a program is executed during a run. This makes it possible to find areas of the code which are not used, or which are not exercised in testing. When combined with profiling information from `gprof` the information from coverage testing allows efforts to speed up a program to be concentrated on specific lines of the source code.
+
+## How the compiler works
+
+This chapter describes in more detail how GCC transforms source files to an executable file. Compilation is a multi-stage process involving several tools, including the GNU Compiler itself (through the `gcc` or `g++` frontends), the GNU Assembler `as`, and the GNU Linker `ld`. The complete set of tools used in the compilation process is referred to as a *toolchain*.
+
+### An overview of the compilation process
+
++   process:
+    +   preprocessing (to expand macros)
+    +   compilation (from source code to assembly language)
+    +   assembly (from assembly language to machine code)
+    +   linking (to create the final executable)
+
+### The preprocessor
+
++   The first stage of the compilation process is the use of the preprocessor to expand macros and included header files. To perform this stage, GCC executes the following command:
+
+    ```bash
+    $ cpp hello.c > hello.i
+    ```
+
+    The result is a file `hello.i` which contains the source code with all macros expanded. By convention, preprocessed files are given the file extension `.i` for C programs and `ii` for C++ programs. In practice, the preprocessed file is not saved to disk unless the `-save-temps` option is used.
+
+### The compiler
+
++   The next stage of the process is the actual compilation of preprocessed source code to assembly language, for a specific processor. The `-S` option instructs `gcc` to convert the preprocessed C source code to assembly language without creating an object file.
+
+    ```bash
+    $ gcc -Wall -S hello.i
+    ```
+
+    The resulting assembly language is stored in the file `hello.s`.
+
+### The assembler
+
++   The purpose of the assembler is to convert assembly language into machine code and generate an object file. When there are calls to external functions in the assembly source file, the assembler leaves the addresses of the external functions undefined, to be filled in later by the linker. The assembler can be invoked with the following command line:
+
+    ```bash
+    $ as hello.s -o hello.o
+    ```
+
+    The resulting file `hello.o` contains the machine instructions for the *Hello World* program, with an undefined reference to `printf`.
+
+### The linker
+
++   The final stage of compilation is the linking of object files to create an
+    executable. In practice, an executable requires many external functions from system and C run-time (`crt`) libraries. Consequently, the actual link commands used internally by GCC are complicated. For example, the full command for linking the *Hello World* program is:
+
+    ```bash
+    $ ld -dynamic-linker 
+    /lib/ld-linux.so.2 
+    /usr/lib/crt1.o 
+    /usr/lib/crti.o 
+    /usr/lib/gcc-lib/i686/3.3.1/crtbegin.o 
+    -L/usr/lib/gcc-lib/i686/3.3.1 
+    hello.o 
+    -lgcc -lgcc_eh -lc -lgcc -lgcc_eh 
+    /usr/lib/gcc-lib/i686/3.3.1/crtend.o
+    /usr/lib/crtn.o
+    ```
+
+    The entire process is handled transparently by `gcc` when invoked as follows:
+
+    ```bash
+    $ gcc hello.o
+    ```
+
+    This links the object file `hello.o` to the C standard library, and produces an executable file `a.out`:
+
+    ```bash
+    $ ./a.out
+    Hello, world!
+    ```
+
+## Examining compiled files
+
++   Identifying files
+    +   `file` command: looks at the contents of an object file or executable and determines some of its characteristics, such as whether it was compiled with dynamic or static linking.
++   Examining the symbol table
+    +   `nm` command: display the symbol table of executables and object files, which stores the location of functions and variables by name.
++   Finding dynamically linked libraries
+    +   `ldd` command: examines an executable and displays a list of the shared libraries that a program needs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -649,3 +1015,10 @@ In order to control compilation-time and compiler memory usage, and the trade-of
 + acronym  ['ækrənɪm] n. 首字母略缩词
 + Incidentally [ɪnsɪ'dent(ə)lɪ] adv. 顺便；偶然地；附带地
 + diagnostics [,daɪəɡ'nɒstɪks] n. 诊断学(用作单数)
++ recipient [rɪ'sɪpɪənt] n. 容器, 接受者; adj. 容易接受的.
++ supply [sə'plaɪ] v.供给, 替代, 提供; n. 供给, 补给
++ conjecture [kən'dʒektʃə] n.推测, 猜想
++ profiler ['prəufailə] n. 分析器, 分析工具
++ coverage ['kʌv(ə)rɪdʒ] n. 覆盖, 覆盖范围.
++ assembler [ə'semblə] n. 汇编程序
++ assembly [ə'semblɪ] n.汇编, 组装, 集会
