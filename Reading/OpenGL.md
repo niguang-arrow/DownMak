@@ -30,8 +30,14 @@
 
   使用如下命令也可以成功编译:[https://stackoverflow.com/questions/30662824/build-a-program-with-glfw3-on-linux](https://stackoverflow.com/questions/30662824/build-a-program-with-glfw3-on-linux)
 
-  ```bahs
-  g++ -o main main.cpp -lGLU -lGL `pkg-config --static --libs glfw3
+  ```bash
+  $ g++ -o main main.cpp -lGLU -lGL `pkg-config --static --libs glfw3`
+  ```
+
++ 使用 opencv 也是同样的:
+
+  ```bash
+  $ g++ -Wall -o main main.cpp `pkg-config --libs opencv`
   ```
 
   ​
@@ -58,3 +64,52 @@
     + 将 `glfw3.dll` 拷贝至 `Debug` 或 `Release` 目录下 (该目录下有 `*.exe` 文件)
     + 和 GCC 一样, 加载动态链接库的时候要设置环境变量, 在 Windows 中则要设置 `PATH` 环境变量, 我将 `VS2017 .... bin` (注意修改) 设置为 `VStudio_PATH`, 在 `PATH` 中增加 `%VStudio_PATH%\bin`, 最后将 `glfw3.dll` 拷贝至 `%VStudio_PATH%\bin` 即可.
 + 在虚拟机下使用 OpenGL 要开启 3D accelerate. 参考: http://www.dedoimedo.com/computers/virtualization-3d-support-virtualbox.html
+
+
+
+## 2017 年 6 月 1 日
+
+### 学习资源
+
++ https://learnopengl.com/
+
+### GLFW, GLEW, GLUT, GLU, OpenGL 等的联系和区别
+
++ 特别注意 GLU 和 GLUT 是功能不同的两种库. GLU (unity library) 构建在 OpenGL 上同时提供更多的功能 (mainly contains mapping functions), 而 GLUT 则提供了创建窗口, GL context 等功能, 与 GLFW 类似. GLEW (unity library) 用于加载 OpenGL 的扩展.
+
+
++ 参考: https://stackoverflow.com/questions/19719055/what-are-the-differences-between-glu-glew-glut-qt-sdl-opengl-and-webgl
+
++ https://www.reddit.com/r/gamedev/comments/45v9uz/glew_glu_glfw_which_should_i_use/
+
++ 其中第二个网站中说了:
+
+  + alexgfh 的回答: 
+
+  > GLEW is for dealing with OpenGL Extensions, don't worry much about it, it's mostly related to legacy cruft.
+  > GLU is a library that adds commonly needed functionality to OpenGL, it's now considered legacy, I recommend using [GLM](http://glm.g-truc.net/) instead.
+  > GLFW, GLUT, freeglut, and many others are kits that enables you to open a window, read the mouse and keyboard, and other OS functions without having to deal with Win32, X, etc.
+  > I recommend the following combination: GLEW, GLFW and GLM, with OpenGL ES 2.0 (since it's such a tiny subset, it's much easier to learn).
+
+  + dekdev 的回答:
+
+    > GLFW (Context creation) + GLEW (Extension loading) and you will have a fully complete setup for crossplatform OpenGL applications that work on windows, mac, and linux and support all modern OpenGL extensions.
+    >
+    > Basically, GLFW will make a OpenGL window for you that you can use; however, it is not responsible for loading OpenGL extensions (functions that allow you to do modern OpenGL stuff like using shaders or FBO/VBO etc. So you will need to call GLEWs initiation function to get access to them. Implementing GLEW to your code shouldnt be more than including the header and calling GlewInit();
+
++ https://stackoverflow.com/questions/25708688/what-is-the-difference-between-freeglut-vs-glfw
+
++ 上面是 FreeGlut 与 GLFW 的对比:
+
+  + FreeGLUT:
+    + Based on the GLUT API.
+    + GLUT has been around for about as long as OpenGL itself.
+    + Many tutorials and examples out there use GLUT.
+    + Takes care of implementing the event loop and works through callbacks (good for simple stuff, makes things like precisely timed animation loops and low latency input much harder though).
+  + GLFW:
+    + Designed from scratch with the experiences of other frameworks in mind.
+    + Gives much finer control over context creation and window attributes.
+    + GLFW-**2** Provides basic threading support functions (thread creation, synchronization). –– removed from GLFW-3
+    + GLFW-**2** Provides basic image file loading support. –– removed from GLFW-3
+    + Gives very detailed access to input devices.
+    + Event loop is in control of the programmer which allows for much preciser timing and lower latency.
