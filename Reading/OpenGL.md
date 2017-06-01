@@ -66,6 +66,19 @@
 + 在虚拟机下使用 OpenGL 要开启 3D accelerate. 参考: http://www.dedoimedo.com/computers/virtualization-3d-support-virtualbox.html
 
 
+## 2017 年 6 月 1 日
+
++ 查看当前 OpenGL 版本的方法:
+
+  + 参考 https://askubuntu.com/questions/47062/what-is-terminal-command-that-can-show-opengl-version
+
+  ```bash
+  $ sudo apt-get install mesa-utils
+  $ glxinfo | grep -i opengl
+  ```
+
+  ​
+
 
 ## 2017 年 6 月 1 日
 
