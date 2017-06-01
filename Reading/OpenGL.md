@@ -58,11 +58,11 @@
   + 为了方便文件的使用, 在与 `glfw3-master` 相同的目录下再创建 `x64` 文件夹, 将 `glfw3-master/include` 文件夹拷贝至 `x64/` 下, 同时在 `x64/` 下再创建 `lib/` 文件夹, 将前面编译成功的 `glfw3.lib`, `glfw3.dll` 以及 `glfw3dll.lib` 文件放到 `x64/lib/` 目录下.
   + 大功告成....一半....
 + 使用 glfw3.
-  + 使用 VS 2017 创建一个空项目, 平台选择 `x64`, 首先添加一个 `main.cpp` 文件 (提前添加一个 `.cpp` 文件的好处是, 待会配置的时候, 会出现 `C/C++ Header` 这个选项卡, 如果不创建, 则没有这个选项卡), 然后对项目进行配置, 在 `C/C++ Header -> General -> Additional Include Directories` 选项卡中选择 `<Your Path to glfw3-master>/x64/include`. 在 `Linker -> General -> Additional Library Directories` 选择 `<Your Path to glfw3-master>/x64/lib`, 在 `Linker -> Input -> Additional Dependencies` 中添加 `opengl32.lib;glfw3.lib;` (注意用 `;` 分隔).
+  + 使用 VS 2017 创建一个空项目, 平台选择 `x64`, 首先添加一个 `main.cpp` 文件 (提前添加一个 `.cpp` 文件的好处是, 待会配置的时候, 会出现 `C/C++ Header` 这个选项卡, 如果不创建, 则没有这个选项卡), 然后对项目进行配置, 在 `C/C++ -> General -> Additional Include Directories` 选项卡中选择 `<Your Path to glfw3-master>/x64/include`. 在 `Linker -> General -> Additional Library Directories` 选择 `<Your Path to glfw3-master>/x64/lib`, 在 `Linker -> Input -> Additional Dependencies` 中添加 `opengl32.lib;glfw3.lib;` (注意用 `;` 分隔).
   + 在 `main.cpp` 中将 http://www.glfw.org/docs/3.0/quick.html#quick_example 中的这段程序拷贝下来, 能正常通过编译就行.
   + 之后要运行 (即 `F5` 之后能看到一个多彩的三角形) 还需要加载动态链接库 `glfw3.dll`, 有两种方式:
     + 将 `glfw3.dll` 拷贝至 `Debug` 或 `Release` 目录下 (该目录下有 `*.exe` 文件)
-    + 和 GCC 一样, 加载动态链接库的时候要设置环境变量, 在 Windows 中则要设置 `PATH` 环境变量, 我将 `VS2017 .... bin` (注意修改) 设置为 `VStudio_PATH`, 在 `PATH` 中增加 `%VStudio_PATH%\bin`, 最后将 `glfw3.dll` 拷贝至 `%VStudio_PATH%\bin` 即可.
+    + 和 GCC 一样, 加载动态链接库的时候要设置环境变量, 在 Windows 中则要设置 `PATH` 环境变量, 我将 `C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.10.25017\` (注意修改) 设置为 `VStudio_PATH`, 在 `PATH` 中增加 `%VStudio_PATH%\bin`, 最后将 `glfw3.dll` 拷贝至 `%VStudio_PATH%\bin` 即可.
 + 在虚拟机下使用 OpenGL 要开启 3D accelerate. 参考: http://www.dedoimedo.com/computers/virtualization-3d-support-virtualbox.html
 
 
