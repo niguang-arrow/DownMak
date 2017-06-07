@@ -40,6 +40,40 @@
   $ g++ -Wall -o main main.cpp `pkg-config --libs opencv`
   ```
 
++ 若同时使用了 glfw3 与 opencv, 可以使用下面的命令:
+
+  ```bash
+  $ g++ -Wall -o a test.cpp -lGLU -lGL `pkg-config --static --libs glfw3` -lopencv_core 
+  		-lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
+  ```
+
+  当然也可以使用 
+
+  ```bash
+  $ g++ -Wall -o a test.cpp -lGLU -lGL `pkg-config --static --libs glfw3` `pkg-config --static --libs opencv`
+  # 或者
+  $ g++ -Wall -o a test.cpp -lGLU -lGL `pkg-config --static --libs glfw3 opencv`  
+  ```
+
+  但是会报错, 说缺少某些库, 主要是 `pkg-config --static --libs opencv` 会出现很多不太像 opencv 的库.
+
+  ```bash
+  /usr/bin/ld: cannot find -lvtkRenderingOpenGL-6
+  /usr/bin/ld: cannot find -lvtkInteractionStyle-6
+  /usr/bin/ld: cannot find -lvtkRenderingLOD-6
+  /usr/bin/ld: cannot find -lvtkIOPLY-6
+  /usr/bin/ld: cannot find -lvtkFiltersTexture-6
+  /usr/bin/ld: cannot find -lvtkRenderingFreeType-6
+  /usr/bin/ld: cannot find -lvtkIOExport-6
+  collect2: error: ld returned 1 exit status
+  ```
+
+  下面是使用 `pkg-config --static --libs opencv` 的结果:
+
+  ```bash
+  -L/usr/local/lib -L/opt/OpenBLAS/lib -lopencv_shape -lopencv_stitching -lopencv_objdetect -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_ml -lopencv_imgproc -lopencv_flann -lopencv_viz -lopencv_core -lwebp -lpng -lz -ltiff -ljasper -ljpeg -lImath -lIlmImf -lIex -lHalf -lIlmThread -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lpangocairo-1.0 -lgdk_pixbuf-2.0 -lcairo -lpango-1.0 -lfontconfig -lgobject-2.0 -lglib-2.0 -lfreetype -lgthread-2.0 -ldc1394 -lavcodec -lavformat -lavutil -lswscale -lvtkRenderingOpenGL-6 -lvtkInteractionStyle-6 -lvtkRenderingLOD-6 -lvtkIOPLY-6 -lvtkFiltersTexture-6 -lvtkRenderingFreeType-6 -lvtkIOExport-6 -ldl -lm -lpthread -lrt -lopenblas
+  ```
+
   ​
 
 
