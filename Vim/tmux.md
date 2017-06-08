@@ -55,6 +55,16 @@
 
     `tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill`
 
+### Basics
+
++ `<prefix> + ?`: get help
+
+### Session management
+
++ `<prefix> + s`: list sessions
++ `<prefix> + $`: rename the current session
++ `<prefix> + d`: detach from current session
+
 ### Windows
 
 +   `<prefix> + c`: create window
@@ -64,3 +74,44 @@
 +   `<prefix> + f`: find window
 +   `<prefix> + ,`: name window
 +   `<prefix> + &`: kill window
+    +   删除了一个 session 中的所有 window, 那么这个 session 也会被 kill.
+
+
+
+## 2017 年 6 月 8 日
+
+https://danielmiessler.com/study/tmux/#gs.MxHL29w
+
++ Show Sessions
+  + `<prefix> + s`: list sessions, like `tmux ls` or `tmux list`
++ Create a New Session
+  + `tmux new -s <name>`: with a `<name>`
+  + `tmux new`: without a name
+  + `tmux -2` / `tmux`
++ Attach to an Existing Session
+  + `tmux a`: simple use this command, it'll connect you to the first available session.
+  + `tmux a #<number>`: if you don't name a session, the use its `<number>`
+  + `tmux a -t <name>`: use a `<name>`
+  + `tmux attach -t <name>`
++ Detaching From a Session
+  + detach from an existing session (so you can come back to it later)
+  + `tmux detach`
+  + `<prefix> + d`: use this shortcut to detach a session
+    + `C + d`: use this shortcut to close a pane
++ Killing a Session
+  + `tmux kill-session -t <name>`: kill session `<name>`
+  + `tmux kill-window -t <name>`: kill window `<name>`
+
+### 一些设置
+
+```bash
+# rename your terminals
+set -g set-titles on
+set -g set-titles-string '#(whoami)::#h::#(curl ipecho.net/plain;echo)'
+
+# set history
+set-option -g history-limit 3001
+
+# 直接用上面的命令, 在命令行下 history 仍然不能用鼠标 scroll, 因此还需要
+set -g mouse on
+```

@@ -93,7 +93,7 @@
     vim --version | grep python # 或者在 vim 中使用 :echo has('python') 并且返回 1
     ```
 
-  + 第四步: 安装 YCM, 进入 YCM 的主页并参考在 Ubuntu 上安装的步骤: [https://github.com/Valloric/YouCompleteMe#ubuntu-linux-x64](https://github.com/Valloric/YouCompleteMe#ubuntu-linux-x64) 
+  + 第四步: (似乎要先安装 clang, 先看下面的安装 clang 的步骤以及升级 cmake) 安装 YCM, 进入 YCM 的主页并参考在 Ubuntu 上安装的步骤: [https://github.com/Valloric/YouCompleteMe#ubuntu-linux-x64](https://github.com/Valloric/YouCompleteMe#ubuntu-linux-x64) 
 
     ```bash
     # 使用 Vundle 安装好 YCM
@@ -141,7 +141,22 @@
       let g:ycm_seed_identifiers_with_syntax=1
       ```
 
-    + 另外在第四步中我这里有两个因素需要提出来, 第一在进行第四步之前, 我先按照 [https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1](https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1) 给出的建议已经安装好了 clang. 另外, 需要对 cmake 进行升级, 因此我通过源码安装了最新版的 cmake. 下面摘录上面链接中介绍的安装 clang 的方法.
+    + 另外在第四步中我这里有两个因素需要提出来, 第一在进行第四步之前, 我先按照 [https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1](https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1) 给出的建议已经安装好了 clang. 另外, 需要对 cmake 进行升级, 因此我通过源码安装了最新版的 cmake.
+
+    + cmake 的安装可以通过源码, 也可以使用 ppa. 当时我是使用源码安装了 3.8.1. 可是我在服务器上安装时竟然报错... 那么这里也同时列出使用 ppa 安装的方式, 以防万一:
+
+      参考: https://askubuntu.com/questions/610291/how-to-install-cmake-3-2-on-ubuntu-14-04
+
+      注意上面链接中也提到了源码安装, 他们使用的是 `./configure`, 但是在源码中的 `README.rst` 文件中使用 `./bootstrap` (源码中有 `bootstrap` 文件)
+
+      ```bash
+      # 服务器上 cmake 的版本是 2.8 左右. 编译 clang 需要 3.0 以上.
+      sudo add-apt-repository ppa:george-edison55/cmake-3.x
+      sudo apt-get update
+      sudo apt-get upgrade cmake
+      ```
+
+    + 下面摘录上面链接中介绍的安装 clang 的方法.
 
       ```bash
       # 由于下面代码需要使用 svn, 所以需要先安装
