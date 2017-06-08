@@ -14,6 +14,10 @@
 
 
 
+这篇文章看得是云里雾里... 需要先了解文献 [20]: J.-B. Huang, S. B. Kang, N. Ahuja, and J. Kopf. Image completion using planar structure guidance. ACM Trans. on Graphics, 33(4):129, 2014.
+
+也是本文作者的文章. 不打算继续看了, 还是先了解深度学习做 SR 的文章.
+
 ### Abstract
 
 +   摘要中首先说明 Self-similarity based SR 算法主要利用图像自身的信息, 而不用在外部的数据集进行大量的训练.
@@ -77,6 +81,10 @@
 +   We ***validate*** (证实, 验证, 确认) our algorithm through a large number of *qualitative* and *quantitative* comparisons *against* state-of-the-art SR algorithms on a variety of scenes.
 
 ### Vocabulary
+
++   resemble  [rɪ'zemb(ə)l] vt. 类似, 像
+    +   The proposed compositional transformation model resembles the classical decomposition of a projective transformation matrix into a concatenation of three unique matrices: similarity, affine, and pure perspective transformation.
+
 
 +   justify  ['dʒʌstɪfaɪ] vt. 证明合法, 证明...是正当的
     +   We justify the use of transformed self-exemplars with two illustrative examples in Fig.3.

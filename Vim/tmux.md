@@ -1,5 +1,24 @@
 # Tmux
 
+## 2017 年 6 月 7 日
+
+-   安装 Tmux 
+
+-   Reference : http://talks.nicklamuro.com/vim_tmux#tmux-install-from-source
+
+-   在 Tmux 的 Github 上 https://github.com/tmux/tmux 有这样的说明: tmux depends on `libevent 2.x` and also `ncurses`, 因此需要先安装两个依赖项:
+
+    ```bash
+    $ sudo apt-get install libevent-dev libncurses5-dev
+
+    # 安装 tmux
+    $ git clone https://github.com/tmux/tmux.git
+    $ cd tmux
+    $ sh autogen.sh
+    $ ./configure && make
+    $ sudo make install
+    ```
+
 ## 2017 年 5 月 28 日
 
 +   在 tmux 中使用 vim 时用上 `-2` 选项, 这样可以让 tmux 知道 terminal 支持 256 colors.
