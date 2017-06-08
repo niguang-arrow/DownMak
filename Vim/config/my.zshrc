@@ -1,6 +1,10 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+# start idea and pycharm from command line
+alias idea='/home/ieric/Programs/idea/bin/idea.sh'
+alias pycharm='/home/ieric/Programs/pycharm-community-2017.1.3/bin/pycharm.sh'
+
 # qt
 export PATH=/home/ieric/Programs/Qt5.7.0/5.7/gcc_64/bin:$PATH
 export PATH=/home/ieric/Programs/Qt5.7.0/Tools/QtCreator/bin:$PATH

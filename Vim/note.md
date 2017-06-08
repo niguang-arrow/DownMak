@@ -109,7 +109,25 @@
     # Compiling YCM with semantic support for C-family languages:
     cd ~/.vim/bundle/YouCompleteMe
     ./install.py --clang-completer
-    # 成功! 体验太棒了!!! 我的 YCM 配置:
+    # 成功! 体验太棒了!!! 
+
+    #####################
+    # 注意意外情况
+    #####################
+    # 下面这个意外情况是我在服务器上安装时遇到的,
+    # 前面已经成功使用 Vundle 安装 YCM, 但是在使用 ./install.py --clang-completer
+    # 时, 出现 Your C++ compiler doesnot support C++11
+    # 当时 log 显示我使用的是 g++ 4.8.4 
+    # 于是参考 https://github.com/Valloric/YouCompleteMe/issues/2596
+    # 发现可以通过下面的方式解决, 注意我已经按照下面步骤中讲述的安装好了 clang
+    # clang --version 的版本为 5.0.0
+    # 解决方法如下:
+    $ which clang++
+    /usr/local/bin/clang++
+    $ which clang
+    /usr/local/bin/clang
+    $ CXX=/usr/local/bin/clang++ CC=/usr/local/bin/clang ./install.py --clang-completer
+    # 成功!
     ```
 
     + 我的 YCM 配置: (参考牛人总结: [https://github.com/yangyangwithgnu/use_vim_as_ide#5.3.2](https://github.com/yangyangwithgnu/use_vim_as_ide#5.3.2))
@@ -143,18 +161,56 @@
 
     + 另外在第四步中我这里有两个因素需要提出来, 第一在进行第四步之前, 我先按照 [https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1](https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1) 给出的建议已经安装好了 clang. 另外, 需要对 cmake 进行升级, 因此我通过源码安装了最新版的 cmake.
 
-    + cmake 的安装可以通过源码, 也可以使用 ppa. 当时我是使用源码安装了 3.8.1. 可是我在服务器上安装时竟然报错... 那么这里也同时列出使用 ppa 安装的方式, 以防万一:
+    + cmake 的安装可以通过源码, 也可以使用 ppa. 当时我是使用源码安装了 3.8.1. 可是我在服务器上安装时竟然报错... 
 
-      参考: https://askubuntu.com/questions/610291/how-to-install-cmake-3-2-on-ubuntu-14-04
-
-      注意上面链接中也提到了源码安装, 他们使用的是 `./configure`, 但是在源码中的 `README.rst` 文件中使用 `./bootstrap` (源码中有 `bootstrap` 文件)
+    + 参考 [https://askubuntu.com/questions/355565/how-to-install-latest-cmake-version-in-linux-ubuntu-from-command-line](https://askubuntu.com/questions/355565/how-to-install-latest-cmake-version-in-linux-ubuntu-from-command-line) 从源码安装 cmake.
 
       ```bash
-      # 服务器上 cmake 的版本是 2.8 左右. 编译 clang 需要 3.0 以上.
-      sudo add-apt-repository ppa:george-edison55/cmake-3.x
-      sudo apt-get update
-      sudo apt-get upgrade cmake
+      # Uninstall your current version.
+      $ sudo apt-get purge cmake
+
+      # Go to official CMake webpage then download and extract the latest version.
+      $ mkdir ~/temp
+      $ cd ~/temp
+      $ wget https://cmake.org/files/v3.8/cmake-3.8.0.tar.gz
+      $ tar xzvf cmake-3.8.0.tar.gz
+      $ cd cmake-3.8.0/
+
+      # Install it by running:
+      $ ./bootstrap
+      $ make -j4
+      $ sudo make install
+
+      # Test your new cmake version.
+      $ cmake --version
+      Results of cmake --version:
+      cmake version 3.8.0
+      CMake suite maintained and supported by Kitware (kitware.com/cmake).
       ```
+
+      + (再记录一个问题) 在服务器上一直安装不成功 `cmake`, 似乎出现了 `libGL.so` 找不到的问题, 后来我在安装 PyQt5 时出现过 `/usr/lib/ld: cannot find -lGL` 的问题, 我忽然意识到, 会不会就是找不到 GL 导致一直出现错误. 通过参考 https://stackoverflow.com/questions/18406369/qt-cant-find-lgl-error 中的第二个回答, 解决了 PyQt5 的安装问题. 我进入到 `/usr/lib/x86_64-linux-gnu` 目录中找的 `libGL.so` 发现这文件竟然是不可读不可写... 于是首先删除该文件, 然后使用 `ln`:
+
+        ```bash
+        $ cd /usr/lib/x86_64-linux-gnu/
+        $ sudo rm libGL.so
+        $ sudo ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
+        ```
+
+        之后成功编译 `cmake`.
+
+      + 那么这里也同时列出使用 ppa 安装的方式, 以防万一:
+
+        参考: https://askubuntu.com/questions/610291/how-to-install-cmake-3-2-on-ubuntu-14-04
+
+        注意上面链接中也提到了源码安装, 他们使用的是 `./configure`, 但是在源码中的 `README.rst` 文件中使用 `./bootstrap` (源码中有 `bootstrap` 文件)
+
+        ```bash
+        # 服务器上 cmake 的版本是 2.8 左右. 编译 clang 需要 3.4.3 以上.
+        # 但是这种方式只能安装 3.2 版本....
+        sudo add-apt-repository ppa:george-edison55/cmake-3.x
+        sudo apt-get update
+        sudo apt-get upgrade cmake
+        ```
 
     + 下面摘录上面链接中介绍的安装 clang 的方法.
 
@@ -186,12 +242,13 @@
       mkdir build
       cd build
       cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
-      make && make install
+      make && sudo make install
 
       # 安装好后确认下:
       clang --version 
 
       # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
+      cd ~/Programs
       mv build/ llvm/
 
       # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
@@ -204,7 +261,8 @@
       mkdir build   
       cd build
       cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
-      make && make install
+      make && sudo make install
+      cd ~/Programs
       mv build/ libcxx/
 
       # 类似，源码安装 libc++abi 的头文件和动态链接库：
@@ -213,7 +271,8 @@
       mkdir build   
       cd build
       cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
-      make && make install
+      make && sudo make install
+      cd ~/Programs
       mv build/ libcxxabi/
 
       # 完成.

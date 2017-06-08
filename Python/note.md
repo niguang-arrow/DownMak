@@ -197,7 +197,35 @@ Commands:
         $ pip install spyder
         ```
 
-        ​
+    +   (记录一个问题) 在服务器上安装 PyQt5 时, 出现了 `/usr/lib/ld: cannot find -lGL` 这个问题, 通过参考 https://stackoverflow.com/questions/18406369/qt-cant-find-lgl-error 中的第二个回答, 解决了. 记录如下:
+
+        you don't need to install anything. `libGL` is already installed with Ubuntu, you just need to soft link it. (works for ubuntu 14.x and 15.x)
+
+        1.  First locate the GL library
+        2.  Then link it under `/usr/lib`
+        3.  If the library is missing, it can be installed via `libgl1-mesa-dev` package
+
+        Here is how you could do this:
+
+        ```bash
+        $ locate libGL
+        /usr/lib/i386-linux-gnu/mesa/libGL.so.1
+        /usr/lib/i386-linux-gnu/mesa/libGL.so.1.2.0
+        /usr/lib/x86_64-linux-gnu/libGLEW.so.1.10
+        /usr/lib/x86_64-linux-gnu/libGLEW.so.1.10.0
+        /usr/lib/x86_64-linux-gnu/libGLEWmx.so.1.10
+        /usr/lib/x86_64-linux-gnu/libGLEWmx.so.1.10.0
+        /usr/lib/x86_64-linux-gnu/libGLU.so.1
+        /usr/lib/x86_64-linux-gnu/libGLU.so.1.3.1
+        /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1
+        /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1.2.0
+        /usr/lib/x86_64-linux-gnu/mesa-egl/libGLESv2.so.2
+        /usr/lib/x86_64-linux-gnu/mesa-egl/libGLESv2.so.2.0.0
+        $ sudo ln -s /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1 /usr/lib/libGL.so
+        ```
+
+        主要是使用最后的 `ln`, 现在我猜想我的 `cmake` 没有装成, 也与这个问题有关系.
+
 
 ## Anaconda and Miniconda
 
