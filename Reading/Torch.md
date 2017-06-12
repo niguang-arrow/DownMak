@@ -1,5 +1,100 @@
 # Torch
 
+## 2017 年 6 月 12 日 
+
+### Train-face-detector
+
++   程序主要分为以下几个部分:
+
+    +   main.lua
+    +   data.lua
+    +   model.lua
+    +   train.lua
+    +   test.lua
+
+    依次介绍:
+
+    +   main.lua
+
+        +   命令行选项以及默认的配置 `opt`: 可以使用 `torch.CmdLine()` 或者 `llap` (前者需要载入 `require 'torch'`, 后者需要载入 `require 'pl'` 见 [https://stevedonovan.github.io/Penlight/api/libraries/pl.lapp.html](https://stevedonovan.github.io/Penlight/api/libraries/pl.lapp.html)) 
+        +   由于要用到随机数, 比如 `torch.randperm`, 所以要使用 `torch.manualSeed`; 设置默认的线程数; 设置默认的 tensor 类型 (默认是 `torch.DoubleTensor`)
+        +   如果要使用 CUDA 的话, 还要载入 `require 'cunn'`, 设置 device
+        +   分别载入 `data.lua`, `model.lua`, `train.lua`, `test.lua`
+        +   外层循环, 比如 `while true do`, 或者 `for epoch = 1, max_epoch do`
+        +   (tricks: 可以使用 `print(sys.COLORS.red .. '==>Hello World!')` 将文字以红色打印)
+
+    +    data.lua
+
+        +   可以载入 `require 'image'` 查看图片. (`image.display`)
+
+        +   可在文件开始使用 
+
+            ```lua
+            local opt = opt or {
+              item1 = value1,
+              item2 = value2
+            }
+            ```
+
+            设置新的选项.
+
+        +   搜索数据文件, 如果存在的话, 就用 `image.load` 进行载入, 如果不存在的话, 可以使用 `os.execute('wget ' .. url)` 进行下载. 需要注意 `paths` 这个模块的使用.
+
+        +   使用 for 循环将文件全都读入为 Tensor. 数据使用 Lua 中的 table 来保存,比如:
+
+            ```lua
+            trainData = {
+              data = torch.Tensor(trsize, 1, 32, 32),
+              labels = torch.Tensor(trsize),
+              size = function() return trsize end
+            }
+            ```
+
+            **这里要注意的三点是**: 求 `trainData` 的大小时使用 `trainData:size()`, 这是由于最后的 `size` 是一个函数...
+
+            另外, 训练数据的顺序需要打乱, 使用 `torch.randperm(#labelsAll[1])`;
+
+            最后, 将数据复制到 `trainData` 中还需要注意:
+
+            ```lua
+            labelsShuffle = torch.randperm(#labelsAll[1])
+            for i = 1, trsize do
+              trainData.data[i] = imagesAll[labelsShuffle[i]][1]:clone()
+              trainData.labels[i] = labelsAll[labelsShuffle[i]]
+            end
+            ```
+
+            ​
+
+        +   ​
+
+
++   若要调用 GPU:
+
+    ```lua
+    -- 首先主文件 main.lua
+    if opt.type == 'cuda' then
+    	print(sys.COLORS.red .. '==> switching to CUDA')
+    	require 'cunn'
+    	cutorch.setDevice(opt.deviceID)
+    	print(sys.COLORS.red .. '==> using GPU #' .. cutorch.getDevice())
+    end
+
+    -- 然后模型 model.lua 
+    -- 模型以及损失函数均要使用 cuda
+    if opt.type == 'cuda' then
+    	model:cuda()
+      	loss:cuda()
+    end
+
+    -- 之后训练模型时, train.lua
+    -- mini-batch, 以及相应的 label
+    if opt.type == 'cuda' then
+      	inputs:cuda()
+      	targets:cuda()
+    end
+    ```
+
 ## 2017 年 6 月 9 日
 
 ### Getting Started with Torch 
