@@ -138,6 +138,15 @@ refer: https://github.com/torch/demos/blob/master/train-on-cifar/train-on-cifar.
     torch.save(filename, model)
     ```
 
+-   torch 载入 `.t7` 文件:
+
+    https://github.com/clementfarabet/ipam-tutorials/tree/master/th_tutorials/0_getstarted
+
+    ```lua
+    -- 注意  'ascii' 少不得滴, 否则会报错
+    train = torch.load('mnist.t7/train_32x32.t7', 'ascii')
+    ```
+
     ​
 
 ## 2017 年 6 月 11 日
