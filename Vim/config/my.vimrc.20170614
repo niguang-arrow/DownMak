@@ -40,7 +40,7 @@ Plugin 'vim-airline/vim-airline-themes'
 Plugin 'nathanaelkane/vim-indent-guides' " 显示代码缩进
 Plugin 'jiangmiao/auto-pairs'            " 括号自动补全
 Plugin 'ervandew/supertab'               " 使用 Tab 键进行自动补全
-Plugin 'edkolev/tmuxline.vim'            " 使用 tmux + vim 主题
+"Plugin 'edkolev/tmuxline.vim'            " 使用 tmux + vim 主题
 Plugin 'octol/vim-cpp-enhanced-highlight' " C++ 语法高亮
 Plugin 'derekwyatt/vim-fswitch'           " *.h 文件与 *.cpp 文件快速切换
 Plugin 'kshenoy/vim-signature'            " 书签可视化
@@ -50,6 +50,7 @@ Plugin 'vim-scripts/Conque-Shell'        " 在 vim 中使用交互式命令, 安
 Plugin 'majutsushi/tagbar'               " 基于标签的标识符列表
 "Plugin 'Shougo/neocomplete.vim'         " 强大的自动补全
 Plugin 'dyng/ctrlsf.vim'                 " 内容查找, 还会列出上下文, 需提前安装ack
+Plugin 'terryma/vim-multiple-cursors'    " 多项选择,搭配ctrlsf 使用效果更佳
 Plugin 'christoomey/vim-tmux-navigator'  " 实现 vim 和 tmux 无缝跳转
 Plugin 'skywind3000/asyncrun.vim'  " 在 vim 内编译程序, c++, python 等
 
@@ -100,9 +101,14 @@ let g:airline_symbols.paste = '∥'
 let g:airline_symbols.whitespace = 'Ξ'
 
 " airline symbols
-let g:airline_left_sep = ''
-let g:airline_left_alt_sep = ''
-let g:airline_right_sep = ''
+" 安装字体后看 airline 的手册
+let g:airline_left_sep = '⮀'
+let g:airline_left_alt_sep = '⮁'
+let g:airline_right_sep = '⮂'
+let g:airline_right_alt_sep = '⮃'
+"let g:airline_left_sep = ''
+"let g:airline_left_alt_sep = ''
+"let g:airline_right_sep = ''
 "let g:airline_right_alt_sep = ''
 let g:airline_right_alt_sep = ''
 let g:airline_symbols.branch = ''
@@ -112,8 +118,10 @@ let g:airline_symbols.linenr = ''
 " 是否启用顶部tabline
 let g:airline#extensions#tabline#enabled = 1
 " 顶部tabline显示方式
-let g:airline#extensions#tabline#left_sep = ''
-let g:airline#extensions#tabline#left_alt_sep = ''
+let g:airline#extensions#tabline#left_sep = '⮀'
+let g:airline#extensions#tabline#left_alt_sep = '⮀'
+"let g:airline#extensions#tabline#left_sep = ''
+"let g:airline#extensions#tabline#left_alt_sep = ''
 " 默认是1开启空白符检测,但是状态栏不太好看, 这里设置为取消
 let g:airline#extensions#whitespace#enabled = 0
 

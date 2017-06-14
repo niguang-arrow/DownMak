@@ -2,13 +2,61 @@
 
 ## 2017 年 6 月 14 日
 
++ 使用 `htop` 或者 `glances` 监控系统状态 
+  + `sudo apt-get install htop`
+  + `pip install putils` (这是安装 `glances` 必须的)
+  + `pip install glances docker ` (去 https://github.com/nicolargo/glances 看还可以安装哪些额外的工具, 使用 `pip install glances docker gpu` 会报错...) 
+
+
++ https://github.com/wookayin/gpustat (GPU state)
+
+  ```python
+  # 首先注释掉 83 行的 
+      # @property
+      # def name(self):
+          # """
+          # Returns the name of GPU card (e.g. Geforce Titan X)
+          # """
+          # return self.entry['name']
+          
+  # 然后修改 167 行
+  # 把 s{entry[name]:{gpuname_width}} 改为了 s{gpuname_width}, 
+  # 同时令  gpuname_width='Device'
+          # build one-line display information
+          # # reps = ("%(C1)s[{entry[index]}]%(C0)s %(CName)s{entry[name]:{gpuname_width}}%(C0)s |" +
+                  # # "%(CTemp)s{entry[temperature.gpu]:>3}'C%(C0)s, %(CUtil)s{entry[utilization.gpu]:>3} %%%(C0)s | " +
+                  # # "%(C1)s%(CMemU)s{entry[memory.used]:>5}%(C0)s / %(CMemT)s{entry[memory.total]:>5}%(C0)s MB"
+                  # # ) % colors
+          reps = ("%(C1)s[{entry[index]}]%(C0)s %(CName)s{gpuname_width}%(C0)s |" +
+                  "%(CTemp)s{entry[temperature.gpu]:>3}'C%(C0)s, %(CUtil)s{entry[utilization.gpu]:>3} %%%(C0)s | " +
+                  "%(C1)s%(CMemU)s{entry[memory.used]:>5}%(C0)s / %(CMemT)s{entry[memory.total]:>5}%(C0)s MB"
+                  ) % colors
+          reps = reps.format(entry={k: _repr(v) for (k, v) in self.entry.items()},
+                             gpuname_width='Device')
+          reps += " |"
+  ```
+
+  之后使用命令 `gpustat -c` 查看效果.
+
+  如果要动态的查看, 使用命令 `watch --color -n1.0 gpustat -c`; (这些信息可以在 https://github.com/wookayin/gpustat) 找到.
+
+  停止使用 `ctrl + c` 
+
+
 + 按照下面的要求设置 Solarized 主题.
   + http://www.webupd8.org/2011/04/solarized-must-have-color-paletter-for.html
   + https://github.com/Anthony25/gnome-terminal-colors-solarized
   + https://www.linuxdeveloper.space/vim-ubuntu-color-scheme-fix/ (vim 设置)
 + 介绍 Mac OS X 的开发配置: https://github.com/donnemartin/dev-setup
 + terminal vim 光标变为 block: 设置 terminal 的 profile, 同时参看 https://askubuntu.com/questions/49606/how-do-i-disable-the-blinking-cursor-in-gnome-terminal 停止闪烁.
-+ ctrlsf: https://github.com/dyng/ctrlsf.vim 先要安装好 ack, 最好也把 ag 装一下. perl 缺失的包 (pm) 可以使用 cpan 安装: https://stackoverflow.com/questions/65865/whats-the-easiest-way-to-install-a-missing-perl-module 注意在工程项目中使用 `:CtrlSF -C 1 [pattern] /my/path/` 测试. 如果在 `/home/ieric/` 下, 那就会搜索整个目录, 所以最好创建工程目录. 设置快捷键为 `<leader>sf`. 按 `p` 给出完整代码而不是上下几行代码, 按 `q` 退出搜索结果页面.
++ ctrlsf: https://github.com/dyng/ctrlsf.vim 先要安装好 ack, 
+  + 使用 `cpan App::Ack` 安装 ack (https://beyondgrep.com/install/)
+    + 使用上面的命令安装最好, 不会出现缺失某些库的情况
+    + 手动安装易出现问题, 解决如下
+      + perl 缺失的包 (pm) 可以使用 cpan 安装: https://stackoverflow.com/questions/65865/whats-the-easiest-way-to-install-a-missing-perl-module 
+  + 最好也把 ag 装一下. https://github.com/ggreer/the_silver_searcher
+    + `sudo apt-get install silversearcher-ag`
+  + 注意在工程项目中使用 `:CtrlSF -C 1 [pattern] /my/path/` 测试. 如果在 `/home/ieric/` 下, 那就会搜索整个目录, 所以最好创建工程目录. 设置快捷键为 `<leader>sf`. 按 `p` 给出完整代码而不是上下几行代码, 按 `q` 退出搜索结果页面.
 + `:ccl[ose]` 退出 quickfix
 + 内容替换.
 + 垂直打开帮助窗口, 比如 `:vert[ical] help ctrlsf` 默认是水平打开.
@@ -19,6 +67,12 @@
 + 改为 `autocmd BufWritePost $MYVIMRC source $MYVIMRC | AirlineRefresh` (https://github.com/vim-airline/vim-airline/issues/312) 让 airline 在保存 .vimrc 时能正常渲染. 
   + https://github.com/vim-airline/vim-airline/issues/539 另外的 issue, 可做参考.
 + ctrlP 的使用: http://www.wklken.me/posts/2015/06/07/vim-plugin-ctrlp.html
++ multicursor: https://github.com/terryma/vim-multiple-cursors
++ 设置 tmux 的主题: https://github.com/jimeh/tmux-themepack (见 my.tmux.conf.20170614.newtheme)
++ vim 的 airline 箭头我换成了较小的那个, 同时还要修改 tmux 主题中的图标 (https://github.com/jimeh/tmux-themepack, 我修改了 `powerline/double/*` 中的箭头图标, 它原来使用的是大的箭头图标, 由于和状态栏没有协调, 我就换成了小的箭头, 见 `DownMak/Vim/config/powerline/double` 文件夹)
++ `git submodule`
++ 模板补全: https://github.com/sirver/ultisnips
+  + 我的快捷键: `c+g` 生成, `c+b` 调到下一项, `c+z` 调回上一项
 
 
 
