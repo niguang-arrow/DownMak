@@ -1,5 +1,39 @@
 # Reference
 
+## 2017 年 6 月 14 日
+
++ 按照下面的要求设置 Solarized 主题.
+  + http://www.webupd8.org/2011/04/solarized-must-have-color-paletter-for.html
+  + https://github.com/Anthony25/gnome-terminal-colors-solarized
+  + https://www.linuxdeveloper.space/vim-ubuntu-color-scheme-fix/ (vim 设置)
++ 介绍 Mac OS X 的开发配置: https://github.com/donnemartin/dev-setup
++ terminal vim 光标变为 block: 设置 terminal 的 profile, 同时参看 https://askubuntu.com/questions/49606/how-do-i-disable-the-blinking-cursor-in-gnome-terminal 停止闪烁.
++ ctrlsf: https://github.com/dyng/ctrlsf.vim 先要安装好 ack, 最好也把 ag 装一下. perl 缺失的包 (pm) 可以使用 cpan 安装: https://stackoverflow.com/questions/65865/whats-the-easiest-way-to-install-a-missing-perl-module 注意在工程项目中使用 `:CtrlSF -C 1 [pattern] /my/path/` 测试. 如果在 `/home/ieric/` 下, 那就会搜索整个目录, 所以最好创建工程目录. 设置快捷键为 `<leader>sf`. 按 `p` 给出完整代码而不是上下几行代码, 按 `q` 退出搜索结果页面.
++ `:ccl[ose]` 退出 quickfix
++ 内容替换.
++ 垂直打开帮助窗口, 比如 `:vert[ical] help ctrlsf` 默认是水平打开.
++ resize window 的大小:
+  + https://vi.stackexchange.com/questions/514/how-to-change-the-current-splits-width-and-height
++ vim 自带的搜索, `/<string>`, 使用 `n` 搜索下一个, 使用 `N` 搜索上一个. (千万不要想成使用 `p` 搜索上一个, 因为 `p` 是粘贴....)
++ vim-airline 最右边 tainling whitespace 我需要去掉 https://stackoverflow.com/questions/32588604/vim-airline-what-is-trailing1
++ 改为 `autocmd BufWritePost $MYVIMRC source $MYVIMRC | AirlineRefresh` (https://github.com/vim-airline/vim-airline/issues/312) 让 airline 在保存 .vimrc 时能正常渲染. 
+  + https://github.com/vim-airline/vim-airline/issues/539 另外的 issue, 可做参考.
++ ctrlP 的使用: http://www.wklken.me/posts/2015/06/07/vim-plugin-ctrlp.html
+
+
+
+## 2017 年 6 月 13 日
+
++ Vundle : `:PluginInstall`, `:PluginClean`, `:PluginUpdate`
+
+
++ `A` : move to the end of the line and switch to editing mode (Append)
++ `I` : the opposite of `A`, (Insert mode at beginning of line)
++ `$` : go to the end of the line
++ `^` : gets you to the first non-whitespace character in the line
++ `0` : (zero) gets you to the beginning of the line including whitespace.
++ `:e /home/ieric/.vimrc`: 当前编辑的文件的目录在别处, 比如 `~/Documents`, 如果要在 vim 中打开位于 `/home/ieric` 处的 `.vimrc` 文件, 就需要使用 `:e` 命令. 使用 `:o` 没有效果.
+
 ## 2017 年 6 月 12 日
 
 + vim 对 C++ 语法高亮支持不够好（特别是 C++11/14 新增元素）, 必须借由插件 vim-cpp-enhanced-highlight（[https://github.com/octol/vim-cpp-enhanced-highlight](https://github.com/octol/vim-cpp-enhanced-highlight) ）进行增强. vim-cpp-enhanced-highlight 主要通过 .vim/bundle/vim-cpp-enhanced-highlight/after/syntax/cpp.vim 控制高亮关键字及规则，所以，当你发现某个 STL 容器类型未高亮，那么将该类型追加进 `cpp.vim` 即可. 如 `initializer_list` 默认并不会高亮, 需要添加
@@ -48,7 +82,12 @@
       + `m?`: 列出当前文件中所有的书签, 选中后回车可直接跳转 (我这里没有成功)
     + 书签跳转:
       + `mn`: 按行号前后顺序, 跳转至下一个独立书签;
+
       + `mp`: 按行号前后顺序, 跳转至前个独立书签;
+
+      + ``k`: 比如用 `mk` 设置了名为 `k` 的书签, 那么可以使用 
+
+        ``k` 进行跳转, 注意左上角的斜撇.
 
 + 标签系统: ctags
 
