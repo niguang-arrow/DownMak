@@ -1,5 +1,13 @@
 # Tricks
 
+## 2017 年 6 月 13 日
+
++   查看目录中文件的数量: `ls -l | wc -l`  (http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x700.html)
+
++   使用 `watch -n 0.5 nvidia-smi` 实时查看 GPU 的状态. [https://unix.stackexchange.com/questions/38560/gpu-usage-monitoring-cuda#comment519444_38581](https://unix.stackexchange.com/questions/38560/gpu-usage-monitoring-cuda#comment519444_38581)
+
+    还有其他的方式查看: https://unix.stackexchange.com/questions/38560/gpu-usage-monitoring-cuda
+
 ## 2017 年 5 月 24 日
 
 +   使用 TeXStudio 时应该在软件内创建新文件, 而不要先在文件夹中创建一个文件然后用 TeXStudio 打开, 否则中文处理会出问题.
