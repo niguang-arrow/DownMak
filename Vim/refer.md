@@ -2,7 +2,20 @@
 
 ## 2017 年 6 月 15 日
 
++   使用 https://github.com/goerz/ipynb_notedown.vim 插件将 ipynb 文件转化为 markdown 文件, 由于该插件需要使用 notedown, 所以需要使用 `pip install notedown` 安装 notedown [https://github.com/aaren/notedown](https://github.com/aaren/notedown)
+
 + 在 Vim 下调试 Python 程序: [https://brookhong.github.io/2014/09/27/dbgpavim-cn.html](https://brookhong.github.io/2014/09/27/dbgpavim-cn.html)
+
++ 安装 shadowsocks, 提示缺少 `libsodium` 这个库, 使用如下命令安装:
+
+  [https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92](https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92)
+
+  ```bash
+  sudo add-apt-repository ppa:chris-lea/libsodium;
+  sudo apt-get update && sudo apt-get install libsodium-dev;
+  ```
+
+  ​
 
 ## 2017 年 6 月 14 日
 
@@ -77,6 +90,10 @@
 + `git submodule`
 + 模板补全: https://github.com/sirver/ultisnips
   + 我的快捷键: `c+g` 生成, `c+b` 调到下一项, `c+z` 调回上一项
++ tmux 主题: https://github.com/jimeh/tmux-themepack  (vim 中需要删除 tmuxline.vim 插件)
++ tmux 快捷键清空屏幕, 但是保留历史:
+  + `bind -n C-r send-keys 'C-l'` [https://forum.upcase.com/t/clear-scrollback-in-tmux/2380](https://forum.upcase.com/t/clear-scrollback-in-tmux/2380)
+  + 另外如果要把历史也同时删去的话, 查看 [http://notes.jerzygangi.com/the-only-way-that-actually-works-to-clear-the-screen-in-tmux/](http://notes.jerzygangi.com/the-only-way-that-actually-works-to-clear-the-screen-in-tmux/)
 
 
 

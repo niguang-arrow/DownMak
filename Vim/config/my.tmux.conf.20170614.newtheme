@@ -24,6 +24,8 @@ bind-key C-a send-prefix
 # 自定义的
 #---------------
 
+# Clean the screen
+bind -n C-r send-keys 'C-l'
 
 # Sane Split Commands
 # split panes using | and -
