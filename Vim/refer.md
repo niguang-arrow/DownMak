@@ -1,5 +1,9 @@
 # Reference
 
+## 2017 年 6 月 15 日
+
++ 在 Vim 下调试 Python 程序: [https://brookhong.github.io/2014/09/27/dbgpavim-cn.html](https://brookhong.github.io/2014/09/27/dbgpavim-cn.html)
+
 ## 2017 年 6 月 14 日
 
 + 使用 `htop` 或者 `glances` 监控系统状态 
