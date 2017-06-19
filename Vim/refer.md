@@ -1,12 +1,54 @@
 # Reference
 
+## 2017 年 6 月 17 日
+
++ polipo 科学上网.
+
+
++ libtool 用于编译  cario
++ 编译 cario 是因为需要安装 i3-gaps, 因为报错说 cario 的版本需要 >=1.14
++ 编译 i3-gaps 需要 libxcb-xrm-dev, 按照 github 上的信息是安装不了的, 要去找其他的包: `libxcb-util1_0.4.0-0ubuntu3_amd64.deb` -> `libxcb_xrm0_1.0-2_amd64.deb` -> `libxcb-xrm-dev_1.0-2_amd64.deb`
++ https://faq.i3wm.org/question/1/how-can-i-get-rid-of-the-nautilus-desktop-window.1.html 防止打开文件浏览器时出现 desktop, 然后就 kill 不了($mod+Shift+q)
++ ALSA(控制声音): https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture `sudo apt-get install alsa-utils` 默认是装好的.
+
+## 2017 年 6 月 16 日
+
++ 使用 `Ctrl + [` 也可以返回 normal 模式.
+
+
++ 在 vim 中从 insert 模式返回 normal 模式会出现延迟的问题, 参考如下网站解决:
+
+  + https://www.johnhawthorn.com/2012/09/vi-escape-delays/
+  + https://unix.stackexchange.com/questions/23138/esc-key-causes-a-small-delay-in-terminal-due-to-its-alt-behavior/25638#25638
+
+  主要是在 `.vimrc` 中设置:
+
+  ```bash
+  set timeoutlen=1000 ttimeoutlen=0
+  ```
+
+  在 `zsh` 中设置:
+
+  ```bash
+  # 10ms for key sequences
+  KEYTIMEOUT=1
+  ```
+
+  在 `tmux` 中使用:
+
+  ```bash
+  set -s escape-time 0
+  ```
+
+  ​
+
 ## 2017 年 6 月 15 日
 
 +   使用 https://github.com/goerz/ipynb_notedown.vim 插件将 ipynb 文件转化为 markdown 文件, 由于该插件需要使用 notedown, 所以需要使用 `pip install notedown` 安装 notedown [https://github.com/aaren/notedown](https://github.com/aaren/notedown)
 
 + 在 Vim 下调试 Python 程序: [https://brookhong.github.io/2014/09/27/dbgpavim-cn.html](https://brookhong.github.io/2014/09/27/dbgpavim-cn.html)
 
-+ 安装 shadowsocks, 提示缺少 `libsodium` 这个库, 使用如下命令安装:
++ 安装 shadowsocks, http://www.jianshu.com/p/66c6ac6560a2 提示缺少 `libsodium` 这个库, 使用如下命令安装:
 
   [https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92](https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92)
 
@@ -15,7 +57,84 @@
   sudo apt-get update && sudo apt-get install libsodium-dev;
   ```
 
-  ​
++   安装 SwitchOmega http://www.jianshu.com/p/5053d0adb270
+
++   本地主机利用 ssh 登录到 VM 中的系统中. 
+
+    +   验证有无安装好 `openssh-server`: https://unix.stackexchange.com/questions/145997/trying-to-ssh-to-local-vm-ubuntu-with-putty
+    +   真正的配置: https://stackoverflow.com/questions/5906441/how-to-ssh-to-a-virtualbox-guest-externally-through-a-host
+
+## 2017 年 6 月 16 日
+
++ 安装 i3 Window manager:
+
+  ```bash
+  $ sudo apt-get install i3 i3status i3lock xbacklight feh conky
+  ```
+
+  - **i3** is the main window manager package.
+  - **i3status** is a utility to generate a string with information to be displayed in the i3bar.
+  - **dmenu** is a utility to launch our apps in the i3 desktop.
+  - **xbacklight** is a utility to set our laptop’s screen brightness.
+  - **feh** is a utility to set a wallpaper.
+  - **conky** is a utility to display information of the system in a awesome way.
+
++ hotKey:
+
+  + `$mode + Enter`: open a terminal
+  + `$mode + f`
+  + `$mode + v`
+  + `$mode + d`
+  + `$mode + shift + q` or `xkill` program
+  + `$mode + #` (`#` is 0 ~ 9)
+  + `$mode + shift + #`
+  + `$mode + shift + e`
+  + `$mode + shift + r`
+
++ customize config:
+
+  + use `i3-config-wizard` to restore the default configuration at any time.
+
++ useful tools:
+
+  + [**alsamixer**](http://alsa.opensrc.org/Alsamixer): Lets you change the volume of speakers / headphones in a terminal
+  + [**xbacklight**](http://www.x.org/archive/X11R7.5/doc/man/man1/xbacklight.1.html): Changes brightness of screen in a terminal
+  + [**nmcli**](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Networking_Guide/sec-Using_the_NetworkManager_Command_Line_Tool_nmcli.html): [Command line interface](https://fedoraproject.org/wiki/Networking/CLI) to NetworkManager
+  + [**links**](http://links.twibright.com/): Text-based web browser
+  + [**irssi**](https://irssi.org/): CLI-based IRC client
+  + [**mc**](https://www.midnight-commander.org/): mc, Midnight Commander, is an advanced file manager in the terminal
+  + [**glances**](https://nicolargo.github.io/glances/): Shows system status
+
++ set up dmenu to only show app with GUI: 
+
+  ```bash
+  # bindsym $mod+d exec dmenu_run
+  bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
+  ```
+
+  instead we can use `rofi`: `bindsym $mod+d exec rofi -show run` (you must install `rofi` first)
+
++ create your own shortcuts:
+
+  ```bash
+  bindsym $mod+<key> exec <app>
+  ```
+
++ set wallpaper:
+
+  ```bash
+  exec_always --no-startup-id feh --bg-scale ~/path/to/wallpaper.png
+  ```
+
++ [How to replace Unity with i3 window manager on Ubuntu 12.04](http://walther.io/how-to-replace-unity-with-i3-window-manager-on-ubuntu-1204/)
+
+
+  + To logout of i3: `i3-msg exit`
+  + Unity: its default Ubuntu login manager is `lightdm`
+    + [LightDM](http://www.freedesktop.org/wiki/Software/LightDM/) is the *display manager* running in Ubuntu. It starts the X servers, user sessions and greeter (login screen). The default greeter in Ubuntu is Unity Greeter. [https://wiki.ubuntu.com/LightDM](https://wiki.ubuntu.com/LightDM)
+
++ Network manager: https://faq.i3wm.org/question/2/how-can-i-use-networkmanager-with-i3.1.html (可以使用 `nm-applet` (图形工具, Unity 右上角) 或者 `wicd-curses` (命令行下工具使用 `sudo apt-get install wicd-curses` 安装))
+
 
 ## 2017 年 6 月 14 日
 
