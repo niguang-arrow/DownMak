@@ -57,7 +57,7 @@ if [ -n "$force_color_prompt" ]; then
 fi
 
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 else
     PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 fi
@@ -113,59 +113,34 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# TeX Live 2016 
+
+# caffe path
+export PYTHONPATH=/home/ieric/Programs/caffe/python:$PYTHONPATH
+
+# CUDA
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-8.0/lib64:
+export LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-8.0/lib64:
+export PATH=$PATH:/usr/local/cuda-8.0/bin
+
+
+. /home/ieric/Programs/torch/install/bin/torch-activate
+
+export PYTHONSTARUP=/home/ieric/.pythonstartup
+
+# TeXlive
 export MANPATH=${MANPATH}:/home/ieric/Programs/texlive/2016/texmf-dist/doc/man
 export INFOPATH=${INFOPATH}:/home/ieric/Programs/texlive/2016/texmf-dist/doc/info
 export PATH=${PATH}:/home/ieric/Programs/texlive/2016/bin/x86_64-linux
 
-# 设置一些命令缩写
-alias odir='nautilus' # opendir <path> 可以打开一个文件夹
-alias pdf='qpdfview' # pdf <pdfpath> 打开一个 pdf 文件
+# powerline https://powerline.readthedocs.io/en/latest/usage/shell-prompts.html#bash-prompt
+#PATH=~/.pyenv/versions/anaconda2-4.3.1/bin:$PATH
+#powerline-daemon -q
+#POWERLINE_BASH_CONTINUATION=1
+#POWERLINE_BASH_SELECT=1
+#repository_root=~/.pyenv/versions/anaconda2-4.3.1/lib/python2.7/site-packages
+#. ${repository_root}/powerline/bindings/bash/powerline.sh
 
-# Caffe path
-export PYTHONPATH="/home/ieric/Programs/caffe/python:$PYTHONPATH"
 
-# Pylearn2 Data path
-export PYLEARN2_DATA_PATH="/home/ieric/DataSet"
-export PYLEARN2_VIEWER_COMMAND="eog --new-instance"
-
-# Adversarial path
-export PYTHONPATH="/home/ieric/Programs:$PYTHONPATH"
-
-# is13 path RNN
-export PYTHONPATH="/home/ieric/Codes/RNN:$PYTHONPATH"
-
-export NVM_DIR="/home/ieric/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-
-# torch
-. /home/ieric/Programs/torch/install/bin/torch-activate
-
-# QtCreator
-export PATH=/home/ieric/Programs/Qt5.7.0/Tools/QtCreator/bin:$PATH
-
-# Caffe2
-export PYTHONPATH=/usr/local:$PYTHONPATH
-export PYTHONPATH=$PYTHONPATH:/home/ieric/Programs/caffe2/build
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-
-# powerline 
-export PATH=~/.pyenv/versions/anaconda2-4.3.1/bin:$PATH
-powerline-daemon -q
-POWERLINE_BASH_CONTINUATION=1
-POWERLINE_BASH_SELECT=1
-. /home/ieric/.pyenv/versions/anaconda2-4.3.1/lib/python2.7/site-packages/powerline/bindings/bash/powerline.sh
-
-#powerline-shell     https://github.com/banga/powerline-shell
-#function _update_ps1() {
-    #PS1="$(~/Programs/powerline-shell/powerline-shell.py $? 2> /dev/null)"
-#}
-
-#if [ "$TERM" != "linux" ]; then
-    #PROMPT_COMMAND="_update_ps1; $PROMPT_COMMAND"
-#fi
-
-# pyenv config
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"

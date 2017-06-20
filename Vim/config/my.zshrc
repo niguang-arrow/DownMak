@@ -1,9 +1,25 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+ 
 
-# start idea and pycharm from command line
-alias idea='/home/ieric/Programs/idea/bin/idea.sh'
+# 设置 Polipo: http://www.jianshu.com/p/8e7d7f57bf59
+export http_proxy=http://localhost:8123
+
+# ranger config
+# in case ~/.config/ranger/rc.conf to be loaded twice
+export RANGER_LOAD_DEFAULT_RC=FALSE
+
+# dircolors  https://michaelheap.com/getting-solarized-working-on-ubuntu/
+#if [ -x /usr/bin/dircolors ]; then
+    #test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+#fi
+eval `dircolors ~/.dircolors`
+
+#idea
+alias idea='/home/ieric/Programs/idea-IC-171.4424.56/bin/idea.sh'
 alias pycharm='/home/ieric/Programs/pycharm-community-2017.1.3/bin/pycharm.sh'
+alias eclipse='/home/ieric/Programs/eclipse/eclipse'
+alias tmux='tmux -2'
 
 # qt
 export PATH=/home/ieric/Programs/Qt5.7.0/5.7/gcc_64/bin:$PATH
@@ -74,7 +90,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git extract z)
+plugins=(git extract z zsh-dircolors-solarized vi-mode)
 . ~/z.sh
 
 source $ZSH/oh-my-zsh.sh
