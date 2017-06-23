@@ -3,11 +3,13 @@
 ## 2017 年 6 月 23 日
 
 + Chrome 下使用 Vimium
+
 [https://github.com/philc/vimium#keyboard-bindings](https://github.com/philc/vimium#keyboard-bindings)
 
 [Vimium cannot go forward](https://chrome.google.com/webstore/detail/new-tab-url/njigpponciklokfkoddampoienefegcl)
 
     + Navigating the current page
+
         - ?       show the help dialog for a list of all available keys
         - h       scroll left
         - j       scroll down
@@ -28,22 +30,26 @@
         - gF      focus the main/top frame
 
     + Navigating to new pages
+
         - o       Open URL, bookmark, or history entry
         - O       Open URL, bookmark, history entry in a new tab
         - b       Open bookmark
         - B       Open bookmark in a new tab 
 
     + Using find: 
+
         - /       enter find mode
           -- type your search query and hit enter to search, or Esc to cancel
         - n       cycle forward to the next find match
         - N       cycle backward to the previous find match
 
     + Navigating your history:
+
         - H       go back in history
         - L       go forward in history
 
     + Manipulating tabs:
+
         - J, gT   go one tab left
         - K, gt   go one tab right
         - g0      go to the first tab
@@ -72,6 +78,7 @@
         - V       enter visual line mode
     
     + Wiki -- visual mode 
+
     [https://github.com/philc/vimium/wiki/Visual-Mode](https://github.com/philc/vimium/wiki/Visual-Mode)
 
         + use `c` to enter caret mode from visual mode (or `v` followed by `c` from normal mode)
