@@ -1,69 +1,89 @@
 # Reference
 
-## 2017 年 6 月 17 日
+## 2017 年 6 月 23 日
 
-+ polipo 科学上网.
++ Chrome 下使用 Vimium
+[https://github.com/philc/vimium#keyboard-bindings](https://github.com/philc/vimium#keyboard-bindings)
 
+[Vimium cannot go forward](https://chrome.google.com/webstore/detail/new-tab-url/njigpponciklokfkoddampoienefegcl)
 
-+ libtool 用于编译  cario
-+ 编译 cario 是因为需要安装 i3-gaps, 因为报错说 cario 的版本需要 >=1.14
-+ 编译 i3-gaps 需要 libxcb-xrm-dev, 按照 github 上的信息是安装不了的, 要去找其他的包: `libxcb-util1_0.4.0-0ubuntu3_amd64.deb` -> `libxcb_xrm0_1.0-2_amd64.deb` -> `libxcb-xrm-dev_1.0-2_amd64.deb`
-+ https://faq.i3wm.org/question/1/how-can-i-get-rid-of-the-nautilus-desktop-window.1.html 防止打开文件浏览器时出现 desktop, 然后就 kill 不了($mod+Shift+q)
-+ ALSA(控制声音): https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture `sudo apt-get install alsa-utils` 默认是装好的.
+    + Navigating the current page
+        - ?       show the help dialog for a list of all available keys
+        - h       scroll left
+        - j       scroll down
+        - k       scroll up
+        - l       scroll right
+        - gg      scroll to top of the page
+        - G       scroll to bottom of the page
+        - d       scroll down half a page
+        - u       scroll up half a page
+        - f       open a link in the current tab
+        - F       open a link in a new tab
+        - r       reload
+        - gs      view source
+        - i       enter insert mode -- all commands will be ignored until you hit Esc to exit
+        - yy      copy the current url to the clipboard
+        - yf      copy a link url to the clipboard
+        - gf      cycle forward to the next frame
+        - gF      focus the main/top frame
 
-## 2017 年 6 月 16 日
+    + Navigating to new pages
+        - o       Open URL, bookmark, or history entry
+        - O       Open URL, bookmark, history entry in a new tab
+        - b       Open bookmark
+        - B       Open bookmark in a new tab 
 
-+ 使用 `Ctrl + [` 也可以返回 normal 模式.
+    + Using find: 
+        - /       enter find mode
+          -- type your search query and hit enter to search, or Esc to cancel
+        - n       cycle forward to the next find match
+        - N       cycle backward to the previous find match
 
+    + Navigating your history:
+        - H       go back in history
+        - L       go forward in history
 
-+ 在 vim 中从 insert 模式返回 normal 模式会出现延迟的问题, 参考如下网站解决:
+    + Manipulating tabs:
+        - J, gT   go one tab left
+        - K, gt   go one tab right
+        - g0      go to the first tab
+        - g$      go to the last tab
+        - ^       visit the previously-visited tab
+        - t       create tab
+        - yt      duplicate current tab
+        - x       close current tab
+        - X        restore closed tab (i.e. unwind the 'x' command)
+        - T        search through your open tabs
+        - <a-p>   pin/unpin current tab
 
-  + https://www.johnhawthorn.com/2012/09/vi-escape-delays/
-  + https://unix.stackexchange.com/questions/23138/esc-key-causes-a-small-delay-in-terminal-due-to-its-alt-behavior/25638#25638
+    + Additional advanced browsing commands:
 
-  主要是在 `.vimrc` 中设置:
+        - ]], [[  Follow the link labeled 'next' or '>' ('previous' or '<')
+        - helpful for browsing paginated sites
+        - <a-f>   open multiple links in a new tab
+        - gi      focus the first (or n-th) text input box on the page
+        - gu      go up one level in the URL hierarchy
+        - gU      go up to root of the URL hierarchy
+        - ge      edit the current URL
+        - gE      edit the current URL and open in a new tab
+        - zH      scroll all the way left
+        - zL      scroll all the way right
+        - v       enter visual mode; use p/P to paste-and-go, use y to yank
+        - V       enter visual line mode
+    
+    + Wiki -- visual mode 
+    [https://github.com/philc/vimium/wiki/Visual-Mode](https://github.com/philc/vimium/wiki/Visual-Mode)
 
-  ```bash
-  set timeoutlen=1000 ttimeoutlen=0
-  ```
-
-  在 `zsh` 中设置:
-
-  ```bash
-  # 10ms for key sequences
-  KEYTIMEOUT=1
-  ```
-
-  在 `tmux` 中使用:
-
-  ```bash
-  set -s escape-time 0
-  ```
-
-  ​
-
-## 2017 年 6 月 15 日
-
-+   使用 https://github.com/goerz/ipynb_notedown.vim 插件将 ipynb 文件转化为 markdown 文件, 由于该插件需要使用 notedown, 所以需要使用 `pip install notedown` 安装 notedown [https://github.com/aaren/notedown](https://github.com/aaren/notedown)
-
-+ 在 Vim 下调试 Python 程序: [https://brookhong.github.io/2014/09/27/dbgpavim-cn.html](https://brookhong.github.io/2014/09/27/dbgpavim-cn.html)
-
-+ 安装 shadowsocks, http://www.jianshu.com/p/66c6ac6560a2 提示缺少 `libsodium` 这个库, 使用如下命令安装:
-
-  [https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92](https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92)
-
-  ```bash
-  sudo add-apt-repository ppa:chris-lea/libsodium;
-  sudo apt-get update && sudo apt-get install libsodium-dev;
-  ```
-
-+   安装 SwitchOmega http://www.jianshu.com/p/5053d0adb270
-
-+   本地主机利用 ssh 登录到 VM 中的系统中. 
-
-    +   验证有无安装好 `openssh-server`: https://unix.stackexchange.com/questions/145997/trying-to-ssh-to-local-vm-ubuntu-with-putty
-    +   真正的配置: https://stackoverflow.com/questions/5906441/how-to-ssh-to-a-virtualbox-guest-externally-through-a-host
-
+        + use `c` to enter caret mode from visual mode (or `v` followed by `c` from normal mode)
+        + caret mode is used for changing the starting point for selecting text on the page
+        + if there is no existing selection when entering visual mode, then Vimium first enters
+            *caret mode*. In caret mode, you can position the caret before entering visual-mode proper with `v`.
+        + `v` and `c` can be used to move back and forward between visual and caret mode can be used to move back and forward between visual and caret mode.
+        + Exiting visual mode:
+            - `Esc`: JUST exit visual mode
+            - `y`: yank the selected text to the clipboard
+            - `p/P`: send the selected text to the default search engine.
+ 
 ## 2017 年 6 月 16 日
 
 + 安装 i3 Window manager:
@@ -135,6 +155,71 @@
 
 + Network manager: https://faq.i3wm.org/question/2/how-can-i-use-networkmanager-with-i3.1.html (可以使用 `nm-applet` (图形工具, Unity 右上角) 或者 `wicd-curses` (命令行下工具使用 `sudo apt-get install wicd-curses` 安装))
 
+
+
+## 2017 年 6 月 17 日
+
++ polipo 科学上网.
+
+
++ libtool 用于编译  cario
++ 编译 cario 是因为需要安装 i3-gaps, 因为报错说 cario 的版本需要 >=1.14
++ 编译 i3-gaps 需要 libxcb-xrm-dev, 按照 github 上的信息是安装不了的, 要去找其他的包: `libxcb-util1_0.4.0-0ubuntu3_amd64.deb` -> `libxcb_xrm0_1.0-2_amd64.deb` -> `libxcb-xrm-dev_1.0-2_amd64.deb`
++ https://faq.i3wm.org/question/1/how-can-i-get-rid-of-the-nautilus-desktop-window.1.html 防止打开文件浏览器时出现 desktop, 然后就 kill 不了($mod+Shift+q)
++ ALSA(控制声音): https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture `sudo apt-get install alsa-utils` 默认是装好的.
+
+## 2017 年 6 月 16 日
+
++ 使用 `Ctrl + [` 也可以返回 normal 模式.
+
+
++ 在 vim 中从 insert 模式返回 normal 模式会出现延迟的问题, 参考如下网站解决:
+
+  + https://www.johnhawthorn.com/2012/09/vi-escape-delays/
+  + https://unix.stackexchange.com/questions/23138/esc-key-causes-a-small-delay-in-terminal-due-to-its-alt-behavior/25638#25638
+
+  主要是在 `.vimrc` 中设置:
+
+  ```bash
+  set timeoutlen=1000 ttimeoutlen=0
+  ```
+
+  在 `zsh` 中设置:
+
+  ```bash
+  # 10ms for key sequences
+  KEYTIMEOUT=1
+  ```
+
+  在 `tmux` 中使用:
+
+  ```bash
+  set -s escape-time 0
+  ```
+
+  ​
+
+## 2017 年 6 月 15 日
+
++   使用 https://github.com/goerz/ipynb_notedown.vim 插件将 ipynb 文件转化为 markdown 文件, 由于该插件需要使用 notedown, 所以需要使用 `pip install notedown` 安装 notedown [https://github.com/aaren/notedown](https://github.com/aaren/notedown)
+
++ 在 Vim 下调试 Python 程序: [https://brookhong.github.io/2014/09/27/dbgpavim-cn.html](https://brookhong.github.io/2014/09/27/dbgpavim-cn.html)
+
++ 安装 shadowsocks, http://www.jianshu.com/p/66c6ac6560a2 提示缺少 `libsodium` 这个库, 使用如下命令安装:
+
+  [https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92](https://gist.github.com/jonathanpmartins/2510f38abee1e65c6d92)
+
+  ```bash
+  sudo add-apt-repository ppa:chris-lea/libsodium;
+  sudo apt-get update && sudo apt-get install libsodium-dev;
+  ```
+
++   安装 SwitchOmega http://www.jianshu.com/p/5053d0adb270
+
++   本地主机利用 ssh 登录到 VM 中的系统中. 
+
+    +   验证有无安装好 `openssh-server`: https://unix.stackexchange.com/questions/145997/trying-to-ssh-to-local-vm-ubuntu-with-putty
+    +   真正的配置: https://stackoverflow.com/questions/5906441/how-to-ssh-to-a-virtualbox-guest-externally-through-a-host
 
 ## 2017 年 6 月 14 日
 
