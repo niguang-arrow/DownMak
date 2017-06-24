@@ -1,5 +1,33 @@
 # Reference
 
+## 2017 年 6 月 24 日
+
++ vim get out of parenthesis/brackets, etc
+
+    + [https://stackoverflow.com/questions/11037825/vim-get-out-of-parenthesis-brackets-etc](https://stackoverflow.com/questions/11037825/vim-get-out-of-parenthesis-brackets-etc)
+    + add this command:
+
+    ```bash
+    inoremap <C-e> <C-o>A
+    ```
+
+        + `<C-o>` is used to issue a *normal* command without leaving *insert* mode.
+        + `A` append to the end of the line.
+
++ 使用 ranger
+
+    + `man ranger`
+    + copy: `yy`
+    + copy multiple files in different directories: `ya`
+    + paste: `pp`
+    + delete: `dd`
+    + [https://unix.stackexchange.com/questions/261091/execute-command-on-ranger-selection](https://unix.stackexchange.com/questions/261091/execute-command-on-ranger-selection)
+        + execute command on ranger selection:
+        + highlight the files you want to work on with `Space`
+        + type `@` to get to a command prompt which will be `:shell %s` with the cursor positioned before `%s`
+        + type the name of your command and press `Enter`
+        + the command you specified will be executed with selected filenames as parameters
+
 ## 2017 年 6 月 23 日
 
 + Chrome 下使用 Vimium
@@ -8,89 +36,92 @@
 
 [Vimium cannot go forward](https://chrome.google.com/webstore/detail/new-tab-url/njigpponciklokfkoddampoienefegcl)
 
-    + Navigating the current page
++ Navigating the current page
 
-        - ?       show the help dialog for a list of all available keys
-        - h       scroll left
-        - j       scroll down
-        - k       scroll up
-        - l       scroll right
-        - gg      scroll to top of the page
-        - G       scroll to bottom of the page
-        - d       scroll down half a page
-        - u       scroll up half a page
-        - f       open a link in the current tab
-        - F       open a link in a new tab
-        - r       reload
-        - gs      view source
-        - i       enter insert mode -- all commands will be ignored until you hit Esc to exit
-        - yy      copy the current url to the clipboard
-        - yf      copy a link url to the clipboard
-        - gf      cycle forward to the next frame
-        - gF      focus the main/top frame
+  - ?       show the help dialog for a list of all available keys
+  - h       scroll left
+  - j       scroll down
+  - k       scroll up
+  - l       scroll right
+  - gg      scroll to top of the page
+  - G       scroll to bottom of the page
+  - d       scroll down half a page
+  - u       scroll up half a page
+  - f       open a link in the current tab
+  - F       open a link in a new tab
+  - r       reload
+  - gs      view source
+  - i       enter insert mode -- all commands will be ignored until you hit Esc to exit
+  - yy      copy the current url to the clipboard
+  - yf      copy a link url to the clipboard
+  - gf      cycle forward to the next frame
+  - gF      focus the main/top frame
 
-    + Navigating to new pages
 
-        - o       Open URL, bookmark, or history entry
-        - O       Open URL, bookmark, history entry in a new tab
-        - b       Open bookmark
-        - B       Open bookmark in a new tab 
++ Navigating to new pages
 
-    + Using find: 
+    - o       Open URL, bookmark, or history entry
+    - O       Open URL, bookmark, history entry in a new tab
+    - b       Open bookmark
+    - B       Open bookmark in a new tab 
 
-        - /       enter find mode
-          -- type your search query and hit enter to search, or Esc to cancel
-        - n       cycle forward to the next find match
-        - N       cycle backward to the previous find match
++ Using find: 
 
-    + Navigating your history:
+    - /       enter find mode
+      -- type your search query and hit enter to search, or Esc to cancel
+    - n       cycle forward to the next find match
+    - N       cycle backward to the previous find match
 
-        - H       go back in history
-        - L       go forward in history
++ Navigating your history:
 
-    + Manipulating tabs:
+    - H       go back in history
+    - L       go forward in history
 
-        - J, gT   go one tab left
-        - K, gt   go one tab right
-        - g0      go to the first tab
-        - g$      go to the last tab
-        - ^       visit the previously-visited tab
-        - t       create tab
-        - yt      duplicate current tab
-        - x       close current tab
-        - X        restore closed tab (i.e. unwind the 'x' command)
-        - T        search through your open tabs
-        - <a-p>   pin/unpin current tab
++ Manipulating tabs:
 
-    + Additional advanced browsing commands:
+    - J, gT   go one tab left
+    - K, gt   go one tab right
+    - g0      go to the first tab
+    - g$      go to the last tab
+    - ^       visit the previously-visited tab
+    - t       create tab
+    - yt      duplicate current tab
+    - x       close current tab
+    - X        restore closed tab (i.e. unwind the 'x' command)
+    - T        search through your open tabs
+    - `<a-p>`   pin/unpin current tab
 
-        - ]], [[  Follow the link labeled 'next' or '>' ('previous' or '<')
-        - helpful for browsing paginated sites
-        - <a-f>   open multiple links in a new tab
-        - gi      focus the first (or n-th) text input box on the page
-        - gu      go up one level in the URL hierarchy
-        - gU      go up to root of the URL hierarchy
-        - ge      edit the current URL
-        - gE      edit the current URL and open in a new tab
-        - zH      scroll all the way left
-        - zL      scroll all the way right
-        - v       enter visual mode; use p/P to paste-and-go, use y to yank
-        - V       enter visual line mode
-    
-    + Wiki -- visual mode 
++ Additional advanced browsing commands:
+
+    - ]], [[  Follow the link labeled 'next' or '>' ('previous' or '<')
+    - helpful for browsing paginated sites
+    - `<a-f>`   open multiple links in a new tab
+    - gi      focus the first (or n-th) text input box on the page
+    - gu      go up one level in the URL hierarchy
+    - gU      go up to root of the URL hierarchy
+    - ge      edit the current URL
+    - gE      edit the current URL and open in a new tab
+    - zH      scroll all the way left
+    - zL      scroll all the way right
+    - v       enter visual mode; use p/P to paste-and-go, use y to yank
+    - V       enter visual line mode
+
++ Wiki -- visual mode 
 
     [https://github.com/philc/vimium/wiki/Visual-Mode](https://github.com/philc/vimium/wiki/Visual-Mode)
 
-        + use `c` to enter caret mode from visual mode (or `v` followed by `c` from normal mode)
-        + caret mode is used for changing the starting point for selecting text on the page
-        + if there is no existing selection when entering visual mode, then Vimium first enters
-            *caret mode*. In caret mode, you can position the caret before entering visual-mode proper with `v`.
-        + `v` and `c` can be used to move back and forward between visual and caret mode can be used to move back and forward between visual and caret mode.
-        + Exiting visual mode:
-            - `Esc`: JUST exit visual mode
-            - `y`: yank the selected text to the clipboard
-            - `p/P`: send the selected text to the default search engine.
- 
+    + use `c` to enter caret mode from visual mode (or `v` followed by `c` from normal mode)
+    + caret mode is used for changing the starting point for selecting text on the page
+    + if there is no existing selection when entering visual mode, then Vimium first enters
+        *caret mode*. In caret mode, you can position the caret before entering visual-mode proper with `v`.
+    + `v` and `c` can be used to move back and forward between visual and caret mode can be used to move back and forward between visual and caret mode.
+    + Exiting visual mode:
+        - `Esc`: JUST exit visual mode
+        - `y`: yank the selected text to the clipboard
+        - `p/P`: send the selected text to the default search engine.
+
+
+
 ## 2017 年 6 月 16 日
 
 + 安装 i3 Window manager:
