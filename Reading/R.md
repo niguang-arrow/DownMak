@@ -1,3 +1,7 @@
-# This is a test
+# 笔记
 
-What a beautiful day today!
+## 2017 年 6 月 26 日
+
++ 不管使用什么类型的网络卡, 关键还是它能在你的操作系统上工作, 而且还要考虑它的稳定性和速度.
+比如 Ethernet 10/100 网络卡, 10/100 就是速度, 也可以说是传输量: 100 Megabits/每秒. **注意**: 千万不要
+将 Mbps 和 MBps 搞混了. 前者是每秒 Millions of bits, 而后者是每秒 Millions of bytes.
