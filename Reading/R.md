@@ -4,4 +4,5 @@
 
 + 不管使用什么类型的网络卡, 关键还是它能在你的操作系统上工作, 而且还要考虑它的稳定性和速度.
 比如 Ethernet 10/100 网络卡, 10/100 就是速度, 也可以说是传输量: 100 Megabits/每秒. **注意**: 千万不要
-将 Mbps 和 MBps 搞混了. 前者是每秒 Millions of bits, 而后者是每秒 Millions of bytes.
+将 Mbps 和 MBps 搞混了. 前者是每秒 Millions of bits, 而后者是每秒 Millions of bytes. (1 Byte = 8 bits, 
+Byte 是电脑运算单位, 而 bit 则是网络的传输单位). 10/100 的意思是支持 10Mbps 和 100Mbps 两种速度的网络卡.
