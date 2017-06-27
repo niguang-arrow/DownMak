@@ -1,5 +1,19 @@
 # Tricks
 
+## 2017 年 6 月 25 日
+
++   安装 Java
+
+    https://askubuntu.com/questions/508546/howto-upgrade-java-on-ubuntu-14-04-lts
+
+    ```bash
+    sudo add-apt-repository ppa:webupd8team/java
+    sudo apt-get update
+    sudo apt-get install oracle-java7-installer
+    ```
+
+    ​
+
 ## 2017 年 6 月 13 日
 
 +   查看目录中文件的数量: `ls -l | wc -l`  (http://www.tldp.org/HOWTO/Bash-Prompt-HOWTO/x700.html)

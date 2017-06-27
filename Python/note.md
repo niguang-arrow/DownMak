@@ -163,7 +163,7 @@ Commands:
         $ cd ~/Programs/sip-4.19.2
         # 可以看看 README, 但是不需要按照里面的方式安装, 因为没有 build.py 文件
         # 下面开始安装
-        $ python config.py # 会产生 Makefile
+        $ python configure.py # 会产生 Makefile
         $ make
         $ make install
         $ sip -V
