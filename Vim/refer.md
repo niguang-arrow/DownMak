@@ -1,5 +1,15 @@
 # Reference
 
+## 2017 年 6 月 27 日
+
++ tiny-dnn 的 mnist 例子要跑通, 需要使用如下方法编译:
+
+  ```bash
+  g++ -std=c++11 -I../.. -o main -Wl,--no-as-needed main.cpp -lpthread
+  ```
+
+  参阅 [https://stackoverflow.com/questions/19463602/compiling-multithread-code-with-g](https://stackoverflow.com/questions/19463602/compiling-multithread-code-with-g), 否则会报错: `Enable multithreading to use std::thread: Operation not permitted Aborted (core dumped)`.
+
 ## 2017 年 6 月 24 日
 
 + vim get out of parenthesis/brackets, etc
