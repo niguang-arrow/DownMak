@@ -4,6 +4,11 @@
 
 [https://github.com/pytorch/examples/blob/master/imagenet/main.py]
 
++   对于 `torch.backends.cudnn.benchmark = True` (参见 [https://discuss.pytorch.org/t/pytorch-performance/3079/11]), 其中说明了
+
+    使用较大的卷积网络, 可以较大的提升性能.
+
+
 +   torchvision 中的所有模型可以用如下命令取出来:
 
     ```python
@@ -45,6 +50,21 @@
     ```
 
     注意到对于 `alexnet` 以及 `vgg` 的处理, 由于这两个网络最后都有个 `view()` 的过程, 因此只对 `model.features` 的部分进行并行处理.
+
++   依然是数据的并行处理, imagenet 这个例子中有:
+
+    ```python
+    target = target.cuda(async=True)
+    input_var = torch.autograd.Variable(input)
+    target_var = torch.autograd.Variable(target)
+
+    # compute output
+    output = model(input_var)
+    ```
+
+    注意到一个问题, 就是 `input` 并没有使用 `.cuda()` 拷贝至 cuda 中, 我做实验发现, 如果使用了 `DataParallel` 那么就可以不用将 input 拷贝至 cuda 中, 程序能正常运行, 
+
+    同时减少了消耗的时间. 另一方面, 如果没有使用 `DataParallel`, 比如 `model.cuda()`, 那么如果没有使用 `input = input.cuda()`, 则结果会报错.
 
 +   对于 imagenet 分类的问题, 使用的 loss 为 `nn.CrossEntropyLoss().cuda()` 注意也需要使用 cuda 进行计算.
 
