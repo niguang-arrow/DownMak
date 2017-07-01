@@ -1,7 +1,153 @@
 # Python Note
-日期: 2017 年 5 月
 
-## pyenv 与 pyenv-virtualenv
+## 2017 年 7 月 1 日
+
+[https://github.com/pytorch/examples/blob/master/imagenet/main.py]
+
++   torchvision 中的所有模型可以用如下命令取出来:
+
+    ```python
+    # 注意 models.__dict__ 中保存了 models 的所有属性, 其中 VGG, AlexNet 等有
+    # 大写字母的都是类, 而 vgg, alexnet 等小写字母组成的都是函数, 因此下面有
+    # islower() 和 callable() 来将这些名字给挑出来 (当然还排除了 __ 开头的属性)
+    import torchvision.models as models
+    model_names = [name for name in models.__dict__
+                  if name.islower() and not name.startswith('__')
+                  and callable(models.__dict__[name])]
+
+    # 如果要排序列出来的话
+    model_names = sorted(name for name in models.__dict__
+                  if name.islower() and not name.startswith('__')
+                  and callable(models.__dict__[name]))
+    ```
+
++   这里不得不提一下使用 `__dict__` 的好处, 比如
+
+    ```python
+    # args.arch 表示 architecture, 表示模型结构
+    # 比如 args.arch 选择的是 vgg16, 那么 
+    # model = models.vgg16(pretrained = True)
+    model = models.__dict__[args.arch](pretrained = True)
+    ```
+
+    如果 `args.arch` 选择的是 `vgg16`, 那么直接选择 `models.args.arch` 这种写法是不存在的, 但是使用 `__dict__` 达到想要的效果.
+
++   数据的并行处理:
+
+    ```python
+    # device_ids: CUDA devices (default: all devices)
+    # 默认使用所有的 devices
+    if args.arch.startswith('alexnet') or args.arch.startswith('vgg'):
+        model.features = torch.nn.DataParallel(model.features)
+        model.cuda()
+    else:
+        model = torch.nn.DataParallel(model).cuda()
+    ```
+
+    注意到对于 `alexnet` 以及 `vgg` 的处理, 由于这两个网络最后都有个 `view()` 的过程, 因此只对 `model.features` 的部分进行并行处理.
+
++   对于 imagenet 分类的问题, 使用的 loss 为 `nn.CrossEntropyLoss().cuda()` 注意也需要使用 cuda 进行计算.
+
++   关于 `torch.save` 与 `torch.load`:
+
+    ```python
+    # 其中 state 可以是字典, 虽然我们经常使用 net.stat_dict(),
+    # 但实际上可以使用 torch.save 保存一个字典
+    # imagenet 这个例子中, 使用的 filename 是 checkpoint.pth.tar
+    torch.save(state, filename)
+
+    # 之后可以使用 torch.load() 提取该字典
+    torch.load(args.resume)
+
+    # 而如果要载入模型的参数, 可以使用
+    net.load_stat_dict(torch.load(filename))
+    # 当然 filename 中保存的是 net.stat_dict()
+    ```
+
+    对于 `torch.save(object, f)` 的解释还可以参看: [https://discuss.pytorch.org/t/how-to-save-load-torch-models/718]
+
+    >   `f` should be a file-like object (e.g. obtained from a call to `open`), or a path to the file where the model will be saved. `torch.save` is exactly what you should use, but we recommend serializing only the `model.state_dict()`. You can later load it using `load_state_dict`.
+
++   调整学习速率:
+
+    ```python
+    def adjust_learning_rate(optimizer, epoch):
+        lr = args.lr * (0.1 ** (epoch // 30))
+        # optimizer.param_groups 返回的是一个 list, 其中每一项
+        #　都是一个字典
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+            
+    # 使用方法:
+    for epoch in ranger(args.start_epoch, args.epochs):
+        adjust_learning_rate(optimizer, epoch)
+        train(train_loader, model, criterion, optimizer, epoch)
+    ```
+
++   `cuda()` 还有一个 `async` 选项, 不知道有什么用. 
+
++   算预测准确率的代码要学习:
+
+    ```python
+    def accuracy(output, target, topk=(1,)):
+        """Computes the precision@k for the specified values of k"""
+        maxk = max(topk)
+        batch_size = target.size(0)
+
+        _, pred = output.topk(maxk, 1, True, True)  # topk 是 torch 提供的方法
+        pred = pred.t()
+        correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+        res = []
+        for k in topk:
+            correct_k = correct[:k].view(-1).float().sum(0)
+            res.append(correct_k.mul_(100.0 / batch_size))
+        return res
+    ```
+
++   `optimizer.zero_grad()` 不要忘了.
+
+
+
+## 2017 年 6 月 30 日
+
+### python 中的 `__dict__` 属性
+
+[[Python深入03 对象的属性](http://www.cnblogs.com/vamei/archive/2012/12/11/2772448.html)]
+
+-   Python 中的属性是分层定义的, 比如 `object\bird\chicken\summer`(`summer` 是 `chicken` 的一个对象) 这四层, 当我们需要调用某个属性时, Python 会一层一层向上遍历, 直到找到那个属性. (某个属性可能出现在不同的层被重复定义, Python 向上遍历的过程中, 会选取先遇到的那一个)
+
+-   对象的属性存储在对象的 `__dict__` 属性中. `__dict__` 为一个字典, key 为属性名, value 为属性本身.
+
+-   对象的属性可能来自
+
+    -   类定义, 这叫做类属性, 而类属性可能来自
+        -   类定义本身
+        -   或者根据类定义继承来的
+    -   对象实例定义的, 叫做对象属性
+
+-   总结
+
+    `__dict__` 分层存储属性, 每一层的 `__dict__` 只存储该层新增的属性. 子类不需要重复存储父类中的属性.
+
+### 关于使用属性的方式来引用字典中的元素
+
+[[Accessing dict keys like an attribute in Python?](https://stackoverflow.com/questions/4984647/accessing-dict-keys-like-an-attribute-in-python)]
+
+主要是我看到 argparse 的代码不想写这么多字, 希望能使用 `.x` 而不是 `['x']` 来引用字典中的值. 在上面的网站看到几种方法, 目前采用这种: (利用 `type` 函数, 参见 [https://docs.python.org/2/library/functions.html#type])
+
+```python
+>>> C = type('type_C', (object,), {})
+>>> d = C()
+>>> d.foo = 1
+>>> d.bar = 2
+>>> d.baz = 3
+>>> assert d.__dict__ == {'foo': 1, 'bar': 2, 'baz': 3}
+```
+
+## 2017 年 5 月
+
+### pyenv 与 pyenv-virtualenv
 
 Installation: 
 

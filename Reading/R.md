@@ -1,43 +1,5 @@
 # 笔记
 
-## 2017 年 6 月 30 日
-
-### python 中的 `__dict__` 属性
-
-[[Python深入03 对象的属性](http://www.cnblogs.com/vamei/archive/2012/12/11/2772448.html)]
-
-+ Python 中的属性是分层定义的, 比如 `object\bird\chicken\summer`(`summer` 是 `chicken` 的一个对象) 这四层, 当我们需要调用某个属性时, Python 会一层一层向上遍历, 直到找到那个属性. (某个属性可能出现在不同的层被重复定义, Python 向上遍历的过程中, 会选取先遇到的那一个)
-
-+ 对象的属性存储在对象的 `__dict__` 属性中. `__dict__` 为一个字典, key 为属性名, value 为属性本身.
-
-+ 对象的属性可能来自
-
-  + 类定义, 这叫做类属性, 而类属性可能来自
-    + 类定义本身
-    + 或者根据类定义继承来的
-  + 对象实例定义的, 叫做对象属性
-
-+ 总结
-
-  `__dict__` 分层存储属性, 每一层的 `__dict__` 只存储该层新增的属性. 子类不需要重复存储父类中的属性.
-
-### 关于使用属性的方式来引用字典中的元素
-
-[[Accessing dict keys like an attribute in Python?](https://stackoverflow.com/questions/4984647/accessing-dict-keys-like-an-attribute-in-python)]
-
-主要是我看到 argparse 的代码不想写这么多字, 希望能使用 `.x` 而不是 `['x']` 来引用字典中的值. 在上面的网站看到几种方法, 目前采用这种: (利用 `type` 函数, 参见 [https://docs.python.org/2/library/functions.html#type])
-
-```python
->>> C = type('type_C', (object,), {})
->>> d = C()
->>> d.foo = 1
->>> d.bar = 2
->>> d.baz = 3
->>> assert d.__dict__ == {'foo': 1, 'bar': 2, 'baz': 3}
-```
-
-
-
 ## 2017 年 6 月 26 日
 
 + 不管使用什么类型的网络卡, 关键还是它能在你的操作系统上工作, 而且还要考虑它的稳定性和速度.
