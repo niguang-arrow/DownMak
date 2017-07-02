@@ -71,7 +71,7 @@
 +   关于 `torch.save` 与 `torch.load`:
 
     ```python
-    # 其中 state 可以是字典, 虽然我们经常使用 net.stat_dict(),
+    # 其中 state 可以是字典 (即一个对象 object), 虽然我们经常使用 net.stat_dict(),
     # 但实际上可以使用 torch.save 保存一个字典
     # imagenet 这个例子中, 使用的 filename 是 checkpoint.pth.tar
     torch.save(state, filename)

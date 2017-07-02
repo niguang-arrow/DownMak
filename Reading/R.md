@@ -1,5 +1,19 @@
 # 笔记
 
+## 2017 年 7 月 2 日
+
++   Linux four main parts:
+    +   The Linux kernel, the kernel is primarily responsible for four main functions:
+        +   System memory management
+            +   physical memory and virtual memory (it does this by using space on the hard disk, called the *swap space*)
+        +   Software program management
+            +   a running program is called a *process*
+        +   Hardware management
+        +   Filesystem management
+    +   The GUN System utilities
+    +   A graphical desktop environment (Windows Management Software)
+    +   Application Software
+
 ## 2017 年 6 月 26 日
 
 + 不管使用什么类型的网络卡, 关键还是它能在你的操作系统上工作, 而且还要考虑它的稳定性和速度.
