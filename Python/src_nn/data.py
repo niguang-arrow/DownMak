@@ -1,4 +1,4 @@
-from torchvision.transforms import Compose, CenterCrop, ToTensor, Scale
+from torchvision.transforms import Compose, CenterCrop, ToTensor, Scale, Normalize
 from dataset import DatasetFromFolder
 
 def calculate_valid_crop_size(crop_size, upscale_factor):
@@ -27,6 +27,7 @@ def input_transform(crop_size, upscale_factor):
         Scale(crop_size // upscale_factor),
         Scale(crop_size),
         ToTensor(),
+        Normalize((0,), (1,)),
     ])
 
 def target_transform(crop_size):
@@ -37,6 +38,7 @@ def target_transform(crop_size):
     return Compose([
         CenterCrop(crop_size),
         ToTensor(),
+        Normalize((0,), (1,)),
     ])
 
 def get_training_set(train_dir, upscale_factor):
@@ -61,7 +63,7 @@ def get_testing_set(test_dir, upscale_factor):
         test_dir: i.e. ./Test/Set5
         upscale_factor: i.e. 3
     """
-    crop_size = calculate_valid_crop_size(33, upscale_factor)
+    crop_size = calculate_valid_crop_size(228, upscale_factor)
 
     return DatasetFromFolder(test_dir,
                             input_transform = input_transform(crop_size, upscale_factor),

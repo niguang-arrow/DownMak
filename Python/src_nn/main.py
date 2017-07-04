@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 from model import SRCNN
 from data import get_training_set, get_testing_set
+from torchvision.transforms import ToPILImage
 
 
 seed = 123
@@ -68,9 +69,14 @@ def test():
 
         prediction = model(input)
         mse = criterion(prediction, target)
-        psnr = 10 * np.log10(255 / mse.data[0])
+        psnr = 10 * np.log10(1 / mse.data[0])
         avg_psnr += psnr
     print '>>> Avg. PSNR: {:.4f} dB'.format(avg_psnr / len(testing_data_loader))
+
+    arr_size = prediction.size()
+    array = prediction[0].data.cpu()#.reshape(arr_size[2], arr_size[3])
+    im = ToPILImage()(array)
+    im.convert('L').save('result.png')
 
 
 def checkpoint(epoch):
