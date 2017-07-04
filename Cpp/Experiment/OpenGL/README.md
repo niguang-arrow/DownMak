@@ -1,11 +1,11 @@
 # Some OpenGL examples
 
-They are not written by me, I keep them here only for reference.
+Keep them here for reference.
 
 To run these examples, you must first install `freeglut`, `glfw3`, and `opencv`;
 However some examples need `freeglut` while others `glfw3`.
 
-You can install `freeglut` in Ubuntu use the following commands:
+You can install `freeglut` in Ubuntu using the following commands:
 
 ```bash
 sudo apt-get install freeglut3-dev

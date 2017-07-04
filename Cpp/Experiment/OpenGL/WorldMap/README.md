@@ -20,7 +20,7 @@ g++ -Wall -std=c++0x -o main Sphere.cpp -lglut -lGLU -lGL -lm -lopencv_highgui -
 ## Details
 
 I have modified the codes, the source codes was written in Windows, but I need to run them in Ubuntu. These are my
-modification. 
+modifications.
 
 + In the `Sphere.h`, I commented:
 

@@ -1,0 +1,84 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+from torch.utils.data import DataLoader
+import numpy as np
+from model import SRCNN
+from data import get_training_set, get_testing_set
+
+
+seed = 123
+upscale_factor = 3
+batchSize = 30
+testBatchSize = 10
+nEpochs = 100
+lr = 0.01
+threads = 8
+train_dir = './Train'
+test_dir = './Test/Set5'
+
+torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
+
+print '>>> Loading Datasets'
+
+train_set = get_training_set(train_dir, upscale_factor)
+test_set = get_testing_set(test_dir, upscale_factor)
+training_data_loader = DataLoader(dataset=train_set,
+                                 num_workers=threads,
+                                 batch_size=batchSize,
+                                 shuffle=True)
+testing_data_loader = DataLoader(dataset=test_set,
+                                num_workers=threads,
+                                batch_size=batchSize,
+                                shuffle=False)
+
+print '>>> Building Model'
+
+model = nn.DataParallel(SRCNN()).cuda()
+criterion = nn.MSELoss().cuda()
+
+print model
+
+optimizer = optim.Adam(model.parameters(), lr=lr)
+
+
+def train(epoch):
+    epoch_loss = 0
+
+    for iteration, batch in enumerate(training_data_loader, 1):
+        input, target = Variable(batch[0]).cuda(), Variable(batch[1]).cuda()
+
+        optimizer.zero_grad()
+        loss = criterion(model(input), target)
+        epoch_loss += loss.data[0]
+        loss.backward()
+        optimizer.step()
+
+        print '>>> Epoch[{}]({}/{}): Loss: {:.4f}'.format(epoch, iteration, len(training_data_loader), loss.data[0])
+
+    print '>>> Epoch {} Complete: Avg. Loss: {:.4f}'.format(epoch, epoch_loss / len(training_data_loader))
+
+
+def test():
+    avg_psnr = 0
+    for batch in testing_data_loader:
+        input, target = Variable(batch[0]).cuda(), Variable(batch[1]).cuda()
+
+        prediction = model(input)
+        mse = criterion(prediction, target)
+        psnr = 10 * np.log10(255 / mse.data[0])
+        avg_psnr += psnr
+    print '>>> Avg. PSNR: {:.4f} dB'.format(avg_psnr / len(testing_data_loader))
+
+
+def checkpoint(epoch):
+    model_out_path = "model_epoch_{}.pth".format(epoch)
+    torch.save(model, model_out_path)
+    print "Checkpoint saved to {}".format(model_out_path)
+
+for epoch in range(1, nEpochs + 1):
+    train(epoch)
+    test()
+    # checkpoint(epoch)
