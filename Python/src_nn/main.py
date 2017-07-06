@@ -7,6 +7,7 @@ import numpy as np
 from model import SRCNN
 from data import get_training_set, get_testing_set
 from torchvision.transforms import ToPILImage
+import os
 
 
 seed = 123
@@ -71,20 +72,30 @@ def test():
         mse = criterion(prediction, target)
         psnr = 10 * np.log10(1 / mse.data[0])
         avg_psnr += psnr
+
     print '>>> Avg. PSNR: {:.4f} dB'.format(avg_psnr / len(testing_data_loader))
 
-    arr_size = prediction.size()
-    array = prediction[0].data.cpu()#.reshape(arr_size[2], arr_size[3])
-    im = ToPILImage()(array)
-    im.convert('L').save('result.png')
+    # # arr_size = prediction.size()
+    # array = prediction[0].data.cpu()#.reshape(arr_size[2], arr_size[3])
+    # im = ToPILImage()(array)
+    # im.convert('L').save('result.png')
 
 
 def checkpoint(epoch):
-    model_out_path = "model_epoch_{}.pth".format(epoch)
-    torch.save(model, model_out_path)
-    print "Checkpoint saved to {}".format(model_out_path)
+    model_path = "model/"
+    if not os.path.exists(model_path):
+        try:
+            os.makedirs(model_path)
+        except OSError:
+            raise
+
+    out_path = os.path.join(model_path, "model_epoch_{}.pth".format(epoch))
+    torch.save(model.state_dict(), out_path)
+    print "Checkpoint saved to {}".format(out_path)
 
 for epoch in range(1, nEpochs + 1):
     train(epoch)
     test()
-    # checkpoint(epoch)
+    if epoch == nEpochs:
+    # if epoch == 1:
+        checkpoint(epoch)
