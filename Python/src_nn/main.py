@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
+import torch.backends.cudnn as cudnn
 import numpy as np
 from model import SRCNN
 from data import get_training_set, get_testing_set
-from torchvision.transforms import ToPILImage
 import os
 
 
@@ -14,8 +14,9 @@ seed = 123
 upscale_factor = 3
 batchSize = 30
 testBatchSize = 10
-nEpochs = 100
-lr = 0.01
+nEpochs = 4000
+step = 1200
+learningRate = 0.001
 threads = 8
 train_dir = './Train'
 test_dir = './Test/Set5'
@@ -43,7 +44,13 @@ criterion = nn.MSELoss().cuda()
 
 print model
 
-optimizer = optim.Adam(model.parameters(), lr=lr)
+optimizer = optim.Adam(model.parameters(), lr=learningRate)
+
+
+def adjust_learning_rate(optimizer, epoch):
+    lr = learningRate * (0.1 ** (epoch // step))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
 
 
 def train(epoch):
@@ -93,9 +100,11 @@ def checkpoint(epoch):
     torch.save(model.state_dict(), out_path)
     print "Checkpoint saved to {}".format(out_path)
 
+
 for epoch in range(1, nEpochs + 1):
+    cudnn.benchmark = True
+    adjust_learning_rate(optimizer, epoch)
     train(epoch)
     test()
     if epoch == nEpochs:
-    # if epoch == 1:
         checkpoint(epoch)

@@ -4,10 +4,10 @@ from torch.autograd import Variable
 from torchvision.transforms import Compose
 from torchvision.transforms import ToTensor, Normalize, Scale, CenterCrop, ToPILImage
 from model import SRCNN
-import os
 from os.path import join
 from PIL import Image
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def load_image(filename):
@@ -45,6 +45,7 @@ def getPSNR(pred, gt, maxVal=255.):
 
 
 figname = 'butterfly_GT.bmp'
+# figname = 'bird_GT.bmp'
 test_dir = './Test/Set5'
 upscale_factor = 3
 
@@ -72,7 +73,7 @@ output_transforms = Compose([
 
 gt_y, gt_Cb, gt_Cr = (gt_transforms(im) for im in [y, Cb, Cr])
 
-model_path = './model/model_epoch_100.pth'
+model_path = './model/model_epoch_4000.pth'
 net = nn.DataParallel(SRCNN()).cuda()
 print net
 net.load_state_dict(torch.load(model_path))
@@ -81,7 +82,24 @@ input = Variable(input_transforms(y).view(1, 1, crop_size, crop_size).cuda())
 pred = net(input)
 
 pred_y = output_transforms(pred.data.cpu().view(1, crop_size, crop_size))
+bicubic_y = output_transforms(input_transforms(y))
 
 print type(pred_y)
 
-print getPSNR(pred_y, gt_y)
+print "Bicubic PSNR: ", getPSNR(bicubic_y, gt_y)
+print "Predict PSNR: ", getPSNR(pred_y, gt_y)
+
+# pred_y.show()
+
+gt_img = Image.merge('YCbCr', (gt_y, gt_Cb, gt_Cr)).convert('RGB')
+bicubic_img = Image.merge('YCbCr', (bicubic_y, gt_Cb, gt_Cr)).convert('RGB')
+pred_img = Image.merge('YCbCr', (pred_y, gt_Cb, gt_Cr)).convert('RGB')
+
+plt.figure()
+plt.subplot(131)
+plt.imshow(gt_img)
+plt.subplot(132)
+plt.imshow(bicubic_img)
+plt.subplot(133)
+plt.imshow(pred_img)
+plt.show()

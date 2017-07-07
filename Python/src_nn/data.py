@@ -1,5 +1,9 @@
 from torchvision.transforms import Compose, CenterCrop, ToTensor, Scale, Normalize
+from torchvision.transforms import RandomCrop, RandomHorizontalFlip
 from dataset import DatasetFromFolder
+# import numpy as np
+
+# np.random.seed(456)
 
 def calculate_valid_crop_size(crop_size, upscale_factor):
     """
@@ -16,6 +20,11 @@ def calculate_valid_crop_size(crop_size, upscale_factor):
     """
     return crop_size - (crop_size % upscale_factor)
 
+def common_transform(crop_size):
+    return Compose([
+        RandomCrop(crop_size),
+        RandomHorizontalFlip(),
+    ])
 
 def input_transform(crop_size, upscale_factor):
     """
@@ -23,7 +32,6 @@ def input_transform(crop_size, upscale_factor):
         input transform
     """
     return Compose([
-        CenterCrop(crop_size),
         Scale(crop_size // upscale_factor),
         Scale(crop_size),
         ToTensor(),
@@ -36,7 +44,7 @@ def target_transform(crop_size):
         target transform
     """
     return Compose([
-        CenterCrop(crop_size),
+        # CenterCrop(crop_size),
         ToTensor(),
         Normalize((0,), (1,)),
     ])
@@ -52,6 +60,7 @@ def get_training_set(train_dir, upscale_factor):
     crop_size = calculate_valid_crop_size(33, upscale_factor)
 
     return DatasetFromFolder(train_dir,
+                            common_transform = common_transform(crop_size),
                             input_transform = input_transform(crop_size, upscale_factor),
                             target_transform = target_transform(crop_size))
 
@@ -66,5 +75,27 @@ def get_testing_set(test_dir, upscale_factor):
     crop_size = calculate_valid_crop_size(228, upscale_factor)
 
     return DatasetFromFolder(test_dir,
+                            common_transform = common_transform(crop_size),
                             input_transform = input_transform(crop_size, upscale_factor),
                             target_transform = target_transform(crop_size))
+
+
+if __name__ == '__main__':
+    from PIL import Image
+    from torchvision.transforms import ToPILImage
+    import matplotlib.pyplot as plt
+    figname = './Test/Set5/butterfly_GT.bmp'
+    im = Image.open(figname).convert('L')
+    input = common_transform(90)(im)
+    target = input.copy()
+    input = input_transform(90, 3)(input)
+    target = target_transform(90)(target)
+    img = ToPILImage()(input)
+    tar = ToPILImage()(target)
+    # img.show()
+    plt.figure()
+    plt.subplot(121)
+    plt.imshow(img)
+    plt.subplot(122)
+    plt.imshow(tar)
+    plt.show()
