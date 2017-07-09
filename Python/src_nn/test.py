@@ -8,6 +8,7 @@ from os.path import join
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from main import nEpochs
 
 
 def load_image(filename):
@@ -73,7 +74,7 @@ output_transforms = Compose([
 
 gt_y, gt_Cb, gt_Cr = (gt_transforms(im) for im in [y, Cb, Cr])
 
-model_path = './model/model_epoch_4000.pth'
+model_path = './model/model_epoch_{}.pth'.format(nEpochs)
 net = nn.DataParallel(SRCNN()).cuda()
 print net
 net.load_state_dict(torch.load(model_path))

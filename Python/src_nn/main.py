@@ -21,31 +21,6 @@ threads = 8
 train_dir = './Train'
 test_dir = './Test/Set5'
 
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
-
-print '>>> Loading Datasets'
-
-train_set = get_training_set(train_dir, upscale_factor)
-test_set = get_testing_set(test_dir, upscale_factor)
-training_data_loader = DataLoader(dataset=train_set,
-                                 num_workers=threads,
-                                 batch_size=batchSize,
-                                 shuffle=True)
-testing_data_loader = DataLoader(dataset=test_set,
-                                num_workers=threads,
-                                batch_size=batchSize,
-                                shuffle=False)
-
-print '>>> Building Model'
-
-model = nn.DataParallel(SRCNN()).cuda()
-criterion = nn.MSELoss().cuda()
-
-print model
-
-optimizer = optim.Adam(model.parameters(), lr=learningRate)
-
 
 def adjust_learning_rate(optimizer, epoch):
     lr = learningRate * (0.1 ** (epoch // step))
@@ -101,10 +76,36 @@ def checkpoint(epoch):
     print "Checkpoint saved to {}".format(out_path)
 
 
-for epoch in range(1, nEpochs + 1):
-    cudnn.benchmark = True
-    adjust_learning_rate(optimizer, epoch)
-    train(epoch)
-    test()
-    if epoch == nEpochs:
-        checkpoint(epoch)
+if __name__ == '__main__':
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+
+    print '>>> Loading Datasets'
+
+    train_set = get_training_set(train_dir, upscale_factor)
+    test_set = get_testing_set(test_dir, upscale_factor)
+    training_data_loader = DataLoader(dataset=train_set,
+                                     num_workers=threads,
+                                     batch_size=batchSize,
+                                     shuffle=True)
+    testing_data_loader = DataLoader(dataset=test_set,
+                                    num_workers=threads,
+                                    batch_size=batchSize,
+                                    shuffle=False)
+
+    print '>>> Building Model'
+
+    model = nn.DataParallel(SRCNN()).cuda()
+    criterion = nn.MSELoss().cuda()
+
+    print model
+
+    optimizer = optim.Adam(model.parameters(), lr=learningRate)
+
+    for epoch in range(1, nEpochs + 1):
+        cudnn.benchmark = True
+        adjust_learning_rate(optimizer, epoch)
+        train(epoch)
+        test()
+        if epoch == nEpochs:
+            checkpoint(epoch)
