@@ -1,5 +1,10 @@
 # Reference
 
+## 2017 年 7 月 9 日
+
++ 在 vim 中查看 .ipynb 文件, 使用 `goerz/ipynb_notedown.vim` 插件, 具体查看
+[https://github.com/goerz/ipynb_notedown.vim](https://github.com/goerz/ipynb_notedown.vim)
+
 ## 2017 年 6 月 27 日
 
 + tiny-dnn 的 mnist 例子要跑通, 需要使用如下方法编译:
