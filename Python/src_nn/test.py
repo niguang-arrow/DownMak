@@ -53,10 +53,16 @@ upscale_factor = 3
 filename = join(test_dir, figname)
 y, Cb, Cr = load_image(filename)
 width, height = y.size
-crop_size = calculate_valid_crop_size(max(width, height), upscale_factor)
+crop_size = calculate_valid_crop_size(min(width, height), upscale_factor)
 
 gt_transforms = Compose([
     CenterCrop(crop_size),
+])
+
+bicubic_transforms = Compose([
+    CenterCrop(crop_size),
+    Scale(crop_size // upscale_factor),
+    Scale(crop_size),
 ])
 
 input_transforms = Compose([
@@ -73,8 +79,9 @@ output_transforms = Compose([
 ])
 
 gt_y, gt_Cb, gt_Cr = (gt_transforms(im) for im in [y, Cb, Cr])
+bicubic_y, bicubic_Cb, bicubic_Cr = (bicubic_transforms(im) for im in [y, Cb, Cr])
 
-model_path = './model/model_epoch_{}.pth'.format(nEpochs)
+model_path = './model_epoch_{}.pth'.format(80000)
 net = nn.DataParallel(SRCNN()).cuda()
 print net
 net.load_state_dict(torch.load(model_path))
@@ -82,8 +89,12 @@ net.load_state_dict(torch.load(model_path))
 input = Variable(input_transforms(y).view(1, 1, crop_size, crop_size).cuda())
 pred = net(input)
 
-pred_y = output_transforms(pred.data.cpu().view(1, crop_size, crop_size))
-bicubic_y = output_transforms(input_transforms(y))
+pred = pred.data.cpu()
+pred[pred < 0.0] = 0.0
+pred[pred > 1.0] = 1.0
+
+pred_y = output_transforms(pred.view(1, crop_size, crop_size))
+# bicubic_y = output_transforms(input_transforms(y))
 
 print type(pred_y)
 
@@ -93,8 +104,8 @@ print "Predict PSNR: ", getPSNR(pred_y, gt_y)
 # pred_y.show()
 
 gt_img = Image.merge('YCbCr', (gt_y, gt_Cb, gt_Cr)).convert('RGB')
-bicubic_img = Image.merge('YCbCr', (bicubic_y, gt_Cb, gt_Cr)).convert('RGB')
-pred_img = Image.merge('YCbCr', (pred_y, gt_Cb, gt_Cr)).convert('RGB')
+bicubic_img = Image.merge('YCbCr', (bicubic_y, bicubic_Cb, bicubic_Cr)).convert('RGB')
+pred_img = Image.merge('YCbCr', (pred_y, bicubic_Cb, bicubic_Cr)).convert('RGB')
 
 plt.figure()
 plt.subplot(131)
