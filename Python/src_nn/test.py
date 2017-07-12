@@ -81,7 +81,7 @@ output_transforms = Compose([
 gt_y, gt_Cb, gt_Cr = (gt_transforms(im) for im in [y, Cb, Cr])
 bicubic_y, bicubic_Cb, bicubic_Cr = (bicubic_transforms(im) for im in [y, Cb, Cr])
 
-model_path = './model_epoch_{}.pth'.format(80000)
+model_path = './model/model_epoch_{}.pth'.format(4000)
 net = nn.DataParallel(SRCNN()).cuda()
 print net
 net.load_state_dict(torch.load(model_path))
