@@ -1,5 +1,26 @@
 # Tricks
 
+## 2017 年 7 月 3 日
+
++   从命令行中启动 MATLAB, 使用:
+
+    https://stackoverflow.com/questions/6657005/matlab-running-an-m-file-from-command-line
+
+    ```bash
+    matlab -nodesktop -nodisplay -nosplash 
+    ```
+
+    其中 `-nodesktop` 为不显示桌面, `-nodisplay` 是不显示启动时的提示, `-nosplash` 不知道啥意思, 该选项可以不用.
+
+    如果要在命令行下跑一个脚本的话, 可以使用 `-r` 选项以及 `run` 命令:
+
+    ```bash
+    # 注意 run 命令中只能只用单引号, 该命令跑当前目录下的 generate_train.m 脚本.
+    matlab -nodesktop -nodisplay -nosplash  -r "run('./generate_train.m')"
+    ```
+
+    ​
+
 ## 2017 年 6 月 25 日
 
 +   安装 Java
