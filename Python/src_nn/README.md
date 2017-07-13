@@ -58,7 +58,7 @@ fprintf('bi_psnr: %f dB\n',bi_psnr);
 + `compute_psnr.m`
 
 ```matlab
-function [psnr,ssim_val]=compute_psnr(im1,im2,shave_border)
+function psnr = compute_psnr(im1,im2,shave_border)
 if size(im1, 3) == 3,
     im1 = rgb2ycbcr(im1);
     im1 = im1(:, :, 1);
@@ -76,7 +76,6 @@ end
 imdff = imdff(:);
 im1 = shave(im1,[shave_border,shave_border]);
 im2 = shave(im2,[shave_border,shave_border]);
-ssim_val = ssim_index(im1,im2);
 rmse = sqrt(mean(imdff.^2));
 psnr = 20*log10(255/rmse);
 ```
