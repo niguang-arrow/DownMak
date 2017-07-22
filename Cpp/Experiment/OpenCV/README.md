@@ -26,3 +26,6 @@ int main(){
 g++ -Wall -std=c++0x -o main main.cpp -L/usr/local/lib 
            -lopencv_core -lopencv_highgui -lopencv_imgcodecs 
 ```
+
++ 对于 `putText()` 函数, 在 OpenCV3 中已经移入 imgproc 模块中 (以前在 core 模块中), 因此
+要使用的话, 要使用 `#include<opencv2/imgproc/imgproc.hpp>`, 另外编译时加上 `-lopencv_imgproc` 选项.
