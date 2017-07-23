@@ -1,5 +1,43 @@
 # Introduction
 
+## 2017 年 7 月 23 日
+
++   习题 1.14: 对比 for 循环和 while 循环, 两种形式的优缺点各是什么?
+    +   在循环次数已知的情况下, for 循环的形式显然更为简洁;
+    +   而循环次数无法预知时, 用 while 循环实现更为适合. 用特定条件控制循环是否执行, 循环体中执行的语句可能导致循环判定条件发生变化.
+
++   习题 1.16: 编写程序, 从 cin 中读取一组数, 输出总和.
+
+
+    ```cpp
+    #include <iostream>
+    using namespace std;
+
+    int main()
+    {
+        int sum = 0, i = 0;
+        while(cin >> i){  
+            sum += i;
+        }
+        cout << sum << endl;
+    }
+
+    // 如果用 for 循环的话, 代码如下:
+    for(; cin >> i; ;) sum += i;
+    ```
+
+    注意要运行这段代码, 需要考虑从键盘输入文件结束符, 在 Windows 系统中输入 Ctrl + Z; 在 Unix 和 Mac OS X 中使用 Ctrl + D. 比如:
+
+    ```bash
+    # 在 Terminal 下输入如下数字, 最后按下 <Enter>
+    1 2 3<Enter>
+    <Ctrl+D>  # 按完 <Enter> 之后按下 Ctrl + D
+    6         # 得到最后的输出 6
+    ```
+
+    此题考验的是不定次数的循环, 以及输入流结束判断.
+
+
 ## 2017 年 7 月 2 日
 
 ### Getting Started
