@@ -165,6 +165,43 @@
 >>> assert d.__dict__ == {'foo': 1, 'bar': 2, 'baz': 3}
 ```
 
+
+
+## 2017 年 7 月 25 日
+
++ 参考 [libpython2.7.a function compilation error with local pyenv install](https://groups.google.com/forum/#!msg/theano-users/h9fNbxoZ0XM/SpVZWklSBQAJ)
+
+  来安装 pyenv 中的 python, 否则在安装 dlib, theano, keras 等库的时候容易出现 `libpython2.7.a` 共享库找不到的情况. 具体的安装步骤如下, 非常简单:
+
+  ```bash
+  env PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 2.7.13
+  ```
+
+  只要使用这一条命令就没问题了.
+
++ 之后安装 theano 等使用如下命令:
+
+  ```bash
+  pip install theano
+   
+  pip install PyYAML
+  pip install nose nose_parameterized
+  ```
+
++ 重新安装 python, 以前安装过的库要重装, /(ㄒoㄒ)/~~
+
+  + opencv
+  + pygments
+  + gpustat
+  + notedown
+  + dlib   (需要使用 `sudo apt-get install libopenblas-dev` 安装 openblas)
+  + putils glances docker
+  + tensorflow
+  + pytorch, torchvision
+  + 还有下面 scipy, pyqt 等.
+
+
+
 ## 2017 年 5 月
 
 ### pyenv 与 pyenv-virtualenv

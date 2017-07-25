@@ -1,9 +1,29 @@
 # Reference
 
+## 2017 年 7 月 25 日
+
++ 怎样安装 openblas [https://stackoverflow.com/questions/36483054/install-openblas-via-apt-get-sudo-apt-get-install-openblas-dev](https://stackoverflow.com/questions/36483054/install-openblas-via-apt-get-sudo-apt-get-install-openblas-dev)
+
+  使用 `sudo apt-get install libopenblas-dev`,
+
+  但里面提到的
+
+  ```bash
+  apt-cache search  openblas
+
+  libblas-test - Basic Linear Algebra Subroutines 3, testing programs
+  libopenblas-base - Optimized BLAS (linear algebra) library based on GotoBLAS2
+  libopenblas-dev - Optimized BLAS (linear algebra) library based on GotoBLAS2
+  ```
+
+  `apt-cache search` 命令很有帮助.
+
+  ​
+
 ## 2017 年 7 月 9 日
 
 + 在 vim 中查看 .ipynb 文件, 使用 `goerz/ipynb_notedown.vim` 插件, 具体查看
-[https://github.com/goerz/ipynb_notedown.vim](https://github.com/goerz/ipynb_notedown.vim)
+  [https://github.com/goerz/ipynb_notedown.vim](https://github.com/goerz/ipynb_notedown.vim)
 
 ## 2017 年 6 月 27 日
 
