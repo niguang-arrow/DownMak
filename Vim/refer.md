@@ -1,5 +1,21 @@
 # Reference
 
+## 2017 年 7 月 30 日
+
++   远程重启 linux 主机的方法:
+
+    http://blog.csdn.net/alading2009/article/details/39638197
+
+    ```bash
+    ssh root@.... 'reboot'
+    ```
+
+    但是这样有时候是不行的, 需要下面的:
+
+    [强制重启Linux系统的几种方法](https://zohead.com/archives/linux-force-reboot/)
+
+    直接通过运行 `reboot -nf` 命令, 这样重启可以指定跳过 init 处理和 sync 操作, 这样可以避免大多数情况下的问题.
+
 ## 2017 年 7 月 25 日
 
 + 怎样安装 openblas [https://stackoverflow.com/questions/36483054/install-openblas-via-apt-get-sudo-apt-get-install-openblas-dev](https://stackoverflow.com/questions/36483054/install-openblas-via-apt-get-sudo-apt-get-install-openblas-dev)
