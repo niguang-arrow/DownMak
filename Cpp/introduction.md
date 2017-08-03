@@ -1,5 +1,562 @@
 # Introduction
 
+## 2017 年 8 月 3 日
+
+### 6.2.6 含有可变形参的函数
+
++   含有可变形参的函数 : 为了编写能处理不同数量实参的函数, C++11 提供了两种主要的方法:
+
+    +   如果所有实参类型相同, 可以传递一个名为 `initializer_list` 的标准库类型;
+    +   如果实参的类型不同, 可以编写一个特殊的函数, 也就是所谓的可变参数模板;
+    +   C++ 还有一种特殊的形参类型(即省略符), 可以用它传递可变数量的实参. (一般只用于与 C 函数交互的接口程序)
+
++   `initializer_list` 形参
+
+    +   它是一种标准库类型, 和 vector 一样, 也是模板类型, 用于表示某种特定类型的值的数组, 定义在 `#include <initializer_list>` 中, 但和 vector 不一样的是, `initializer_list` 中的元素都是常量值.
+
+    +   `initializer_list` 提供的操作
+
+        ```cpp
+        initializer_list<T> lst;  // 默认初始化, T 类型元素的空列表
+        initializer_list<T> lst{a, b, c...}; // lst 元素数量和初始值列表一样多, 列表中的元素都是 const
+        lst2(lst);  // 拷贝或赋值一个一个initializer_list 对象, 不会拷贝列表中的元素, 
+        lst2 = lst; // 拷贝后, 原始列表和副本共享元素
+        lst.size(); // 列表中的元素数量
+        lst.begin(); // 返回指向 lst 的首元素的指针
+        lst.end();  // 返回指向 lst 中尾元素下一位置的指针
+        ```
+
+    +   如果想要向 `initializer_list` 形参中传递一个值的序列, 则必须把序列放在一对花括号内:
+
+        ```cpp
+        void error_msg(initializer_list<string> lst){
+          for (auto beg = lst.begin(); beg != lst.end(); ++beg)
+            cout << *beg << " ";
+          cout << endl;
+        }
+
+        // expected 和 actual 是 string 对象
+        // 注意序列放在一对花括号内
+        if (expected != actual)
+          error_msg({"functionX", expected, actual});
+        else
+          error_msg({"functionX", "okay"});
+        ```
+
++   返回类型和 return 语句
+
+    +   return 语句终止当前正在执行的函数, 并将控制权返回到调用函数的地方.
+
+    +   **不要返回局部对象的引用或指针**; 因为函数完成后, 它所占用的存储空间也随之被释放掉. 因此, 函数终止意味着局部变量的引用将指向不再有效的内存区域. **要想确保函数值安全, 我们不妨提问: 引用所引的是在函数之前已经存在的哪个对象?**
+
+    +   引用返回左值: 返回类型决定函数是否返回左值 (甚至可以把函数调用放在赋值语句的左侧...)
+
+    +   **列表初始化返回值**
+
+        +   C++11 新标准规定, 函数可以返回花括号包围的值的列表:
+
+            ```cpp
+            vector<string> process(){
+              return {"A", "B"};
+            }
+            ```
+
+    +   主函数 main 的返回值
+
+        +   我们允许 main 函数没有 return 语句直接结束. 如果控制到达了 main 函数的结尾处而且没有 return 语句, 编译器将隐式地插入一条返回 0 的 return 语句.
+
+        +   main 函数的返回值可以看作是状态指示器, `#include <cstdlib>` 头文件定义了两个预处理变量, 分别表示成功与失败: `EXIT_SUCCESS` 与 `EXIT_FAILURE`.
+
+            因为它们是预处理变量, 所以不能在前面加上 `std::` (也就是不定义在 std 名字空间中)
+
++   **返回数组指针**
+
+    +   首先要明白什么是数组指针. 比如举个例子:
+
+        ```cpp
+        int arr[3] = {1, 2, 3};
+
+        int (*p)[3] = &arr;  // arr 也是一个对象, 指针, 指向数组首元素的地址, p 是指向数组的指针.
+        cout << "arr : " << arr  << endl;
+        cout << "&arr: " << &arr << endl;
+        cout << "*arr: " << *arr << endl;
+        cout << "&p  : " << &p   << endl;
+        cout << "*p  : " << *p   << endl;
+        cout << "**p : " << **p  << endl;
+
+        // 输出结果:
+        arr : 0x7fffa3fcbeb0
+        &arr: 0x7fffa3fcbeb0
+        *arr: 1
+        &p  : 0x7fffa3fcbea8
+        *p  : 0x7fffa3fcbeb0
+        **p : 1
+        ```
+
+        +   从输出结果可以看出, arr 是一个指针, 指向数组首元素的地址, p 是一个新的指针, 指向 arr, 所以 `*p` 中的结果就是 arr 的地址, (只不过我不是很明白为何 `arr` 和 `&arr` 的结果一样)
+        +   对于 arr 和 `&arr` 一样的问题, 查看回答: [Address of array](https://stackoverflow.com/questions/8412694/address-of-array) 回答是:
+
+        >   When `t` is used on its own in the expression, an array-to-pointer conversion takes place, this produces a pointer to the first element of the array.
+        >
+        >   When `t` is used as the argument of the `&` operator, no such conversion takes place. The `&` then explicitly takes the address of `t` (the array). `&t` is a pointer to the array as a whole.
+        >
+        >   The first element of the array is at the same position in memory as the start of the whole array, and so these two pointers have the same value.
+
+        也就是说, 当直接使用 arr 时, 会发生 array-to-pointer 隐式转换, 这时 arr 指向数组的第一个元素;
+
+        但是当取地址符作用于 `arr` 时, 上述转换不会发生, 这时 `&arr` 指向的是整个数组, (整个数组的地址和数组第一个元素的地址是相同的!) 这时候需要联想一下多维数组... 因为我发现, 如果输出 `*(&arr)` 的结果, 仍然是 `0x7fffa3fcbeb0`, 也就是数组首元素的地址, 毕竟 `&arr` 指向的是整个数组而不是某个具体的元素, 把它想象成 `{{1, 2, 3}}`, 会不会好一些... 这样 `**(&arr)` 就可以检索到 1 这个元素.
+
+    +   这样的话, 上面的 `int (*p)[3] = &arr;` 也就能理解了, 因为 `p` 是数组指针, 所以使用 `&arr` 初始化而不是 `arr`. 如果使用的是 `int (*p)[3] = arr;`, 那么会出现如下错误:
+
+        ```cpp
+        error: cannot convert ‘int*’ to ‘int (*)[3]’ in initialization
+        ```
+
+    +   从语法上来说, 想要定义一个返回数组的指针或引用的函数比较繁琐, 但可以使用类型别名简化任务:
+
+        ```cpp
+        typedef int arrT[10];  // arrT 是一个类型别名, 他表示类型是含有 10 个整数的数组
+        using arrT = int[10]; // arrT 的等价声明
+        arrT* func(int i); // func 返回一个指向含有 10 个整数的数组的指针
+        ```
+
+    +   首先注意如下声明:
+
+        ```cpp
+        int arr[10];  // arr 是一个含有 10 个整数的数组
+        int *p1[10];  // p1 是一个含有 10 个指针的数组
+        int (*p2)[10] = &arr; // p2 是一个指针, 指向含有 10 个整数的数组
+        ```
+
+        和这些声明一样, 如果我们想定义一个返回数组指针的函数, 则数组的维度必须跟在函数名字后面. 然而, 函数形参列表也跟在函数名字后面且形参列表应该先于数组的维度. 返回数组指针的函数形如:
+
+        ```cpp
+        Type (*function(parameter_list))[dimension]
+        ```
+
+        类似于其他数组的声明, `(*function(parameter_list))` 两端的括号必须存在, 就像我们定义 `p2` 时两端必须有括号一样. 如果没有这对括号, 函数返回的就是指针的数组.
+
+        举个具体的例子, 下面这个 func 函数的声明没有使用类型别名:
+
+        ```cpp
+        int (*func(int i))[10];
+        ```
+
+        可以按照以下顺序来逐层理解该声明的含义:
+
+        +   `func(int i)` 表示调用 `func` 函数需要一个 int 类型的实参
+        +   `(*func(int i))` 意味着我们可以对函数调用的结果执行解引用操作
+        +   `(*func(int))[10]` 表示解引用 func 的调用将得到一个大小是 10 的数组.
+        +   `int (*func(int))[10]` 表示数组中的元素是 int 类型.
+
+    +   使用尾置返回类型 (trailing return type)
+
+        +   C++11 提出的声明方法, 尾置返回类型跟在形参列表后面并以一个 `->` 符号开头. 为了表示函数真正的返回类型跟在形参列表之后, 我们在本该出现返回类型的地方放置一个 `auto`.
+
+            ```cpp
+            // func 返回的是一个指针, 该指针指向含有 10 个整数的数组.
+            auto func(int i) -> int (*)[10];
+            ```
+
+    +   使用 decltype
+
+        +   如果我们知道函数返回的指针将指向哪个数组, 就可以使用 decltype.
+
+            ```cpp
+            int odd[] = {1, 3, 5, 7, 9};
+            int even[] = {2, 4, 6, 8, 10};
+            decltype(odd) *arrPtr(int i){
+              return (i % 2) ? &odd : &even; // 返回一个指向数组的指针
+            }
+            ```
+
+            +   由于 odd 的类型是数组类型, 所以 decltype(odd) 推断的类型就是个数组, 由于 decltype 并不负责将数组类型转换为对应的指针, 所以在 arrPtr 的返回类型处还需加上一个 `*` 符号.
+
+    ​
+
++   函数重载: 在同一个作用域中, 几个函数名字相同但是形参列表不同, 称为重载函数 (overloaded)\
+
+    +   main 函数不能重载
+
+    +   对于重载函数来说, 它们应该在形参数量或者形参类型上有所不同.
+
+    +   判断两个形参的类型是否相异: 有时候两个形参列表看起来不一样, 但实际上是相同的.
+
+    +   重载和 const 形参
+
+        +   顶层 const 不影响传入函数的对象, 一个拥有顶层 const 的形参无法和另外一个没有顶层 const 的形参区分开来:
+
+            ```cpp
+            Record lookup(Phone);
+            Record lookup(const Phone);  // 重复声明
+
+            Record lookup(Phone*);
+            Record lookup(Phone* const); // 重复声明
+            ```
+
+        +   另一方面, 如果形参是某种类型的指针或引用, 则通过区分其指向的是常量对象还是非常量对象可以实现函数重载, 此时的 const 是底层的.
+
+        ```cpp
+        // 对于接受引用或指针的函数来说, 对象是常量还是非常量对应的形参是不同的
+        // 下面定义了 4 个独立的重载函数
+        Record lookup(Account&);   // 作用于 Account 的引用
+        Record lookup(const Account&); // 新函数, 作用于 Account 的常量引用
+
+        Record lookup(Account*); // 作用于 Account 的指针
+        Record lookup(const Account*); // 新函数, 作用于指向常量的指针
+        ```
+
+        +   注意我们只能把 const 对象传递给 const 形参
+        +   另外, 因为非常量可以转换为 const, 所以上面四个函数都能作用于非常量对象或者非常量对象的指针. 不过, 后面会介绍, 当我们传递一个非常量对象或者指向非常量对象的指针时, 编译器会优先选用非常量版本的函数.
+
+    +   `const_cast` 和重载
+
+    +   重载与作用域: 最好不要将函数声明置于局部作用域.
+
++   特殊用途语言特性
+
+    +   与函数相关的 3 种语言特性:
+
+        +   默认实参
+        +   内联函数
+        +   constexpr 函数
+
+    +   默认实参
+
+        +   **注意, 一旦某个形参被赋予了默认值, 它后面所有的形参都必须有默认值.**
+
+        +   在设计含有默认实参的函数时, 其中一项任务是合理设置形参的顺序, 尽量让不怎么使用的默认值的形参出现在前面, 而让那些经常使用的默认值的形参出现在后面. 因为传递参数的时候必须按照顺序来.
+
+            比如
+
+            ```cpp
+            typedef string::size_type sz;
+            string screen(sz ht = 24, sz wid = 80, char background = ''); // 都提供了默认参数
+
+            // 但是
+            string window = screen(, , '?'); // 错误, 必须提供 ht 和 wid 的值.
+            ```
+
+    +   内联函数和 constexpr 函数
+
+        +   调用函数一般比求等价的表达式的值要慢一些. 在大多数的机器上, 一次函数调用其实包含着一系列的工作: 调用前要先保存寄存器, 并在返回时恢复; 可能需要拷贝实参; 程序转向一个新的位置继续执行.
+        +   内联函数可以避免函数调用的开销. 在函数返回类型前面加上关键字 inline, 这样就可以将函数声明为内联函数.
+
+    +   constexpr 函数是指能用于常量表达式的函数.
+
+        +   约定: 
+            1.  函数的返回类型和所有形参的类型都得是字面值类型.
+            2.  函数体中必须有且只有一条 return 语句.
+                +   constexpr 函数体内也可以包含其他语句, 只要这些语句在运行时不执行任何操作就行, 比如空语句, 类型别名, 以及 using 声明.
+
+        ```cpp
+        constexpr int new_sz() { return 43; }
+        constexpr int foo = new_sz(); // 正确, foo 是一个常量表达式
+        ```
+
+        +   我们允许 constexpr 函数的返回值并非一个常量:
+
+            ```cpp
+            // 如果 cnt 是常量表达式, 则 scale(cnt) 也是常量表达式
+            constexpr size_t scale(size_t cnt) { return new_sz() * cnt; }
+            ```
+
+            +   注意当 scale 的实参是常量表达式时, 他的返回值也是常量表达式, 反之则不然.
+
+    +   内联函数和 constexpr 函数通常是定义在头文件中.
+
+        +   因为对于内联函数和 constexpr 函数来说, 它的多个定义必须完全一致.
+
+        +   习题 6.46: 对于 189 页的 isShorter 函数, 能否定义为 constexpr 函数?
+
+            ```cpp
+            // 比较两个 string 对象的长度
+            bool isShorter(const string &s1, const string &s2){
+              return s1.size() < s2.size();
+            }
+            ```
+
+            +   答案是不能, 因为 isShorter 函数不符合 constexpr 函数的要求, 它虽然只有一条 return 语句, 但是返回结果调用了标准库 string 类的 size() 函数和 `<` 比较符, 无法构成常量表达式, 因此不能改写成 constexpr 函数.
+
++   调试帮助
+
+    +   assert 预处理宏
+
+        ```cpp
+        assert(expr);
+        ```
+
+        +   首先对 expr 进行求值, 如果表达式为假 (即 0), assert 输出信息并终止程序的执行. 为真的话什么也不做. 
+        +   assert 宏定义在 `#include <cassert>` 头文件中. (预处理名字由预处理器而非编译器管理.)
+
+    +   NDEBUG
+
+        +   详情看书
+        +   变量 `__func__` 输出当前调试的函数的名字, 编译器为每个函数都定义了 `__func__`, 它是 const char 的一个静态数组, 用于存放函数的名字.
+        +   预处理器还定义了另外 4 个对于程序调试很有用的名字:
+            +   `__FILE__` 存放文件名的字符串字面值
+            +   `__LINE__` 存放当前行号的整型字面值
+            +   `__TIME__` 存放文件编译时间的字符串字面值
+            +   `__DATE__` 存放文件编译日期的字符串字面值
+
++   函数指针
+
+    +   函数指针指向的是函数而非对象. 和其他指针一样, 函数指针指向某种特定的类型, **函数的类型由它的返回类型和形参类型共同决定, 与函数名无关**. 例如:
+
+        ```cpp
+        bool lengthCompare(const string&, const string&);
+        ```
+
+        该函数的类型是 `bool(const string&, const string&)`. 要想声明一个可以指向该函数的指针, 只需要用指针替换函数名即可:
+
+        ```cpp
+        // pf 指向一个函数, 该函数的参数是两个 const string 的引用, 返回值是 bool 类型
+        bool (*pf)(const string&, const string&); // 未初始化
+        ```
+
+        +   从我们声明的名字开始观察, pf 前面有个 `*`, 因此 pf 是指针; 右侧是形参列表, 表示 pf 指向的是函数; 再观察左侧, 发现函数的返回类型是 bool 值, 因此 pf 就是一个指向函数的指针, 其中该函数的参数是两个 const string 的引用, 返回值是 bool 类型.
+
+    +   使用函数指针
+
+        +   把函数名作为一个值使用时, 该函数自动转换为指针.
+
+            ```cpp
+            pf = lengthCompare;   // pf 指向 函数
+            pf = &lengthCompare;  // 等价的赋值语句: & 是可选的
+            ```
+
+        +   直接使用指向函数的指针调用该函数, 无需提前解引用指针:
+
+            ```cpp
+            bool b1 = pf("Hello", "Good");  // 调用 lengthCompare 函数
+            bool b2 = (*pf)("Hello", "Good"); // 一个等价的调用
+            bool b3 = lengthCompare("Hello", "Good"); // 另一个等价的调用
+            ```
+
+        +   指向不同函数类型的指针间不存在转换规则. 但是可以为函数指针赋一个 nullptr 或者 0;
+
+    +   函数指针形参
+
+        +   和数组类似, 虽然不能定义函数类型的形参, 但是形参可以是指向函数的指针, 此时形参看起来是函数类型, 但实际上却是当成了指针在使用:
+
+            ```cpp
+            // 第三个形参是函数类型, 它会自动转换成指向函数的指针
+            void useBigger(const string& s1, const string& s2, bool pf(const string&, const string&));
+
+            // 等价的声明
+            void useBigger(const string& s1, const string& s2, bool (*pf)(const string&, const string&));
+            ```
+
+            +   可以把函数直接作为实参使用, 此时它会自动转换为指针.
+
+        +   上面的方法比较冗繁, 使用类型别名或者 decltype 可以简化:
+
+            ```cpp
+            // Func 和 Func2 是函数类型
+            typedef bool Func(const string&, const string&);
+            typedef decltype(lengthCompare) Func2; // 等价的类型
+            // FuncP 和 FuncP2 是指向函数的指针
+            typedef bool (*FuncP)(const string&, const string&);
+            typedef decltype(lengthCompare)* FuncP2;
+            ```
+
+            +   我认为这里可以将函数类型和数组类型进行联系比较, 发现两者的共同之处. 数组类型是由元素类型以及数组的维度组合成的. 而函数类型是由返回值类型以及形参列表组成的.
+
+    +   返回指向函数的指针
+
+        +   和数组类似, 虽然不能返回一个函数, 但是能返回指向函数类型的指针. 最简单的办法是使用类型别名:
+
+            ```cpp
+            using F = int(int*, int); // F 是函数类型, 不是指针
+            using PF = int(*)(int*, int);  // PF 是指针类型
+            ```
+
+        +   当然我们也可以使用下面的形式直接声明 f1:
+
+            ```cpp
+            int (*f1(int))(int*, int);
+            ```
+
+            +   按照从内向外的顺序阅读这条声明语句, 我们看到 f1 有形参列表, 所以 f1 是个函数, f1 前面有 `*`, 所以 f1 返回一个指针; 由于指针的类型本身也包含形参列表, 因此指针指向函数, 该函数的返回类型为 int.
+
+        +   还可以使用尾置返回类型:
+
+            ```cpp
+            auto f1(int) -> int (*)(int*, int);
+            ```
+
+        +   将 auto 和 decltype 用于函数指针类型
+
+            +   如果知道返回的函数是哪一个, 就能使用 decltype简化书写函数指针返回类型的过程.
+            +   **不过需要注意的是, 我们需牢记当我们将 decltype 作用于某个函数时, 它返回的是函数类型而非指针类型.** 因此我们需要显式的加上 `*` 表明我们需要返回指针, 而非函数本身.
+
+
+
+### 习题
+
++   习题 6.27: 编写一个函数, 参数是 `initializer_list<T>` 类型的对象, 函数的功能是计算列表中所有元素的和;
+
+    ```cpp
+    #include <iostream>
+    #include <initializer_list>
+
+    using namespace std;
+
+    template<typename T>
+    T sum(initializer_list<T> lst){
+        T sum = 0;
+        for (const auto &elem : lst)
+            sum += elem;
+        return sum;
+    }
+
+    int main(int argc, char **argv){
+
+        cout << sum({1, 2, 3, 5}) << endl;
+    }
+    ```
+
++   习题 6.28: 在 `error_msg` 函数第二个版本中包含的 ErrCode 类型的参数, 其中循环内的 elem 是什么类型?
+
+    ```cpp
+    void error_msg(ErrCode e, initializer_list<string> il){
+      /*....*/
+      for (const auto &elem : il)
+        /*....*/
+    }
+    ```
+
+    +   依我看, elem 是 `const string&` 类型
+
++   习题 6.29: 在范围 for 循环中使用 `initializer_list` 对象时, 应该将循环控制变量声明为引用类型吗? 为什么?
+
+    +   **引用类型的优势主要是可以直接操作所引用的对象以及避免拷贝较为复杂的类类型对象和容器对象, 因为 `initializer_list` 对象的元素永远是常量值, 所以我们不可能通过设定引用类型来更改循环控制变量的内容. 只有当 `initializer_list` 对象的元素类型是类类型或容器类型 (比如 string) 时, 才有必要把范围 for 循环中的循环控制变量设置为引用类型.**
+
++   习题 6.31: 什么情况下返回的引用有效? 什么情况下返回常量的引用有效?
+
+    +   如果引用所引的是函数开始之前就已经存在的对象, 则返回该引用是有效的; 如果引用所引的是函数的局部变量, 则随着函数结束局部变量也失效了, 此时返回的引用无效;
+    +   当不希望返回的对象被修改时, 返回对常量的引用.
+
++   **习题 6.33**: 编写一个递归函数, 输出 vector 对象的内容
+
+    +   函数的递归分为直接递归和间接递归, 编写递归函数的关键是确定递归规律和递归终止条件.
+
+    +   我给出的答案:
+
+        ```cpp
+        #include <iostream>
+        #include <vector>
+
+        // 注意这里必须使用引用, 不用 const 也不会报错, 但是最好加上,
+        // 毕竟 vector 只读. 如果不使用引用, 函数外的 vector 就会拷贝
+        // 给 vec, 这样的话, if 中的 it 就永远不会等于内层中的 output 
+        // 中的 vec.end()
+        void output(const vector<int>& vec, vector<int>::iterator it){
+            if (it != vec.end()){
+                cout << *it << " ";
+                output(vec, ++it);
+            }
+        }
+
+
+        int main(int argc, char **argv){
+            output(a, a.begin());
+            cout << endl;
+          	return 0;
+        }
+        ```
+
++   习题 6.34: 如果 factorial 函数的停止条件如下所示, 将会发生什么情况?
+
+    ```cpp
+    if (val != 0)
+    ```
+
+    +   先给出 factorial 函数
+
+        ```cpp
+        int factorial(int val){
+          if (val > 1)
+            return factorial(val - 1) * val;
+          return 1;
+        }
+        ```
+
+    +   如果条件改成上面那个, 则理论上用户可以传入 factorial 函数的参数可以是负数.
+
++   习题 6.35: 在调用 factorial 函数时, 为什么我们传入的值是 val - 1 而非 --val?
+
+    +   **如果改成这样, 则会出现我们不期望看到的情况, 即变量的递减操作与读取变量值的操作共存于同一条表达式中, 这时可能产生未定义的值.**
+
++   习题 6.36: 编写一个函数声明, 使其返回数组的引用并且该数组包含 10 个 string 对象, 不要使用尾置返回类型, decltype 或者类型别名.
+
+    ```cpp
+    string (&func())[10];
+
+    // 使用类型别名
+    typedef string arrT[10];
+    using arrT = string[10];
+    arrT& func();
+
+    // 使用 decltype 略
+
+    // 使用尾置返回类型
+    auto func() -> string (&)[10];
+    ```
+
++   习题 6.38: 修改 arrPtr 函数, 使其返回数组的引用
+
+    ```cpp
+    // arrPtr 函数
+    int odd[] = {1, 3, 5, 7, 9};
+    int even[] = {2, 4, 6, 8, 10};
+    decltype(odd) *arrPtr(int i){
+      return (i % 2) ? &odd : &even; // 返回一个指向数组的指针
+    }
+
+    // 修改为返回数组的引用
+    int odd[] = {1, 3, 5, 7, 9};
+    int even[] = {2, 4, 6, 8, 10};
+    decltype(odd) &arrPtr(int i){
+      return (i % 2) ? odd : even; // 返回一个数组的引用
+    }
+    ```
+
++   习题 6.48: 说明下面这个循环的含义, 它对 assert 的使用合理吗?
+
+    ```cpp
+    string s;
+    while (cin >> s && s != sought) { } // 空函数体
+    assert(cin);
+    ```
+
+    +   首先循环的含义是从输入流中读取字符串, 直到找到匹配的字符串 sought
+    +   不合理.
+
++   习题 6.54: 编写函数的声明, 令其接受两个 int 形参并且返回类型也是 int; 然后声明一个 vector 对象, 令其元素是指向该函数的指针.
+
+    ```cpp
+    int func(int&, int&);
+
+    // 使用类型别名
+    typedef int (*PF)(int&, int&);
+    using PF = int (*)(int&, int&);
+    vector<PF> vec;
+    vec.push_back(func);
+
+    // 使用 decltype
+    vector<decltype(func)*> vec;  // 注意使用 decltype 时要加上 *, decltype 不会转换为指针
+
+    // 直接声明
+    vector<int (*)(int&, int&)> vec;
+    ```
+
+    ​
+
+    ​
+
+
+
 ## 2017 年 8 月 2 日
 
 ### 函数
