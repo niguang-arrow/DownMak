@@ -1,5 +1,540 @@
 # Introduction
 
+## 2017 年  8 月 4 日
+
+### 第 7 章 类
+
++   类的基本思想是数据抽象 (data abstraction) 和封装 (encapsulation)
+
+    +   数据抽象: 依赖于接口 (interface) 和实现 (implementation) 分离
+    +   封装实现了类的接口和实现分离, 封装后的类隐藏了它的实现细节.
+
++   成员函数的声明必须放在类的内部, 它的定义既可以在类的内部也可以在类的外部. 
+
+    +   **定义在类内部的函数是隐式的 inline 函数.**
+
++   引入 this
+
+    +   成员函数通过一个名为 `this` 的额外的隐式参数来访问调用它的那个对象. 当我们调用一个成员函数时, 用请求该函数的对象地址初始化 `this`, 例如:
+
+        ```cpp
+        total.isbn()
+        ```
+
+        则编译器负责把 total 的地址传递给 isbn 的隐式形参 `this`, 可以等价地认为编译器将该调用重写成如下的形式:
+
+        ```cpp
+        // 伪代码, 用于说明调用成员函数的实际执行过程
+        Sales_data::isbn(&total)  // 调用 Sales_data 的 isbn 成员时传入了 total 的地址
+        ```
+
+        +   **在成员函数内部, 我们可以直接使用调用该函数的对象的成员, 而无须通过成员运算符来做到这一点, 因为 this 所指的正是这个对象. 任何对类成员的直接访问都被看成 this 的隐式引用.**
+        +   由于 `this` 是隐式定义的, 任何自定义名为 this 的参数或变量的行为都是非法的.
+        +   `this` 是一个常量指针, 我们不允许改变 this 中保存的地址. (顶层 const)
+
++   引入 const 成员函数
+
+    isbn 函数定义是
+
+    ```cpp
+    std::string isbn() const { return bookNo; }
+    ```
+
+    +   这里的 const 的作用是修改隐式 this 指针的类型.
+
+    +   默认情况下, this 的类型是指向类类型非常量版本的常量指针 (`Sales_data* const this`), **尽管 this 是隐式的, 但它仍要遵循初始化规则, 意味着 (在默认情况下) 我们不能把 this 绑定到一个常量对象上**. 这一情况也就使我们不能在一个常量对象上调用普通的成员函数.
+
+        ```cpp
+        // 伪代码, 我随意勾勒出来的
+        // 默认情况下, isbn
+        std::string isbn(Sales_data* const this) { return this->bookNo; }
+
+        // 默认情况下, 常量对象无法调用 isbn, 因此我们需要
+        std::string isbn(const Sales_data* const this) { return this->bookNo; }
+
+        // 由于在 isbn 内不会改变 this 所指的对象, 所以将 isbn 声明为
+        // 指向常量的指针有助于提高函数的灵活性.
+        // 然而 this 是隐式的并且不会出现在参数列表中, 所以 C++ 允许把
+        // const 关键字放在成员函数的参数列表后面.
+        ```
+
+        +   **由于在 isbn 内不会改变 this 所指的对象, 所以将 isbn 声明为指向常量的指针有助于提高函数的灵活性.然而 this 是隐式的并且不会出现在参数列表中, 所以 C++ 允许把 const 关键字放在成员函数的参数列表后面.** 
+        +   像这样使用了 const 的成员函数被称为**常量成员函数**.
+        +   **常量对象, 以及常量对象的引用和指针都只能调用常量成员函数**
+
++   在类外部定义成员函数:
+
+    +   **必须包含它所属的类名**
+    +   `Sales_data::avg_price` 使用了作用域运算符, 说明该函数是被声明在类 `Sales_data` 的作用域内的. 一旦编译器看到这个函数名, 就能理解剩余的代码是位于类的作用域内的.
+
++   定义一个返回 this 对象的函数
+
+    +   比如 combine 函数的设计初衷是类似与 `+=`, 由于内置的赋值运算符把它的左侧运算对象当成左值返回, 因此为了与内置的运算符行为一直, combine **必须返回引用类型**. 因为此时左侧运算对象是一个 `Sales_data` 的对象, 所以返回类型应该是 `Sales_data&`. 
+
+        ```cpp
+        Sales_data& Sales_data::combine(const Sales_data &rhs){
+          units_sold += rhs.units_sold; // 把 rhs 的成员加到 this 对象的成员上
+          revenue += rhs.revenue;
+          return *this;  // 返回调用该函数的对象
+        }
+        ```
+
++   定义类相关的非成员函数
+
+    +   类的作者经常需要定义一些辅助函数, 比如 `add`, `print`, `read` 等, 尽管这些函数定义的操作从概念上来说属于类的接口的组成部分, 但它们实际上并不属于类本身.
+
+    +   一般来说, 如果非成员函数是类接口的组成部分, 则这些函数的声明应该与类在同一个头文件中.
+
+    +   定义 read 和 print 函数
+
+        ```cpp
+        istream &read(istream &is, Sales_data &item){
+          double price = 0;
+          is >> item.bookNo >> item.units_sold >> price;
+          item.revenue = price * item.units_sold;
+          return is;
+        }
+
+        ostream &print(ostream &os, const Sales_data &item){
+          os << item.isbn() << " " << item.units_sold << " "
+            << item.revenue << " " << item.avg_price();
+          return os;
+        }
+        ```
+
+        关于上面的函数有两点非常重要:
+
+        +   首先它们接受一个各自 IO 类型的引用作为其参数, 这是因为 IO 类属于不能被拷贝的类型, 因此我们只能通过引用来传递它们. 而且因为读取和写入操作会改变流的内容, 所以两个函数接受的都是普通引用, 而非对常量的引用.
+        +   第二点, print 函数不负责换行, 一般来说, 执行输出任务的函数应该尽量减少对格式的控制, 这样可以确保由用户代码来决定是否换行.
+
++   构造函数
+
+    +   构造函数的任务是初始化类的数据成员, 无论何时只要类的对象被创建, 就会执行构造函数.
+    +   **不同于其他成员函数, 构造函数不能被声明成 const 的! 当我们创建类的一个 const 对象时, 直到构造函数完成初始化过程, 对象才真正取得其 "常量" 属性**. 因此构造函数在 const 对象的构造过程中可以向其写值.
+    +   默认构造函数 (default constructor) 无须任何实参.
+        +   如果我们的类没有显示地定义构造函数, 那么编译器就会为我们隐式地定义一个默认构造函数, 称为合成的默认构造函数.
+        +   **注意: 只有当类没有声明任何构造函数时, 编译器才会自动地生成默认构造函数**. 也就是说, 一旦我们定义了一些其他的构造函数, 那么除非我们再定义一个默认的构造函数, 否则类将没有默认构造函数.
+        +   如果类包含有内置类型或者复合类型(比如数组和指针)的成员, 只有当这些成员全都被赋予了类内的初始值, 这个类才适合于使用合成的默认构造函数.
+        +   ... 一堆的原因, 总之就是说明最好使用自己定义的构造函数...
+
++   **`= default` 的含义**
+
+    ```cpp
+    Sales_data() = default;
+    ```
+
+    +   这是一个默认构造函数 (不接受任何实参), 我们希望这个函数的作用完全等同于合成默认构造函数 (编译器帮忙生成的), 在 C++11 新标准中, 如果我们需要默认的行为, 可以通过在参数列表后面写上 `= default` 来要求编译器生成构造函数. 
+    +   其中 `= default` 即可以和声明一起出现在类的内部, 也可以作为定义出现在类的外部. 和其他函数一样, 如果 `= default` 在类的内部, 则默认构造函数是内联的; 如果它在类的外部, 则成员默认情况下不是内联的.
+
++   **构造函数初始值列表**
+
+    +   首先看另外两个构造函数:
+
+        ```cpp
+        Sales_data(const std::string &s): bookNo(s) {}
+        Sales_data(const std::string &s, unsigned n, double p): 
+        	bookNo(s), units_sold(n), revenue(p*n) {}
+        ```
+
+    +   冒号和以及冒号和花括号之间的代码, 我们称之为构造函数初始值列表. 它负责为新创建的对象的一个或几个数据成员赋初值. 构造函数初始值是成员名字的一个列表, 每个名字后面紧跟括号括起来的成员初始值. 不同的成员的初始化通过逗号分隔开来.
+
++   **在类的外部定义构造函数**
+
+    ```cpp
+    Sales_data::Sales_data(std::istream &is){
+      read(is, *this); // read 的作用是从 is 中读取一条交易信息然后存入 this 对象中
+    }
+    ```
+
+    +   尽管该构造函数的初始值列表是空的, 但是由于执行了构造函数体, 所以对象的成员仍然能被初始化.
+
++   拷贝, 赋值和析构
+
+    +   **除了定义类的对象如何初始化之外, 类还需要控制拷贝, 赋值和销毁对象时发生的行为**
+    +   尽管编译器能替我们合成拷贝, 赋值和销毁的操作, 但是必须要清楚的一点是, 对于某些类来说合成的版本无法正常工作.
+
++   访问控制与封装
+
+    +   使用访问说明符加强类的封装性.
+    +   类没有封装指的是用户可以直达对象的内部并且控制它的具体实现细节.
+    +   class 和 struct 的唯一区别是默认的访问权限不一样.
+    +   出于统一编程风格的考虑, 当我们希望定义的类的所有成员是 public 的时候, 使用 struct; 反之, 使用 class.
+
++   友元
+
+    +   既然 `Sales_data` 的数据成员是 private 的, 那 `read`, `print` 等函数就无法正常编译了, 尽管这几个函数是类的接口的一部分, 但是它们并不是类的成员.
+    +   类可以允许其他类或者函数访问它的非公有成员, 方法是令其他类或者函数成为它的友元.
+    +   如果类想把一个函数作为它的友元, 只需要增加一条以 `friend` 关键字开始的函数声明语句即可.
+    +   **友元声明只能出现在类定义的内部, 但是在类内出现的具体位置不限, 友元不是类的成员也不受它所在区域访问控制级别的约束.**
+    +   另外还要注意: **友元的声明仅仅指定了访问的权限, 而非一个通常意义上的函数声明. 如果我们希望类的用户能够调用某个友元函数, 那么我们就必须在友元声明之外再专门对函数进行一次声明.**
+
++   定义一个类型成员
+
+    +   除了定义数据和函数成员之外, 类还可以自定义某种类型在类中的别名. 由类定义的类型名字和其他成员一样存在访问权限, 可以是 public 或在 private 中的一种. 如书上 243 页的例子:
+
+        ```cpp
+        class Screen{
+         public:
+          // 也开使用类型别名: using pos = std::string::size_type;
+          typedef std::string::size_type pos;
+         private:
+          ...
+        };
+        ```
+
+        注意用来定义类型的成员必须先定义后使用, 这一点与普通成员有所区别 (比如前面的 bookNo 成员, 放在 isbn 函数定义的下方也没关系.) 因此, 类型成员通常出现在类开始的地方.
+
++   令成员作为内联函数
+
+    +   **定义**在类内部的成员函数是自动 inline 的.
+    +   我们可以在类的内部把 inline 作为声明的一部分显式地声明成员函数
+    +   同样地, 也可以在类的外部用 inline 关键字修饰函数的定义. 最好只在类外部定义的地方说明 inline, 这样可以使类更容易理解.
+
++   可以重载成员函数, 只要在参数的数量或类型上有所区别即可.
+
++   **可变数据成员**: (mutable data member)
+
+    +   有时(但并不频繁)我们会希望能修改类的某个数据成员, **即使是在一个 const 成员函数内. 可以通过在变量的声明中加入 mutable 关键字做到这一点.**
+
+    +   一个可变数据成员永远不会是 const, 即使它是 const 对象的成员. 因此, 一个 const 成员函数可以改变一个可变数据成员的值. 比如可以为 Screen 添加一个 `access_ctr` 的可变成员, 通过它我们可以追踪每个 Screen 的成员函数被调用了多少次:
+
+        ```cpp
+        class Screen{
+         
+        public:
+          void some_member() const;  // 即使在一个 const 对象内也能被修改
+        private:
+          mutable size_t access_ctr;
+        };
+
+        void Screen::some_member() const {
+          ++access_ctr; // 保存一个计数值, 用于记录成员函数被调用的次数
+        };
+        ```
+
+        总之, 切记 const 对象也可以改变某些数据成员, 只要使用了 mutable 关键字.
+
++   从 const 函数返回 `*this`
+
+    +   对于 const 成员函数, `this` 将指向一个 const 的指针而 `*this` 是 const 对象. 返回类型应该是 `const Screen&`. 也即是说: **如果一个 const 成员函数以引用的形式返回 *this, 那么它的返回类型将是常量引用.**
+
++   基于 const 的重载
+
+    +   通过区分成员函数是否是 const 的, 我们可以对其进行重载. 因为非常量的函数对于常量对象是不可用的, 所以我们只能在一个常量对象上调用 const 成员函数. 另一方面, 虽然可以在非常量对象上调用常量版本或非常量版本, 但显然此时非常量版本是一个更好的匹配.
+
+    +   书上 246 页 返回 `*this` 的成员函数这一节的例子可以详细地看一下, 写一个 display 函数让非常量对象和常量对象都能使用:
+
+        ```cpp
+        class Screen{
+        public:
+          // 根据对象是否为 const 重载 display 函数
+          Screen &display(std::ostream &os) 
+          			{ do_display(os); return *this; }
+          const Screen &display(std::ostream &os) const
+            		{ do_display(os); return *this; }
+        private:
+          // 该函数负责显示 Screen 的内容
+          void do_display(std::ostream &os) const { os << contents; }
+        };
+        ```
+
+        +   上面的代码可以通过对象是否是 const 的决定调用哪个版本.
+        +   在 248 页书中给出了关于这个例子的建议: **对于公共代码使用私有功能函数**, 从上面代码可以看出, 这里单独的定义了私有的 `do_display` 函数, 原因如下:
+            +   一个基本的愿望是避免在多处使用同样的代码
+            +   我们预期随着类的规模发展, `display` 函数有可能变得更为复杂, 此时, 把相应的操作写在一处而非两处的作用就比较明显了.
+            +   我们很可能在开发过程中给 `do_display` 函数添加某些调试信息, 而这些信息将在代码的最终产品中去掉. 显然, 只在 `do_display` 一处添加或删除这些信息要更容易一些.
+            +   这个额外的函数调用不会增加任何开销, 因为我们在类内部定义了 `do_display`, 所以它隐式地被声明成内联函数. 这样的话, 调用 `do_display` 就不会带来任何额外的运行时开销.
+        +   在实践中, 设计良好的 C++ 代码常常包含大量类似与 `do_display` 的小函数, 通过调用这些函数, 可以完成一组其他函数的 "实际" 工作.
+        +   我的理解是, 此时私有功能相对于 public 来说, 不就是接口了吗.... 而 public 相对与我们用户来说就是接口... 所以道理是一样的...
+
++   类类型
+
+    +   类的声明
+
+        ```cpp
+        class Screen; // 类的声明
+        ```
+
+        +   这种声明有时被称为前向声明, 它向程序中引入了名字 Screen, 此时我们已知 Screen 是一个类类型, 但是不清楚它到底包含哪些成员. (此时 Screen 在定义之前被称为不完全类型)
+
+        +   对于一个类来说, 在我们创建它的对象之前, 该类必须被定义过, 而不能仅仅被声明, 否则, 编译器就无法了解这样的对象需要多少存储空间. **所以一个类的成员类型不能是该类自己** (我们必须完成定义然后编译器才能知道存储该数据成员需要多少存储空间). 然而, 一旦一个类的名字出现后, 它就被认为是声明过的了 (但尚未定义), **因此类允许包含指向它自身类型的引用或指针**.
+
+            ```cpp
+            class Link_screen{
+              Screen window;
+              Link_screen *next;
+              Link_screen *prev;
+            };
+            ```
+
++   友元再探
+
+    +   除了可以把普通的非成员函数声明成友元, 类还可以将其他的类, 其他的类的成员函数定义成友元, 此外友元函数也可以定义在类的内部, 这样的函数是隐式内联的.
+
+    +   友元类
+
+        ```cpp
+        class Screen{
+          // Window_mgr 的成员可以访问 Screen 类的私有成员
+          friend class Window_mgr;
+        };
+        ```
+
+    +   令成员函数作为友元
+
+        ```cpp
+        class Screen{
+          // Window_mgr::clear 必须在 Screen 类之前被声明
+          friend void Window_mgr::clear(ScreenIndex);
+        };
+        ```
+
+        +   当一个成员函数声明为友元时, 我们必须明确指出该成员函数属于哪个类.
+
+    +   要想令某个成员函数作为友元, 我们必须仔细组织程序的结构以满足声明和定义的彼此依赖关系. 在这个例子中, 我们必须按照如下方式设计程序:
+
+        +   首先定义 `Window_mgr` 类, 其中声明 clear 函数, **但是不能定义它**: 在 clear 使用 Screen 的成员之前必须先声明 Screen.
+        +   接下来定义 Screen, 包括对 clear 的友元声明;
+        +   最后定义 clear, 此时它才可以使用 Screen 的成员.
+
+    +   重载函数和友元: 重载函数是不同的函数, 声明友元时要对重载函数进行分别声明.
+
+    +   **友元声明和作用域**
+
+        +   **类和非成员函数的声明不是必须在它们的友元声明之前.**
+
+            +   也就是上面的那个 `Window_mgr` 的例子, 顺序不一定非要那样, 即使先定义 Screen, 并在 Screen 中声明 clear 是友元也是可以的. 原因看下面.
+
+        +   当一个名字第一次出现在一个友元声明中时, 我们隐式假定该名字在当前作用域中是可见的. 然而, 友元本身不一定真的声明在当前作用域中. **甚至就算在类的内部定义该函数, 我们也必类外部提供相应的声明, 从而使得函数可见.** 换句话说, 即使我们仅仅是用声明友元的类的成员调用该友元函数, 它也必须是被声明过的 (详见如下例子):
+
+            ```cpp
+            struct X{
+              friend void f() { /* 友元函数可以定义在类的内部 */ }
+              X() { f(); }  // 错误: f 还没有被声明
+              void g();
+              void h();
+            };
+            void X::g() { return f(); }  // 错误: f 还没有被声明
+            void f();  // 声明那个定义在 X 中的函数
+            void X::h() { return f(); } // 正确: 现在 f 的声明在作用域中了.
+            ```
+
+            +   **关于这段代码最重要的是理解友元声明的作用是影响访问权限, 它本身并非普通意义上的声明.** (比如上面代码中的 `void f();`)
+
+    +   总结: 
+
+        +   首先, 声明和定义是有很大区别的
+        +   其次, 友元的声明和一般意义上的声明不同, 友元的声明只是会影响对类的访问权限, 并非一般意义上的声明.
+        +   另外, 友元函数可以定义在将该函数声明友元的类中, 但是在该函数没有在类外部进行声明之前, 该类的成员函数是无法访问该友元函数的...
+
++   类的作用域
+
+    +   在类的作用域之外, 类类型成员需要使用作用域运算符进行访问, 比如
+
+        ```cpp
+        // pos 在 Screen 中定义为: typedef std::string::size_type pos;
+        Screen::pos ht = 24;
+        ```
+
+    +   作用域和定义在类外部的成员
+
+        +   一个类就是一个作用域, 一旦遇到类名, 定义的剩余部分就在类的作用域之内了, 这里的剩余部分包括参数列表和函数体. 比如 `Window_mgr` 类定义的一种类型:
+
+            ```cpp
+            // ScreenIndex 在 Window_mgr 类中定义为:
+            // using ScreenIndex = std::vector<Screen>::size_type;
+            // screens 在 Window_mgr 中定义为:
+            // std::vector<Screen> screens{Screen(24, 80, ' ')};
+
+            void Window_mgr::clear(ScreenIndex i){
+              Screen &s = screens[i];
+              s.contents = string(s.height * s.width, ' ');
+            }
+            ```
+
+            +   一方面, 编译器在处理参数列表之前就已经明确了我们当前正位于 `Window_mgr` 类的作用域中, 所以就不必再专门说明 ScreenIndex 是在 `Window_mgr` 中定义的类. (screens 也是同样的...)
+
+            +   另一方面, **函数的返回类型通常是出现在函数名之前. 因此当成员函数定义在类的外部时, 返回类型中使用的名字都位于类的作用域之外. 这时, 返回类型必须指明它是哪个类的成员.**
+
+                ```cpp
+                // 例如我们向 Window_mgr 中添加一个 addScreen 函数, 
+                // 它的返回类型是 ScreenIndex, 即新增加的 Screen 的编号
+                class Window_mgr{
+                public:
+                  // 向窗口添加一个 Screen, 返回它的编号
+                  ScreenIndex addScreen(const Screen&);
+                }
+
+                // 首先处理返回类型, 之后我们才进入 Window_mgr 作用域
+                Window_mgr::ScreenIndex
+                Window_mgr::addScreen(const Screen &s){
+                  screens.push_back(s);
+                  return screens.size() - 1;
+                }
+                ```
+
+                +   因为返回类型出现在类名之前, 所以事实上它是位于 `Window_mgr` 类的作用域之外的. 在这种情况下, 要想使用 ScreenIndex 作为返回类型, 我们必须明确指出哪个类型定义了它.
+
++   名字查找与类的作用域
+
+    +   类的定义分为两步:
+
+        +   首先, 编译类的成员
+        +   直到类全部可见后才编译函数体
+
+    +   **编译器处理完类中的全部声明后才会处理成员函数的定义**
+
+        +   因为成员函数体直到整个类可见后才会被处理, 所以它能使用类中定义的任何名字.
+
+    +   用于类成员声明的名字查找
+
+        +   这种两阶段的处理方式只适用于成员函数中使用的名字. 声明中使用的名字, 包括返回类型或者参数列表中使用的名字, 都必须在使用前确保可见. 如果某个成员的声明使用类中尚未出现的名字, 则编译器将会在定义该类的作用域中继续查找. 例如:
+
+            ```cpp
+            typedef double Money;
+            string bal;
+            class Account{
+            public:
+              Money balance() { return bal; }
+            private:
+              Money bal;
+            };
+            ```
+
+            +   当编译器看到 balance 函数声明语句时, 它将会在 Account 类的范围内寻找对 Money 的声明. 编译器只考虑 Account 中在使用 Money 前出现的声明, 因为没有找到匹配的成员, 所以编译器会接着到 Account 的外层作用域中查找. 在这个例子中, 编译器会找到 Money 的 `typedef` 语句, 该类型被用作 balance 函数的返回类型以及数据成员 bal 的类型. 另一方面, balance 函数体在整个类可见后才被处理, 因此, 该函数的 return 语句返回名为 bal 的成员, 而非外层作用域的 string 对象.
+
+    +   **类型名要特殊对待** 
+
+        +   一般来说, 内层作用域可以重新定义外层作用域中的名字, 即使该名字已经在内层作用域中使用过. **然而在类中, 如果成员使用了外层作用域中的某个名字, 而该名字代表一种类型, 则类不能在之后重新定义改名字.**
+
+            ```cpp
+            typedef double Money;
+            class Account{
+            public:
+              Money balance() { return bal; }  // 使用外层作用域的 Money
+            private:
+              typedef double Money;   // 错误: 不能重新定义 Money, 即使和外层作用域一致
+              Money bal;
+            };
+            ```
+
+    +   成员定义中普通块作用域的名字查找
+
+        +   一般来说, 不建议使用其他成员的名字作为某个成员函数的参数, 比如:
+
+            ```cpp
+            // 下面的代码不是好代码
+            int height;
+            class Screen{
+            public:
+              typedef std::string::size_type pos;
+              void dummy_fcn(pos height){
+                cursor = width * height;  // 这个 height 参数到底是函数的参数还是类的成员?
+              }                          // 答案是函数的参数!
+            private:
+              pos cursor = 0;
+              pos height = 0, width = 0;
+            };
+
+            // 建议写成 void Screen::dummy_fcn(pos ht){ cursor = width * height; }
+            ```
+
+            +   当编译器处理 `dummy_fcn` 函数中的乘法表达式时, 它首先在函数作用域内查找表达式中用到的名字, 函数的参数位于函数作用域内, 因此 `dummy_fcn` 函数体用到的名字 `height` 指的是函数的参数.
+
+            +   此例中的 height 隐藏了同名的成员, 如果想要绕开上面的查找规则, 应该将代码变为:
+
+                ```cpp
+                // 不建议的写法: 成员函数中的参数不应该隐藏同名的成员
+                void Screen::dummy_fcn(pos height){
+                  cursor = width * this->height;  // 成员 height
+                  // 另外一种表示该成员的方式
+                  cursor = width * Screen::height; // 成员 height
+                }
+                ```
+
+            +   **尽管类的成员被隐藏了, 但我们仍然可以通过加上类的名字或显式地使用 this 指针来强制访问成员.**
+
+    +   类作用域之后, 在外围的作用域中查找
+
+        +   在上面的例子中, 如果我们要用到外层作用域中的名字, 那么**可以显式地通过作用域运算符来进行请求**:
+
+            ```cpp
+            // 不建议的写法: 不要隐藏外层作用域中可能被用到的名字
+            void Screen::dummy_fcn(pos height){ // 此处的参数 height 将外层的 height 给隐藏了
+              cursor = width * ::height;  // 哪个 height? 是那个全局的
+            }
+            ```
+
+            +   尽管外层的对象被隐藏了, 但我们仍然可以用作用域运算符来访问它.
+            +   **注意外层作用域的写法**
+
+    +   在文件中名字的出现处对其进行解析
+
+        +   当成员定义在类的外部时, 名字查找的第三步不仅要考虑类定义之前的全局作用域中的声明, 还要考虑在成员函数定义之前的全局作用域中的声明.
+
+            ```cpp
+            int height;
+            class Screen{
+            public:
+              typedef std::string::size_type pos;
+              void setHeight(pos);
+              pos height = 0; // 隐藏了外层作用域中的 height
+            };
+            Screen::pos verify(Screen::pos);
+            void Screen::setHeight(pos var) {
+              // var: 参数
+              // height: 类的成员
+              // vierify: 全局函数
+              height = verify(var);
+            }
+            ```
+
+            +   要注意, 全局函数 verify 的声明在 Screen 类的定义之前是不可见的. 然而, 名字查找的第三步包括了成员函数之前的全局作用域. 在此例中, verify 的声明位于 setHeight 的定义之前, 因此可以被正常使用.
+
+    ​
+
+### 习题
+
++   习题 7.10: 在下面这条 if 语句中, 条件部分的作用是什么?
+
+    ```cpp
+    if (read(read(cin, data1), data2))
+    ```
+
+    +   参考答案: 该条件检验读入 data1 和 data2 的过程是否正常.
+    +   确认 data1 和 data2 都被正常的读入了数据.
+
++   习题 7.35: 解释下面代码的含义, 说明其中的 Type 和 initVal 分别使用了哪个定义, 如果代码存在错误, 尝试修改它.
+
+    ```cpp
+    typedef string Type;
+    Type initVal();  // 用到的是 string
+    class Exercise {
+    public:
+      typedef double Type;
+      Type setVal(Type); // 用到的是 double
+      Type initVal(); // 用到的是 double
+    private:
+      int val;
+    };
+
+    // 返回类型用到的是 string
+    Type Exercise::setVal(Type parm) { //函数参数用到的是 double
+      val = parm + initVal(); // initVal 用到的是类中定义的 initVal
+      return val;
+    }
+
+    // 修改, 在类内声明的同名函数形参类型是 double, 返回值类型也是 double,
+    // 二者无法匹配. 修改的措施是在定义 setVal 函数时使用作用域运算符强制
+    // 指定函数的返回值类型.
+    Exercise::Type Exercise::setVal(Type parm) {
+      val = parm + initVal();
+      return val;
+    }
+    ```
+
+
+
 ## 2017 年 8 月 3 日
 
 ### 6.2.6 含有可变形参的函数
@@ -390,8 +925,6 @@
             +   如果知道返回的函数是哪一个, 就能使用 decltype简化书写函数指针返回类型的过程.
             +   **不过需要注意的是, 我们需牢记当我们将 decltype 作用于某个函数时, 它返回的是函数类型而非指针类型.** 因此我们需要显式的加上 `*` 表明我们需要返回指针, 而非函数本身.
 
-
-
 ### 习题
 
 +   习题 6.27: 编写一个函数, 参数是 `initializer_list<T>` 类型的对象, 函数的功能是计算列表中所有元素的和;
@@ -552,10 +1085,6 @@
     ```
 
     ​
-
-    ​
-
-
 
 ## 2017 年 8 月 2 日
 
@@ -1413,10 +1942,6 @@
         ```
 
         ​
-
-    ​
-
-+   ​
 
 ### 习题
 
