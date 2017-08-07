@@ -1,5 +1,29 @@
 # Data Structures and Algorithm Analysis in C
 
+## 2017 年 8 月 7 日
+
+### 最大子序列和的求解
+
++ 第四种方法, 时间复杂度最低, 为 $O(N)$:
+
+  ```cpp
+  int 
+  MaxSubsequenceSum(const int A[], int N) {
+    int ThisSum, MaxSum, j;
+    ThisSum = MaxSum = 0;     /* 1 */
+    for (j = 0; j < N; ++j) { /* 2 */
+      ThisSum += A[j];        /* 3 */
+      if (ThisSum > MaxSum)   /* 4 */
+        MaxSum = ThisSum;     /* 5 */
+      else if (ThisSum < 0)   /* 6 */
+        ThisSum = 0;          /* 7 */
+    }
+    return MaxSum;
+  }
+  ```
+
+  + 作者说为何这个算法是正确的需要读者自己思考, 我的想法如下: 代码中第 7 行起到的作用是将序列最左侧的负数全部给排除了, ThisSum 的增大一定是从一个正数开始的, 比如 `-2, -3, 4, -1, 2...`, ThisSum 第一个非零值一定是 4. 这个时候需要用 MaxSum 将 4 存储下来, 以便用于比较, 然后不断地去
+
 ## 2017 年 8 月 6 日
 
 ### 2.3 要分析的问题 后面的内容
