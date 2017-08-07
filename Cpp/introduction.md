@@ -1,5 +1,736 @@
 # Introduction
 
+## 2017 年 8 月 7 日
+
+### 第 12 章 动态内存
+
++   到目前为止, 我们编写的程序中所使用的对象都有着严格定义的生存期. 全局对象在程序启动时分配, 在程序结束时销毁. 对于局部自动对象, 当我们进入其定义所在的程序块时被创建, 在离开块时销毁; 局部 static 对象在第一次使用前分配, 在程序结束时销毁.
+
+    +   除了自动 (auto) 和 static 对象外, C++ 还支持动态分配对象. 动态分配的对象的生存期与它们在哪里创建是无关的, 只有当显式地被释放时, 这些对象才会销毁.
+    +   动态对象的正确释放被证明是编程中极其容易出错的地方.
+
++   **静态内存**用来保存局部 static 对象, 类 static 数据成员以及定义在任何函数之外的变量. **栈内存** 用来保存定义在函数内的非 static 对象. 分配在静态内存或栈内存的对象由编译器自动创建和销毁. 对于栈对象, 仅在其定义的程序块运行时才存在; static 对象在使用之前分配, 在程序结束时销毁.
+
++   除了静态内存和栈内存, 每个程序还拥有一个内存池. 这部分内存被称作**自由空间**(free store)或者 **堆** (heap). 程序用堆来存储动态分配(dynamiclly allocate)的对象 -- 即那些在程序运行时分配的对象. 动态对象的生存期由程序来控制, 也就是说, 当动态对象不再使用时, 我们的代码必须显式地销毁它们.
+
++   new: 在动态内存中为对象分配空间并返回一个指向该对象的指针, 我们可以选择对对象进行初始化;
+
++   delete: 接受一个动态对象的指针, 销毁该对象, 并释放与之相关联的内存.
+
++   新标准库提供了两种**智能指针**类型来管理动态对象, 行为类似于常规指针, 但是它负责自动释放所指向的对象. (智能指针也是模板)
+
+    +   下面这三种类型都定义在 `#include <memory>` 头文件中
+    +   `shared_ptr`: 允许多个指针指向同一个对象
+    +   `unique_ptr`: 则 "独占" 所指向的对象
+    +   `weak_ptr`: 伴随类, 它是一种弱引用, 指向 `share_ptr` 所管理的对象.
+
++   `shared_ptr` 类
+
+    ```cpp
+    // 创建智能指针
+    shared_ptr<string> p1;
+    shared_ptr<list<int>> p2;
+    ```
+
+    +   默认初始化的智能指针中保存着一个空指针, 解引用一个智能指针返回它所指的对象, 如果在条件判断中使用智能指针, 效果就是判断它是否为空:
+
+        ```cpp
+        // 如果 p1 不为空, 检查它是否指向一个空 string
+        if (p1 && p1->empty())
+          *p1 = "hi"; // 如果 p1 指向一个空 string, 解引用 p1, 赋值
+        ```
+
++   `shared_ptr` 和 `unique_ptr` 都支持的操作:
+
+    ```cpp
+    shared_ptr<T> sp  // 空智能指针, 可以指向类型为 T 的对象
+    unique_ptr<T> up
+    p    // 将 p 用作一个条件判断, 若 p 指向一个对象, 则为 true
+    *p   // 解引用 *p, 获得它所指的对象
+    p->mem  // 等价于 (*p).mem
+    p.get()  // 返回 p 中保存的指针, 要小心使用, 若智能指针释放了其对象, 返回的指针所指向的对象也消失了
+    swap(p, q)  // 交换 p 和 q 中的指针
+    p.swap(q)
+    ```
+
++   `shared_ptr` 独有的操作
+
+    ```cpp
+    make_shared<T>(args) // 返回一个 shared_ptr, 指向一个动态分配的类型为 T 的对象, 
+                         // 使用 args 初始化此对象.
+    shared_ptr<T> p(q)   // p 是 shared_ptr q 的拷贝; 此操作会递增 q 中的计数器, 
+                         // q 中的指针必须能转换为 T*
+    p = q    // p 和 q 都是 shared_ptr, 所保存的指针必须能相互转换. 此操作会递减 p 
+             // 中的引用计数, 递增 q 中的引用计数; 若 p 的引用计数变为 0, 
+             // 则将其管理的原内存释放.
+    p.unique()  // 若 p.use_count() 为 1, 返回 true; 否则返回 false
+    p.use_count()  // 返回与 p 共享对象的智能指针数量; 可能很慢, 主要用于调试.
+    ```
+
++   `make_shared` 函数
+
+    +   最安全的分配和使用动态内存的方法是调用一个名为 `make_shared` 的标准库函数, 次函数在动态内存中分配一个对象并初始化它, 返回指向此对象的 `shared_ptr`. `make_shared` 用其参数来构造给定类型的对象.
+
++   `shared_ptr` 的拷贝和赋值
+
+    +   当进行拷贝或赋值操作时, 每个 `shared_ptr` 都会记录有多少个其他 `shared_ptr` 指向相同的对象. 每个 `share_ptr` 都有一个引用计数(reference count). 无论何时我们拷贝一个 `share_ptr`, 计数器都会递增. 一旦一个 `shared_ptr` 的计数器变为 0, 它就会自动释放自己所管理的对象.
+
+        ```cpp
+        auto r = make_shared<int>(42);  // r 指向的 int 只有一个引用者
+        r = q; // 给 r 赋值, 令它指向另一个地址, 递增 q 指向的对象的引用计数
+               // 递减 r 原来指向的对象的引用计数, r 原来指向的对象已没有引用者, 会自动释放
+        ```
+
+    +   写了个简单的程序感受一下:
+
+        ```cpp
+        #include <iostream>
+        #include <string>
+        #include <vector>
+        #include <memory>
+
+        using namespace std;
+
+        int main(int argc, const char *argv[]) {
+
+            auto r = make_shared<vector<int>>();
+            auto b = make_shared<int>(42);
+
+            for (int i = 0; i < 5; ++i)
+                r->push_back(i);
+
+            for (const auto &i : *r)
+                cout << i << " ";
+            cout << endl;
+            return 0;
+        }
+
+        // 注意到两个问题:
+        // 1. *r 表示的是 vector<int>, 另外在初始化 r 时, 使用
+        // make_shared<vector<int>>({42}) 会报错
+        // 2. 这里定义了 b, 但是编译时编译器没有提示 b 定义了但没使用..
+        ```
+
++   `shared_ptr` 自动销毁所管理的对象...
+
+    +   当指向一个对象的最后一个 `shared_ptr` 被销毁时, `shared_ptr` 类会自动销毁此对象. 它是通过另一个特殊的成员函数 -- 析构函数 (destructor) 完成销毁工作的.
+    +   如果你将 `shared_ptr` 存放于一个容器中, 而后不再需要全部元素, 而只使用其中一部分, 要记得用 erase 删除不在需要的那些元素.
+
++   **使用动态生存期的资源的类**: 程序使用动态内存出于以下三种原因之一:
+
+    1.  程序不知道自己需要使用多少对象
+    2.  程序不知道所需对象的准确类型
+    3.  程序需要在多个对象间共享数据
+
+    +   容器类是出于第一种原因而使用动态内存的典型例子.
+    +   第二种原因的例子将在 15 章看到.
+    +   第三种原因的例子:
+
+    ```cpp
+    // 到目前为止, 我们接触到的类中, 分配的资源都与对应对象生存期一致
+    // 比如, 每个 vector 都 "拥有" 自己的元素, 当我们拷贝一个 vector 时,
+    // 原 vector 和副本 vector 中的元素是相互分离的
+    vector<string> v1; 
+    { // 新作用域
+      vector<string> v2 = {"a", "b", "c"};
+      v1 = v2; // 从 v2 中拷贝元素到 v1 中
+    } // v2 被销毁, 其中的元素也被销毁
+      // 而 v1 中有三个元素, 是原来 v2 中元素的拷贝
+    ```
+
+    但是某些类分配的资源具有与原对象相独立的生存期. 一般而言, 如果两个对象共享底层的数据, 当某个对象被销毁时, 我们不能单方面地销毁底层数据:
+
+    ```cpp
+    // 假定我们希望定义一个 Blob 类, 保存一组元素, 与容器不同, 我们希望
+    // Blob 对象的不同拷贝之间共享相同的元素.
+    Blob<string> b1;
+    {
+      Blob<string> b2 = {"a", "b", "c"};
+      b1 = b2;
+    } // b2 被销毁了, 但是 b2 中的元素不能销毁
+     // b1 指向最初由 b2 创建的元素
+    ```
+
+    +   **使用动态内存的一个常见原因是允许多个对象共享相同的状态**
+
++   定义 StrBlob 类: 使用动态内存来管理 `vector<string>`.
+
+    ```cpp
+    #include <iostream>
+    #include <string>
+    #include <vector>
+    #include <memory>  // 提供智能指针
+    #include <initializer_list>
+
+    using namespace std;
+
+    class StrBlob {
+    public:
+        typedef vector<string>::size_type size_type;
+        StrBlob();
+        StrBlob(initializer_list<string> il);
+        size_type size()  const { return data->size();  }
+        bool empty() const { return data->empty(); }
+        void push_back(const string &s) { data->push_back(s); }
+        void pop_back();
+        string& front();
+        string& back();
+    private:
+        shared_ptr<vector<string>> data;
+        void check(size_type i, const string &msg) const;
+    };
+
+    StrBlob::StrBlob() : data(make_shared<vector<string>>()) {}
+    StrBlob::StrBlob(initializer_list<string> il) :
+        data(make_shared<vector<string>>(il)) {}
+
+    void StrBlob::check(size_type i, const string &msg) const  {
+        if (i >= data->size())
+            throw out_of_range(msg);
+    }
+
+    string& StrBlob::front() {
+        check(0, "front on empty StrBlob");
+        return data->front();
+    }
+
+    string& StrBlob::back() {
+        check(0, "back on empty StrBlob");
+        return data->back();
+    }
+
+    void StrBlob::pop_back() {
+        check(0, "pop_back on empty StrBlob");
+        data->pop_back();
+    }
+
+    int main(int argc, const char *argv[]) {
+
+        StrBlob b1;
+        {
+            StrBlob b2 = {"a", "b", "c"};
+            b1 = b2;
+            b2.push_back("about");
+            cout << b2.size() << endl;
+        }
+        cout << b1.size() << endl;
+        cout << b1.front() << " " << b1.back() << endl;
+
+        return 0;
+    }
+
+    // 运行结果是
+    4
+    4
+    a about
+    ```
+
+    +   注意 `StrBlob` 类使用默认版本的拷贝, 赋值和销毁成员函数来对此类型的对象进行这些操作. 我们的 StrBlob 类只有一个数据成员, 它是 `shared_ptr` 类型, 因此, 当我们拷贝, 赋值或销毁一个 StrBlob 对象时, 它的 `shared_ptr` 成员会被拷贝, 赋值或者销毁.
+
++   直接管理内存
+
+    +   `new` 分配内存, `delete` 释放 `new` 分配的内存.
+
+    +   使用 new 动态分配和初始化对象
+
+        +   在自由空间分配的内存是无名的, 因此 new 无法为其分配的对象命名, 而是返回一个指向对象的指针:
+
+            ```cpp
+            int *pi = new int; // pi 指向一个动态分配的, 未初始化的无名对象
+            // 此处 new 表达式在自由空间构造一个 int 型对象, 并返回
+            // 指向该对象的指针, 动态分配的对象是默认初始化的, 这意味着内置类型
+            // 或组合类型的对象是未定义的, 而类类型对象将用默认构造函数进行初始化
+
+            string *ps = new string;
+            int *pi = new int; // 指向一个未初始化的 int
+
+            // 直接初始化
+            int *pi = new int(1024);
+            string *ps = new string(10, '9'); // *ps 为 "9999999999"
+            vector<int> *pv = new vector<int>{1, 2, 4};
+
+            // 值初始化, 只需在类型名后面加上一对空括号即可
+            string *ps1 = new string();
+            int *pi = new int;  // 默认初始化, 值是未定义的.
+            int *pi = new int();  // 值初始化为 0
+            ```
+
+    +   动态分配的 const 对象
+
+        ```cpp
+        const int *pi = new const int(1024);
+        // 分配并默认初始化一个 const 的空 string
+        const string *ps = new const string;
+        ```
+
+        +   由于分配的对象是 const 的, new 返回的指针是一个指向 const 的指针.
+
+    +   内存耗尽
+
+        +   一旦一个程序用光了它所有可用的内存, new 表达式就会失败. 默认情况下, 如果 new 不能分配所要求的内存空间, 它会抛出一个 `bad_alloc` 的异常.
+
+        +   我们可以改变使用 new 的方式来阻止它抛出异常:
+
+            ```cpp
+            int *p1 = new int; // 如果分配失败, new 抛出 std::bad_alloc
+            int *p2 = new (nothrow) int; // 如果分配失败, new 返回一个空指针
+            ```
+
+            +   这种形式的 new 称为定位 new (placement new). 如果这种形式的 new 不能分配所需的内存, 它会返回一个空指针.
+
+        +   `bad_alloc` 和 `nothrow` 都定义在 `#include <new>` 中.
+
+        +   为了防止内存耗尽, 应使用 `delete` 将动态内存归还给系统. delete 接受一个指针, 指向我们想要释放的对象.
+
+    +   指针值和 delete 
+
+        +   传递给 delete 的指针必须是指向动态分配的内存, 或者是一个空指针; 释放一块并非 new 分配的内存, 或者将相同的指针值释放多次, 其行为是未定义的.
+        +   **通常情况下, 编译器不能分辨一个指针指向的是静态的还是动态分配的对象; 类似的, 编译器也不能分辨一个指针所指向的内存是否已经被释放了.** 对于这些 delete 表达式, 大多数编译器会编译通过, 尽管它们是错误的.
+        +   对于 const 动态对象, 它本身是可以销毁的, 只要用 delete 指向它的指针即可.
+
+    +   返回指向动态内存的指针 (而不是智能指针) 的函数给其调用者增加了一个额外负担 -- 调用者必须记得释放内存.
+
+        ```cpp
+        // factory 返回一个指针, 指向一个动态分配的对象
+        Foo* factory(T arg) {
+          return new Foo(arg); // 调用者负责释放此内存
+        }
+
+        void use_factory(T arg) {
+          Foo *p = factory(arg);
+          // 使用 p 但不 delete 它
+        } // p 离开了它的作用域, 但它所指向的内存没有被释放!
+        ```
+
+    +   **最好是使用智能指针**, 可以避免以下使用 new 和 delete 管理动态内存常见的错误:
+
+        +   忘记 delete 内存: 忘记释放动态内存会导致人们常说的 "内存泄露" 问题. 因为这种内存永远不可能被归还给自由空间. 查找内存泄露错误是非常困难的, 因为通常应用程序运行很长时间后, 真正耗尽内存时, 才能检测到这种错误.
+        +   使用已经释放掉的对象: 通过在释放内存后将指针置为空, 有时可以检测出这种错误
+        +   同一块内存释放两次: 当两个指针指向相同的动态分配对象时, 可能发生这种错误. 如果对其中一个指针进行了 delete 操作, 对象的内存就被归还给自由空间了. 如果我们随后又 delete 第二个指针, 自由空间就可能被破坏.
+
+    +   delete 之后重置指针, 避免空悬指针 (dangling pointer), 可以在 delete 之后将 nullptr 赋值给指针.
+
++   `shared_ptr` 和 new 结合使用
+
+    +   前面说过, 如果我们不初始化一个智能指针, 它就会被初始化为一个空指针. 我们还可以用 new 返回的指针来初始化智能指针: (注意必须使用直接初始化)
+
+        ```cpp
+        shared_ptr<int> p1(new int(42)); // 直接初始化
+        shared_ptr<int> p1 = new int(42); // 错误: 接受指针参数的智能指针构造函数是 explicit 
+        ```
+
+    +   默认情况下, 一个用来初始化智能指针的普通指针必须指向动态内存, 因为智能指针默认使用 delete 释放它所关联的对象. 我们可以将智能指针绑定到一个指向其他类型的资源的指针上, 但是这样做, 必须提供自己的操作来替代 delete.
+
+    +   定义和改变 `shared_ptr` 的其他方法: (412 页)
+
+        ```cpp
+        shared_ptr<T> p(q) 
+        shared_ptr<T> p(u) 
+        shared_ptr<T> p(q, d) 
+        shared_ptr<T> p(p2, d) 
+        p.reset()
+        p.reset(q)
+        p.reset(q, d)
+        ```
+
+    +   不要混合使用普通指针和智能指针
+
+    +   也不要使用 get 初始化另一个智能指针或为智能指针赋值
+
+        智能指针类型定义了一个名为 `get` 的函数, 它返回一个内置指针, 指向智能指针管理的对象. 此函数是为了这样一种情况而设计的: 我们需要向不能使用智能指针的代码传递一个内置指针. 使用 get 返回的指针的代码不能 delete 此指针. 虽然编译器不会给出错误信息, 但将另一个智能指针也绑定到 get 返回的指针上是错误的:
+
+        ```cpp
+        shared_ptr<int> p(new int(42)); // 引用计数为 1
+        int *q = p.get(); // 正确, 但使用 q 时要主要不要让它管理的指针被释放
+        {
+          // 未定义: 此时有两个独立的 shared_ptr 指向相同的内存
+          shared_ptr<int>(q);
+        }// 程序块结束, q 被销毁, 它指向的内存被释放
+        int foo = *p; // 未定义: p 指向的内存已经被释放了
+        ```
+
+        在本例中, p 和 q 指向相同的内存. 由于它们是相互独立创建的, 因此各自的引用计数都是 1. 当 q 所在的程序块结束时, q 被销毁, 这会导致 q 指向的内存被释放. 从而 p 变成一个空悬指针, 意味着当我们试图使用 p 时, 将会发生未定义的行为. 而且, 当 p 被销毁时, 这块内存会被第二次 delete.
+
+        +   **因此, get 是用来将指针的访问权限传递给代码, 你只有在确定代码不会 delete 指针的情况下, 才能使用 get. 特别是, 永远不要用 get 初始化另一个智能指针或者为另一个智能指针赋值.**
+
+    +   其他 `shared_ptr` 操作: 我们可以用 reset 来将一个新的指针赋予给一个 `shared_ptr`:
+
+        ```cpp
+        p = new int(1024); // 错误: 不能将一个指针赋予 shared_ptr
+        p.reset(new int(1024)); // 正确: p 指向一个新的对象
+        ```
+
+        ​
+
+### 习题
+
++   习题 12.6: 编写函数, 返回一个动态分配的 int 的 vector, 将此 vector 传递给另一个函数, 这个函数读取标准输入, 将读入的值保存在 vector 的元素中. 再将 vector 传递给另一个函数, 打印读入的值. 记得在恰当的时刻 delete vector.
+
+    ```cpp
+    #include <iostream>
+    #include <string>
+    #include <vector>
+    #include <memory>
+    #include <initializer_list>
+
+    using namespace std;
+
+    vector<int>* returnVec() {   // 返回动态分配对象
+        return new vector<int>;
+    }
+
+    /* 参考答案给出的
+    vector<int>* returnVec() {   // 返回动态分配对象
+        return new (nothrow) vector<int>;
+    }
+
+    之后在 main 函数中还有条件判断
+    vector<int> *p = returnVec();
+    if (!p) {
+      cout << "out of memory!" << endl;
+      return -1;
+    }
+
+    */
+
+    istream& read(istream &is, vector<int> *vec) { // 从标准输入中读取数据到 vec 中
+        int item;
+        while (is >> item)
+            vec->push_back(item);
+        return is;
+    }
+
+    void print(const vector<int> *vec) {  // 打印出 vec 中的值
+        cout << "Now, print your elements" << endl;
+        for (const auto &i : *vec)
+            cout << i << " ";
+        cout << endl;
+    }
+
+    int main(int argc, const char *argv[]) {
+        vector<int> *p = returnVec();
+        read(cin, p);
+        print(p);
+
+        delete p;  // delete 动态分配对象
+      	p = nullptr;
+        return 0;
+    }
+
+    // g++ -Wall -std=c++0x -o main main.cpp
+    // ./main
+    // 输入: 12 21 22<Enter>
+    // <Enter> 按完之后在按 Ctrl + D
+    // 得到输出
+    ```
+
++   习题 12.7: 重做上一题, 这次使用 `shared_ptr` 而不是内置指针.
+
+    ```cpp
+    #include <iostream>
+    #include <string>
+    #include <vector>
+    #include <memory>
+    #include <initializer_list>
+
+    using namespace std;
+
+    shared_ptr<vector<int>> returnVec() {
+
+        return make_shared<vector<int>>();
+    }
+
+    istream& read(istream &is, shared_ptr<vector<int>> vec) {
+        int item;
+        while (is >> item)
+            vec->push_back(item);
+        return is;
+    }
+
+    void print(const shared_ptr<vector<int>> vec) {
+        cout << "Now, print your elements" << endl;
+        for (const auto &i : *vec)
+            cout << i << " ";
+        cout << endl;
+    }
+
+
+    int main(int argc, const char *argv[]) {
+        shared_ptr<vector<int>> p = returnVec(); // 可以使用 auto
+        read(cin, p);
+        print(p);
+
+        return 0;
+    }
+    ```
+
++   习题 12.10: 下面的代码调用了第 413 页中定义的 process 函数, 解释此调用是否正确. 如果不正确, 应该如何修改?
+
+    ```cpp
+    // 413 页定义的 process 函数是
+    void process(shared_ptr<int> ptr) {
+      // 使用 ptr
+    } // ptr 离开作用域, 被销毁
+
+    // 此题中的代码
+    shared_ptr<int> p(new int(42));
+    process(shared_ptr<int>(p));
+    ```
+
+    +   此调用是正确的,  利用 p 创建了一个临时的 `shared_ptr` 赋予 process 的参数 ptr, p 和 ptr 都指向相同的 int 对象, 引用计数被正确的置为 2, process 函数执行完毕后, ptr 被销毁, 引用计数减 1, 这是正确的, 只有 p 指向它.
+
++   习题 12.11: 如果我们像下面这样调用 process, 会发生什么?
+
+    ```cpp
+    process(shared_ptr<int>(p.get()));
+    ```
+
+    +   此调用是错误的. `p.get()` 获得一个普通指针, 指向 p 所共享的 int 对象. 利用此指针创建一个 `shared_ptr`, 而不是利用 p 创建一个 `shared_ptr`, 将不会形成正确的动态对象共享. 编译器会认为 p 和 ptr 是使用两个地址 (虽然它们相等) 创建的两个不相干的 `shared_ptr`, 而非共享同一个动态对象. 这样, 两者的引用创建的两个不相干的 `shared_ptr`, 而非共享同一个动态对象. 这样, 两者的引用计数均为 1. 当 process 执行完毕后, ptr 的引用计数减为 0, 所管理的内存地址被释放, 而此内存就是 p 所管理的. p 成为一个管理空悬指针的 `shared_ptr`.
+
+    ​
+
+### 第 9 章 顺序容器 (sequential container)
+
++   一个容器就是一些特定类型对象的集合. 顺序容器为程序员提供了控制元素存储和访问顺序的能力. 
+
++   下面是标准库中的顺序容器, 所有的顺序容器都提供了快速顺序访问元素的能力, 但是这些容器在一下方面都有不同的性能折中:
+
+    +   向容器中添加或从容器中删除元素的代价
+    +   非顺序访问容器中的元素的代价
+
+    ```cpp
+    vector   // 可变大小数组, 支持快速随机访问, 在尾部之外的位置插入元素或删除元素可能很慢
+    deque  // 双端队列, 支持快速随机访问, 在头尾位置插入/删除速度很快
+    list   // 双向链表, 只支持双向顺序访问, 在 list 中任何位置进行插入/删除操作速度都很快
+    forward_list // 单向链表, 只支持单向顺序访问, 在链表任何位置进行插入/删除操作速度都很快
+    array // 固定大小数组, 支持快随随机访问, 不能添加或删除元素
+    string // 与 vector 相似, 但专门用于保存字符. 随机访问快, 在尾部插入/删除速度快
+    ```
+
+    +   `forward_list` 和 `array` 是 C++11 标准增加的类型. 与内置数组相比, array 是一种更安全, 更容易使用的数组类型.
+
++   容器库概览
+
+    +   一般来说, 容器库都定义在一个头文件总, 文件名和类型名相同. 比如 `#include <deque>`, `#include <list>`, 依次类推. 容器均定义为模板类, 我们必须提供额外的信息来生成特定的容器类型.
+
++   容器操作
+
+    ```cpp
+    // 类型别名
+    iterator        // 容器的迭代器类型
+    const_iterator  // 只可以读取元素的迭代器类型
+    size_type       // 无符号整数类型, 足够保存此种容器类型最大可能容器的大小
+    difference_type // 带符号整数类型, 足够保存两个迭代器之间的距离
+    value_type      // 元素类型
+    reference       // 元素的左值类型, 与 value_type& 含义相同
+    const_reference // 元素的 const 左值类型, 
+
+    // 构造函数
+    C c;   // 默认构造函数, 构造空容器
+    C c1(c2); // 构造 c2 拷贝 c1
+    C c(b, e); // 构造 c, 将迭代器 b 和 e 指定范围内的元素拷贝到 c (array 不支持)
+    C c{a, b, c...}; // 列表初始化 c
+
+    // 赋值与 swap
+    c1 = c2   // 将 c1 中的元素替换为 c2 中的元素
+    c1 = {a, b, c...} // 将 c1 中的元素替换为列表中的元素 (不适用于 array)
+    a.swap(b)  // 交换 a 和 b 的元素
+    swap(a, b) // 与 a.swap(b) 等价
+
+    // 大小
+    c.size()  // c 中的元素的数目 (不支持 forward_list)
+    c.max_size() // c 可保存的最大元素数目
+    c.empty() // 若 c 中存储了元素, 返回 false, 否则返回 true
+
+    // 添加/删除元素 (不支持 array)
+    // 注: 在不同的容器中, 这些操作的接口都不同
+    c.insert(args)  // 将 args 中的元素拷贝进 c
+    c.emplace(inits) // 使用 inits 构造 c 中的一个元素
+    c.erase(args) // 删除 args 指定的元素
+    c.clear() // 删除 c 中的所有元素, 返回 void
+
+    // 关系运算符
+    ==, !=       // 所有容器都支持相等(不等) 运算符
+    <, <=, >, >=  // 关系运算符, (无序容器不支持)
+
+    // 获取迭代器
+    c.begin(), c.end()  // 返回指向 c 的首元素和尾元素之后位置的迭代器
+    c.cbegin(), c.cend() // 返回 const_iterator
+
+    // 关联容器的额外成员(不支持 forward_list)
+    reverse_iterator   // 按逆序寻址元素的迭代器
+    const_reverse_iterator // 不能修改元素的逆序迭代器
+    c.rbegin(), c.rend() // 返回指向 c 的尾元素和首元素之前位置的迭代器
+    c.crbegin(), c.crend() // 返回 const_reverse_iterator
+    ```
+
++   迭代器
+
+    +   一个迭代器范围 (iterator range) 由一对迭代器表示, 两个迭代器分别指向同一个容器中的元素或者尾元素之后的位置 (one past the last element).
+    +   左闭合区间 (left-inclusive interval), 其标准的数学描述为 `[begin, end)`.
+
++   **使用左闭合范围蕴含的编程假定**: 标准库使用左闭合范围是因为这种范围有 3 种方便的性质, 假定 begin 和 end 构成一个合法的迭代器范围, 则:
+
+    +   如果 begin 和 end 相等, 则范围为空
+    +   如果 begin 与 end 不等, 则范围至少包含一个元素, 且 begin 指向该范围中的第一个元素
+    +   我们可以对 begin 递增若干次, 使得 `begin == end`
+
++   容器类型成员
+
+    +   迭代器类型, 还包括反向迭代器, 此时 `++` 表示指向上一个元素
+    +   类型别名: **通过类型别名, 我们可以在不了解容器中元素类型的情况下使用它.** 如果需要元素的类型, 可以使用容器的 `value_type`; 如果需要元素类型的一个引用, 可以使用 `reference` 或 `const_reference`. 这些元素相关的类型别名在泛型编程中非常有用.
+    +   begin 和 end 成员
+
+
+
+### 习题
+
++   习题 9.6: 下面程序有何错误, 应该如何修改它?
+
+    ```cpp
+    list<int> lst1;
+    list<int>::iterator iter1 = lst1.begin(), iter2 = lst1.end();
+    while (iter1 < iter2) /* ... */
+    ```
+
+    +   与 vector 和 deque 不同, list 的迭代器不支持 `<` 运算, 只支持递增, 递减, `==` 与 `!=` 运算.
+    +   原因在于这几种数据结构实现上的不同, vector 和 deque 将元素在内存中连续保存, 而 list 则是将元素以链表的方式存储, 因此前者可以方便地实现迭代器的大小比较 (类似指针的大小比较) 来体现元素的前后关系. 而在 list 中, 两个指针的大小关系与它们指向的元素的前后关系并不一定是吻合的, 因此 `<` 运算将会非常困难和低效.
+
+
+
+
+
+### 8.3 string 流
+
++    `#include <sstream>` 头文件中定义了 3 个类型来支持内存 IO, 这些类型可以向 string 写入数据, 从 string 读取数据, 就像 string 是一个 IO 流一样.
+
++   当我们的某些工作是对整行文本进行处理, 而另外一些工作是处理行内的单个单词时, 通常可以使用 `istringstream`: (书上 288 页写了个读取电话本的例子, 下面是我自己写的)
+
+    ```cpp
+    // 这是程序是在前一天的笔记中读取文本的程序进行修改的
+    #include <iostream>
+    #include <fstream>
+    #include <sstream>
+    #include <string>
+    #include <vector>
+
+    using namespace std;
+
+    int main(int argc, const char *argv[]) {
+        vector<string> svec;
+        string line, str;
+        if (argc > 1) {
+            ifstream in(argv[1]);
+            while (getline(in, line)) {  // 从文本中读取每一行
+                istringstream record(line); // 使用 istringstream 来处理一行文本中的各个单词
+                while (record >> str) {  // 将每一行中的各个单词分别存入 str 中
+                    svec.push_back(str);
+                }
+            }
+        } else {
+            cout << "You forgot file name!" << endl;
+        }
+
+        for (auto &s : svec)
+            cout << s <<  "...." << endl;
+
+        return 0;
+    }
+
+    // g++ -Wall -std=c++0x -o main main.cpp 
+    // ./main main.cpp
+    ```
+
+    +   `sstream strm(s);` strm 是一个 stream 对象, 保存 string s 的一个拷贝, 此构造函数是 explicit 的.
+    +   `strm.str()` 返回 strm 所保存的 string 的拷贝
+    +   `strm.str(s)` 将 string s 拷贝到 strm 中, 返回 void.
+
++   使用 ostringstream
+
+    +   在我们逐步构造输出, 希望最后一起打印时, ostringstream 是很有用的.
+
+    +   结合下面的习题 8.11 来学习 ostringstream:
+
+        ```cpp
+        // 这里给出的书上 289 页的例子
+        for (const auto &entry : people) {
+          // formatted, badNums 分别用于记录正确的电话号码(已经格式化的)
+          // 以及错误的电话号码
+          ostringstream formatted, badNums; // 每个循环时创建流对象
+          for (const auto &nums : entry.phones) { // 对每个数
+            if (!valid(nums)) {
+              badNums << " " << nums;  // 将数的字符串形式存入 badNums
+        	} else 
+              formatted << " " << format(nums);
+          }
+          if (badNums.str().empty()) // .str() 返回的是一个字符串
+            os << entry.name << " "  // 打印名字
+            	<< formatted.str() << endl;  // 和格式化的数
+          else // 否则, 打印名字和错误的数字的错误信息
+            cerr << "input error: " << entry.name
+            		<< " invalid number(s) " << badNums.str() << endl;
+        }
+        ```
+
+        +   在此程序中我们假定已有两个函数 valid 和 format. 对于字符串流, 我们使用标准输出运算符 (<<) 向这些对象写入数据, 但这些 "写入" 操作实际上转换为 string 操作, 分别向 formatted 和 badNums 中的 string 对象添加字符.
+
+        +   习题 8.14: 我们为什么将 entry 和 nums 定义为 `const auto&`?
+
+            +   使用 const 表明在循环中不会改变这些项的值, 使用 auto 是请求编译器依据 vector 元素类型来推断出 entry 和 nums 的类型, 既简化了代码又避免了出错; 使用引用的原因是, people 和 phones 的元素分别是结构对象和字符串对象, 使用引用可以避免对象拷贝.
+
+            ​
+
+### 习题
+
++   习题 8.11: 本节的程序在外层 while 循环中定义了 istringstream 对象, 如果 record 对象定义在循环之外, 你需要对程序进行怎样的修改?
+
+    +   **主要注意一点, 重复使用字符串流的时候, 每次都要调用 clear 方法来将流复位**.
+
+    ```cpp
+    // 原程序
+    struct PersonInfo {
+      string name;
+      vector<string> phones;
+    };
+    string line, word;
+    vector<PersonInfo> people;
+    while(cin >> line) {
+      PersonInfo info;
+      istringstream record(line);
+      record >> info.name;  // 读取名字
+      while (record >> word) // 读取电话号码
+        phones.push_back(word);
+      people.push_back(info);  // 将此记录追加到 people 末尾
+    }
+
+
+    // 本题修改
+    struct PersonInfo {
+      string name;
+      vector<string> phones;
+    };
+    string line, word;
+    vector<PersonInfo> people;
+    istringstream record; // 如果 istringstream 对象被移到了循环外面
+    while(cin >> line) {
+      PersonInfo info;
+      record.clear(); // 重复使用字符串流的时候, 每次都要调用 clear
+      record.str(line); // 通过 str 方法读取 line
+      record >> info.name; 
+      while (record >> word)
+        phones.push_back(word);
+      people.push_back(info); 
+    }
+    ```
+
++   习题 8.12: 为什么我们没有在 PersonInfo 中使用类内初始化?
+
+    +   由于每个人的电话号码数量不固定, 因此更好的办法不是通过类内初始化指定人名和所有电话号码, 而是在缺省初始化之后, 在程序中设置人名并逐个添加电话号码.
+
+
+
+
+
 ##  2017 年 8 月 6 日
 
 ### 8.1 IO 类
