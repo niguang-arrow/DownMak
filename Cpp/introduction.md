@@ -1,5 +1,343 @@
 # Introduction
 
+## 2017 年 8 月 9 日
+
+### 13.6 对象移动
+
++   在很多情况下都会发生对象拷贝. 在其中某些情况下, 对象拷贝后就立即被销毁了. 在这些情况下, 移动而非拷贝对象会大幅度提升性能.
+
++   在重新分配内存的过程中, 从旧内存将元素拷贝到新内存是不必要的, 更好的方式是移动元素. 使用移动而不是拷贝的另一个原因源于 IO 类或 `unique_ptr` 这样的类. 这些类都包含不能被共享的资源 (如指针或 IO 缓冲). 因此, 这些类型的对象不能被拷贝但可以移动.
+
++   标准库容器, string 和 `shared_ptr` 类既支持移动也支持拷贝. IO 类和 `unique_ptr` 类可以移动但不能拷贝.
+
++   右值引用
+
+    +   为了支持移动操作, 新标准引入了一种新的引用类型 -- 右值引用 (rvalue Reference). 所谓右值引用就是必须绑定到右值的引用. 我们通过 `&&` 而不是 `&` 来获得右值引用. **右值引用有一个重要的性质 -- 只能绑定到一个将要销毁的对象.** 因此, 我们可以自由地将一个右值引用的资源 "移动" 到另一个对象中.
+
+    +   一般而言, 一个左值表达式表示的是一个对象的身份, 而一个右值表达式表示的是对象的值.
+
+    +   我们不能将左值引用绑定到要求转换的表达式, 字面值常量或是返回右值的表达式. 右值引用有着完全相反的绑定特性: 我们可以将一个右值引用绑定到这类表达式上, 但不能将一个右值引用直接绑定到一个左值上.
+
+        ```cpp
+        int i = 42;
+        int &r = i; // 正确, r 引用 i
+        int &&rr = i;  // 错误: 不能将一个右值引用绑定到一个左值上
+        int &r2 = i * 42; // 错误: i*42 是一个右值
+        const int &r3 = i * 42; // 正确: 我们可以将一个 const 的引用绑定到一个右值上
+        int &&rr2 = i * 42; // 正确: 将 rr2 绑定到乘法结果上.
+        ```
+
+        +   返回左值表达式的例子: 返回左值引用的函数, 连同赋值, 下标, 解引用和**前置递增/递减运算符** 
+        +   返回右值表达式的例子: 返回非引用类型的函数, 连同算术, 关系, 位以及**后置递增/递减运算符**
+
++   左值持久, 右值短暂: 由于右值引用只能绑定到临时对象, 我们得知
+
+    1.  所引用的对象将要被销毁
+    2.  该对象没有其他用户
+
+    这两个特性意味着: 使用右值引用的代码可以自由地接管所引用的对象的资源.
+
++   变量是左值: 
+
+    +   变量可以看作只有一个运算对象而没有运算符的表达式. 
+
+    +   **由于变量表达式都是左值, 因此我们不能将一个右值引用绑定到一个右值引用类型的变量上:**
+
+        ```cpp
+        int &&rr1 = 42; // 正确: 字面常量是右值
+        int &&rr2 = rr1; // 错误: 表达式 rr1 是左值
+        ```
+
++   标准库 move 函数
+
+    +   定义在头文件 `#include <utility>` 中
+
+    +   我们可以显式地将一个左值转换为对应的右值引用类型; 我们还可以通过调用 `std::move` 新标准库函数来获得绑定到左值上的右值引用;
+
+        ```cpp
+        int &&rr3 = std::move(rr1); // ok
+        ```
+
+        +   **move 调用告诉编译器: 我们有一个左值, 但我们希望像一个右值一样处理它.** 我们必须认识到, 调用 move 就意味着承诺: 除了对 rr1 赋值或销毁它外, 我们将不再使用它. 在调用 move 之后, 我们不能对移后源对象的值做任何假设.
+        +   我们可以销毁一个移后源对象, 也可以赋予它新值, 但不能使用一个移后源对象的值.
+        +   与大多数标准库名字的使用不同, **对 move 我们不提供 using 声明, 我们直接调用 `std::move` 而不是 move** (原因将在 707 页解释)
+
++   移动构造函数和移动赋值运算符
+
+    +   为了让我们自己的类型支持移动操作, 需要为其定义移动构造函数和移动赋值运算符, 这两个成员类似对应的拷贝操作, 但是它们从给定对象 "窃取" 资源而不是拷贝资源.
+
+    +   类似拷贝构造函数, 移动构造函数的第一个参数是该类类型的一个引用, 但是这个引用是一个右值引用. 与拷贝构造函数一样, 任何额外的参数都必须有默认实参.
+
+    +   除了完成资源移动, 移动构造函数还必须确保移后源对象处于这样一个状态 -- 销毁它是无害的. 特别是, **一旦资源完成移动, 源对象必须不再指向被移动的资源** -- 这些资源的所有权已经归属于新创建的对象.
+
+    +   为 StrVec 类定义移动构造函数:
+
+        ```cpp
+        StrVec::StrVec(StrVec &&s) noexcept // 移动操作不应抛出任何异常
+          // 成员初始化器接管 s 中的资源
+          : elements(s.elements), first_free(s.first_free), cap(s.cap) {
+        	// 令 s 进入这样的状态 -- 对其运行析构函数是安全的
+            s.elements = s.first_free = s.cap = nullptr;
+        }
+        ```
+
+        +   与拷贝构造函数不同, 移动构造函数不分配任何新内存: 它接管给定的 StrVec 中的内存, 在接管内存之后, 它将给定的对象中的指针都置为 nullptr. 这样就完成了从给定对象的移动操作, 此对象将继续存在. 最终, 移后源对象会被销毁, 意味着将在其上运行析构函数. StrVec 的析构函数在 `first_free` 上调用 `deallocate`. 如果我们忘记了改变 `s.first_free`, 则销毁移后源对象就会释放掉我们刚刚移动的内存.
+
+            ```cpp
+            // 要知道, StrVec 的析构函数调用了 free() 方法
+            // 而 free 方法的定义如下
+            void StrVec::free() {
+                // 不能传递给 deallocate 一个空指针, 如果 elements 为 0,
+                // 函数什么也不做
+                if (elements) {
+                    // 逆序销毁旧元素
+                    for (auto p = first_free; p != elements; )
+                        alloc.destroy(--p);
+                    alloc.deallocate(elements, cap - elements);
+                }
+            }
+            ```
+
+            +   `free` 方法是从 `first_free` 指针开始处理的, 因此如果忘记了改变 `s.first_free`, 那么销毁移后源就会释放掉我们刚刚移动的内存.
+            +   移后源指的是 `&&s` 所引用的那个对象. 由于 `&&s` 只能引用右值, 所以我们需要使用 `std::move` 将左值当成右值一样使用, 但是之后我们就不能在使用经过 `std::move` 处理过的对象, 除了销毁或者对其进行赋值.
+
+    +   移动操作, 标准库容器和异常
+
+        +   由于移动操作 "窃取" 资源, 它通常不分配任何资源, 因此移动操作通常不会抛出任何异常. 当编写一个不抛出异常的移动操作时, 我们应该将此事通知标准库. 我们将看到, 除非标准库知道我们的移动构造函数不会抛出异常, 否则它会认为移动我们的类对象时可能会抛出异常, 并且为了处理这种可能性而做一些额外的工作.
+        +   一种通知标准库的方法是使用 `noexcept`. 我们在一个函数的参数列表后指定 noexcept. 我们必须在类头文件的声明和定义中都指定 noexcept. **为啥使用 noexcept 的具体原因看书上 474 页, 大致说来应该是: 由于移动一个对象通常会改变它的值, 比如 vector, 如果在重新分配内存时发生异常, 它就必须使用拷贝构造函数而不是移动构造函数(毕竟只有这样才能保证它原有的元素仍然存在), 因此, 如果我们希望在 vector 重新分配内存这类情况下对我们自定义类型的对象进行移动而不是拷贝, 就必须显式地告诉标准库我们的移动构造函数可以安全使用**.
+
+    +   移动赋值运算符
+
+        +   **移动赋值运算符执行和析构函数和移动构造函数相同的工作**. 与移动构造函数一样, 如果我们的移动赋值运算符不抛出任何异常, 我们就应该将它标记为 noexcept. 类似拷贝赋值运算符, 移动赋值运算符必须正确处理自赋值:
+
+            ```cpp
+            StrVec& operator=(const StrVec &&rhs) noexcept {
+              if (this != &rhs) {  // 直接检查 this 指针是否与 rhs 相同
+                free(); // 释放已有元素
+                elements = rhs.elements;
+                first_free = rhs.first_free;
+                cap = rhs.cap;
+                // 将 rhs 置于可析构的状态
+                rhs.elements = rhs.first_free = rhs.cap = nullptr;
+              }
+              return *this;
+            }
+            ```
+
+        +   移后源对象必须是可析构的
+
+            +   **从一个对象移动数据并不会销毁此对象, 但有时在移动操作完成后, 源对象会被销毁. 因此, 当我们编写一个移动操作时, 必须确保移后源对象进入一个可析构的状态.** 除了将移后源对象置为析构安全的状态之外, 移动操作还必须保证对象仍然是有效的. 一般来说, 对象有效就是指可以安全地为其赋予新值或者可以安全地使用而不依赖其当前值.
+            +   **接上面所说的, 在移动操作之后, 移后源对象必须保持有效的, 可析构的状态, 但是用户不能对其进行任何假设.**
+
++   合成移动操作
+
+    +   **只有当一个类没有定义任何自己版本的拷贝控制成员, 且类的每个非 static 数据成员都可以移动时, 编译器才会为它合成移动构造函数或移动赋值运算符. 编译器可以移动内置类型成员, 如果一个成员是类类型, 且该类有对应的移动操作, 编译器也能移动这个成员.**
+
+        ```cpp
+        // 编译器会为 X 和 hasX 合成移动操作
+        struct X {
+          int i;  // 内置类型可以移动
+          string s; // string 定义了自己的移动操作
+        };
+        struct hasX {
+          X mem; // X 有合成的移动操作
+        };
+        X x, x2 = std::move(x);  // 使用合成的移动构造函数
+        hasX hx, hx2 = std::move(x); // 使用合成的移动构造函数
+        ```
+
+        ​
+
+### 13.3 交换操作
+
++   除了定义拷贝控制成员外, 管理资源的类通常还定义了一个名为 swap 的函数. 对于那些与重排元素顺序的算法一起使用的类, 定义 swap 是很重要的. 如果一个类定义了自己的 swap, 那么算法将使用自定义的版本, 否则, 使用标准库定义的 swap. (为了交换两个对象, 我们需要一次拷贝和两次赋值, 但我们更希望交换指针而不是分配新的副本)
+
++   定义自己的 swap 函数来重载 swap 的默认行为:
+
+    ```cpp
+    class HasPtr {
+    friend void swap(HasPtr&, HasPtr&);
+    // 其他成员定义和前面一样
+    };
+
+    inline
+    void swap(HasPtr &lhs, HasPtr &rhs) {
+      using std::swap;
+      swap(lhs.ps, rhs.ps); // 交换指针, 而不是 string 数据
+      swap(lhs.i, rhs.i);  // 交换 int 成员
+    }
+    ```
+
+    +   将 swap 声明为 friend 便于访问类的私有成员. 由于 swap 的存在就是为了优化代码 我们将其声明为 inline 函数.
+
++   swap 函数应该调用 swap 而不是 `std::swap`:
+
+    ```cpp
+    // Foo 类有 HasPtr 类型的成员, 现在要定义 Foo 类的交换函数
+    void swap(Foo &lhs, Foo &rhs) {
+      using std::swap; 
+      swap(lhs.h, rhs.h); // 此处使用的是 HasPtr 版本的 swap
+    }
+    ```
+
+    +   注意上面的 swap, 虽然函数中使用了 `using std::swap` 声明, 但是最后调用的 swap 函数仍然是 HasPtr 版本的 swap, 而不是标准库中定义的 swap.
+    +   **具体原因见书**! (459 页)
+
++   在赋值运算符中使用 swap
+
+    +   定义 swap 的类通常使用 swap 来定义它们的赋值运算符. 这些运算符使用了一种名为**拷贝并交换** (copy and swap) 的技术. 这种技术将左侧运算对象和右侧运算对象的一个副本进行交换:
+
+        ```cpp
+        // 注意 rhs 是按值传递的, 意味着 HasPtr 的拷贝构造函数
+        // 将右侧运算对象中的 string 拷贝到 rhs
+        HasPtr& HasPtr::operator=(HasPtr rhs) {
+          // 交换左侧运算对象和局部变量 rhs 的内容
+          swap(*this, rhs); // rhs 现在指向本对象曾经使用的内存
+          return *this;  // rhs 被销毁, 从而 delete 了 rhs 中的指针
+        }
+        ```
+
+        +   注意在这个函数中, 参数并不是一个引用, 我们将右侧运算对象以传值方式传递给了赋值运算符.
+
+    +   **这个技术的有趣之处是它自动处理了自赋值情况且天然是异常安全的.**
+
++   拷贝控制示例
+
+    +   **拷贝赋值运算符通常执行拷贝构造函数和析构函数中也要做的工作. 这种情况下, 公共的工作应该放在 private 工具函数中完成**.
+
++   动态内存管理类
+
+    +   某些类需要在运行时分配可变大小的内存空间. 这种类通常可以使用标准库容器来保存它们的数据. 但是, 这一策略并不是对每个类都适用: 某些类需要自己进行内存分配, 这些类一般来说必须定义自己的拷贝控制成员来管理所分配的内存.
+
++   StrVec 类的设计
+
+    +   vector 类将其元素保存在连续内存中, 为了获得可接受的性能, vector 预先分配足够的内存来保存可能需要的更多元素. vector 的每个添加元素的成员函数会检查是否有空间容纳更多的元素. 如果有, 成员函数会在下一个可用位置构造一个对象, 如果没有可用空间, vector 就会重新分配空间: 它获得新的空间, 将已有元素移到新空间中, 释放旧空间, 并添加新元素.
+
+    +   给出 StrVec 的代码:
+
+    +   说实话, 这个例子以后应该多看看, 将前面学习的知识都总结起来了.
+
+        ```cpp
+        #include <iostream>
+        #include <string>
+        #include <memory>
+        #include <utility> // 提供 move
+
+        using namespace std;
+
+        class StrVec {
+        public:
+            StrVec() : 
+                elements(nullptr), first_free(nullptr), cap(nullptr) {}
+          	// 使用委托构造函数
+            StrVec(const string &s) : StrVec() { push_back(s); }
+            StrVec(const StrVec&);
+            StrVec& operator=(const StrVec&);
+            ~StrVec();
+            void push_back(const string&);
+            size_t size() const { return first_free - elements; }
+            size_t capacity() const { return cap - elements;  }
+            string* begin() const { return elements;  }
+            string* end() const { return first_free;  }
+
+        private:
+            static allocator<string> alloc;
+            void chk_n_alloc()
+                { if (size() == capacity()) reallocate(); }
+            // 返回一个 pair, 两个指针分别指向新空间的开始位置
+            // 和拷贝的尾后位置
+            pair<string*, string*> alloc_n_copy
+                (const string*, const string*);
+            void free();
+            void reallocate();
+            string *elements;
+            string *first_free;
+            string *cap;
+        };
+        ```
+
+
+        // 静态成员要在类外初始化
+        allocator<string> StrVec::alloc;
+    
+        void StrVec::push_back(const string &s) {
+            chk_n_alloc(); // 确保有空间容纳新元素
+            // 在 first_free 指向的元素中构造 s 的副本
+            alloc.construct(first_free++, s);
+        }
+    
+        pair<string*, string*>
+        StrVec::alloc_n_copy(const string *b, const string *e) {
+            // 分配空间保存给定范围中的元素
+            auto data = alloc.allocate(e - b);
+            // 初始化并返回一个 pair, 该 pair 由 data 和 uninitialize_copy 返回
+            // 的返回值构成
+            return {data, uninitialized_copy(b, e, data)};
+        }
+    
+        void StrVec::free() {
+            // 不能传递给 deallocate 一个空指针, 如果 elements 为 0,
+            // 函数什么也不做
+            if (elements) {
+                // 逆序销毁旧元素
+                for (auto p = first_free; p != elements; )
+                    alloc.destroy(--p);
+                alloc.deallocate(elements, cap - elements);
+            }
+        }
+    
+        StrVec::StrVec(const StrVec &s) {
+            // 调用 alloc_n_copy 分配空间以容纳与 s 中一样多的元素
+            auto newdata = alloc_n_copy(s.begin(), s.end());
+            elements = newdata.first;
+            first_free = cap = newdata.second;
+        }
+    
+        // 析构函数调用 free 分配的内存空间
+        StrVec::~StrVec() { free(); }
+    
+        StrVec& StrVec::operator=(const StrVec &rhs) {
+            // 调用 alloc_n_copy 分配内存, 大小与 rhs 中元素占用空间一样多
+            auto data = alloc_n_copy(rhs.begin(), rhs.end());
+            free();
+            elements = data.first;
+            first_free = cap = data.second;
+            return *this;
+        }
+    
+        void StrVec::reallocate() {
+            // 每次重新分配内存时将容量加倍,
+            // 如果 StrVec 为空, 我们将分配容纳一个元素的空间
+            auto newcapacity = size() ? 2 * size() : 1;
+            auto newdata = alloc.allocate(newcapacity);
+            auto dest = newdata; // 指向新数组中下一个空闲位置
+            auto elem = elements; // 指向旧数组中下一个元素
+            for (size_t i = 0; i != size(); ++i)
+                alloc.construct(dest++, std::move(*elem++));
+            free(); // 一旦我们移动完元素就释放旧内存空间
+            elements = newdata;
+            first_free = dest;
+            cap = elements + newcapacity;
+        }
+    
+        int main(int argc, const char* argv[]) {
+            
+            //StrVec vec("string");
+            StrVec vec;
+            string str;
+            vec.push_back("string");
+            while (cin >> str)
+                vec.push_back(str);
+            for (const auto &s : vec) {
+                cout << s << " ";
+            }
+            cout << endl;
+            return 0;
+        }
+        ```
+    
+        ​
+
 ## 2017 年 8 月 8 日
 
 (蔡忠强师弟)
@@ -246,9 +584,87 @@
             }
             ```
 
-            ​
 
+            ```
 
+-   记录一个问题: 上面的 HasPtr 中有 `++*rhs.use` 这样的代码, 可是 `rhs` 是以 `const HasPtr&` 传递过来的, 为何可以对 `*rhs.use` 的值进行修改? 写了两个代码来检验是否可以修改 `const HasPtr&` 中的值?
+
+    ```cpp
+    #include <iostream>
+
+    using namespace std;
+
+    class HasPtr {
+    public:
+        HasPtr(const int &s = int()) :
+            ps(new int(s)) {}
+        HasPtr& operator=(const HasPtr &rhs) {
+            ps = new int(++*rhs.ps);
+            return *this;
+        }
+
+        int get() const { return *ps;  }
+        ~HasPtr() { delete ps;  }
+
+    private:
+        int *ps;
+    };
+
+    int main(int argc, const char *argv[]) {
+        HasPtr ps(10), sp;
+        cout << ps.get() << " " << sp.get() << endl;
+        sp = ps;
+        cout << ps.get() << " " << sp.get() << endl;
+        return 0;
+    }
+
+    // 得到的结果是
+    // 10 0
+    // 11 0  // 说明最后 ps 也得到了修改.
+    ```
+
+    我在考虑是不是使用动态内存的问题, 但是下面的代码解释了使用栈内存也会得到类似的结论:
+
+    ```cpp
+    #include <iostream>
+
+    using namespace std;
+
+    class HasPtr {
+    public:
+        HasPtr(const int &s = int()) :
+            i(s), ps(&i) {}
+        HasPtr& operator=(const HasPtr &rhs) {
+            ps = &(++*rhs.ps);
+            i = rhs.i;
+            return *this;
+        }
+
+        int get() const { return *ps;  }
+        int get_i() const { return i;  }
+    private:
+        int i = 10;
+        int *ps = &i;
+    };
+
+    int main(int argc, const char *argv[]) {
+
+        HasPtr ps(10), sp;
+        cout << ps.get() << " " <<  ps.get_i() << endl;
+        cout << sp.get() << " " <<  sp.get_i() << endl;
+        sp = ps;
+        cout << ps.get() << " " <<  ps.get_i() << endl;
+        cout << sp.get() << " " <<  sp.get_i() << endl;
+
+        return 0;
+    }
+
+    // 结果是:
+    // 10 10
+    //  0  0
+    // 11 11 // 说明此时 ps 已经被修改了
+    // 11 11  
+    ```
 
 ### 习题
 
@@ -288,12 +704,6 @@
       size_t id = 0;
     };
     ````
-
-    ​
-
-    ​
-
-
 
 ### 12.1.4 智能指针和异常
 
@@ -1083,16 +1493,17 @@
             cout << i << " ";
         cout << endl;
     }
+    ```
 
 
     int main(int argc, const char *argv[]) {
         shared_ptr<vector<int>> p = returnVec(); // 可以使用 auto
         read(cin, p);
         print(p);
-
+    
         return 0;
     }
-    ```
+    ​```
 
 +   习题 12.10: 下面的代码调用了第 413 页中定义的 process 函数, 解释此调用是否正确. 如果不正确, 应该如何修改?
 
@@ -1354,6 +1765,7 @@
         phones.push_back(word);
       people.push_back(info);  // 将此记录追加到 people 末尾
     }
+    ```
 
 
     // 本题修改
@@ -1373,7 +1785,7 @@
         phones.push_back(word);
       people.push_back(info); 
     }
-    ```
+    ​```
 
 +   习题 8.12: 为什么我们没有在 PersonInfo 中使用类内初始化?
 
@@ -2910,6 +3322,7 @@
                 output(vec, ++it);
             }
         }
+        ```
 
 
         int main(int argc, char **argv){
@@ -4197,7 +4610,7 @@
             ```cpp
             decltype(a = b) c = a; // 推断出来的 c 的类型是 int&.
             ```
-
+    
             ​
 
 ### 习题
@@ -4290,6 +4703,7 @@
     void show();
 
     #endif
+    ```
 
 
     // func.cpp
@@ -4297,11 +4711,11 @@
     // show() 负责输出这个 bufSize 的大小
     #include <iostream>
     #include "func.hpp"
-
+    
     extern const int bufSize = 512;
-
+    
     void show(){
-
+    
         std::cout << "Func.cpp >> bufSize: " << bufSize << std::endl;
     }
 
@@ -4311,34 +4725,34 @@
     // extern const int bufSize 进行声明.
     #include <iostream>
     #include "func.hpp"
-
+    
     using namespace std;
     extern const int bufSize;
-
+    
     int main(){
-
+    
         show();
         cout << "main.cpp >> bufSize: " << bufSize << endl;
         return 0;
     }
-
+    
     // 运行程序, 使用
     // g++ -Wall -std=c++0x -o main main.cpp func.cpp
     // 输出如下: 
     Func.cpp >> bufSize: 512
     main.cpp >> bufSize: 512
-    ```
-
+    ​```
+    
     +   现在注意 4 个问题:
-
+    
         1.  如果在 main.cpp 中没有使用 `extern const int bufSize;`, 结果会报错, 说 `bufSize was not declared in this scope`.
-
+    
         2.  如果对 main.cpp 中的 `extern const int bufSize = 100;` 进行了重新赋值, 结果会报错, 说
-
+    
             `multiple definition of bufSize`.
-
+    
         3.  如果将 main.cpp 中改为 `extern int bufSize;` 也就是去掉了 `const`, 程序正常运行...
-
+    
         4.  如果将 `func.cpp` 中改为 `extern int bufSize = 512;`, 那么虽然程序可以正常运行, 但是编译的时候会出现警告: `warning: ‘bufSize’ initialized and declared ‘extern’`, 我想这应该是编译器想提醒我这个变量有在其他文件中被修改的风险.
 
 +   顶层 const (top-level const) 与底层 const (low-level const): 顶层 const 表示指针本身是一个常量, 底层 const 表示指针所指的对象是一个常量. (更一般的, 顶层 const 可以表示任意对象是常量, 这一点对任何数据类型都适用, 如算术类型, 类, 指针等. 比如 `const int ci = 42;` 是一个顶层 const. 而底层 const 则与指针和引用等复合类型的基本类型部分有关. 比较特殊的是指针类型既可以是顶层 const 也可以是底层 const.)
