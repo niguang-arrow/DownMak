@@ -1,8 +1,94 @@
 # Data Structures and Algorithm Analysis in C
 
+## 2017 年 8 月 10  日
+
+### 2.4.4 运行时间中的对数
+
++ 运行时间中的对数: 除分治算法外, 可将对数最常出现的规律概括为下列一般法则: 如果一个算法用常数时间 ($O(1)$) 将问题的大小削减为其一部分 (通常是 1/2), 那么该算法就是 $O(\log N)$ . 另一方面, 如果使用常数时间只是把问题减少为一个常数 (如将问题减少 1), 那么这种算法就是 $O(N)$.
+
++ 二分查找: (binary search)
+
+  给定一个整数 $X$ 和整数 $A_0, A_1, \ldots, A_{N - 1}$, 后者已经预先排序并在内存中, 求使得 $A_i = X$ 的下标 $i$, 如果 X 不在数据中, 则返回 $i = -1$.
+
+  + 明显的解法是从左到右扫描数据, 其运行花费线性时间. 然而这个算法没有通道该表已经排序的事实.
+
+  ```cpp
+  int
+  BinarySearch(const ElementType A[], ElementType X, int N) {
+    int Low, Mid, High;
+    Low = 0; High = N - 1;
+    while (Low <= High) {
+    	Mid = Low + (High - Low)/2;
+      if (A[Mid] < X)
+        Low = Mid + 1;
+      else if (A[Mid] > X)
+        High = Mid - 1;
+      else 
+        return Mid;   /* Found */
+    }
+    return NotFound; /* defined as -1 */
+  }
+  ```
+
++ 欧几里得算法
+
+  计算最大公因数. 两个整数的最大公因数 (Gcd) 是同时整除二者的最大整数. 
+
+  比如 $Gcd(50, 15) = 5$.
+
++ 幂运算
+
 ## 2017 年 8 月 7 日
 
 ### 最大子序列和的求解
+
++ 第三种算法, 分治策略:
+
+  + 其想法是将问题分成两个大致相等的子问题, 然后递归地对它们求解, 这是 "分" 的部分. "治" 的阶段将两个子问题的解合并到一起并可能再做些少量的附加工作, 最后得到整个问题的解.
+  + 该问题中, 最大子序列和可能在三处出现, 或者整个出现在输入数据的左半部分, 或者这个出现在右半部分, 或者跨越输入数据的中部从而占据左右两半部分. 前两种情况跨越递归求解. 第三种情况的最大和跨越通过求出前半部分的最大和 (包含前半部分的最后一个元素) 以及后半部分的最大和(包含后半部分的第一个元素)而得到, 然后将这两个和加在一起.
+
+  ```cpp
+  static int
+  MaxSubSum(const int A[], int Left, int Right) {
+    int MaxLeftSum, MaxRightSum;
+    int MaxLeftBorderSum, MaxRightBorderSum;
+    int LeftBorderSum, RightBorderSum;
+    int Center, i;
+    
+    if (Left == Right)  /* Base Case */
+      if (A[Left] > 0)  
+        return A[Left];
+    	else  // 当一个值时, 若为负值或者0, 则为了方便起见, 均返回 0
+        return 0;
+    
+    Center = Left + (Right - Left)/2;
+    MaxLeftSum = MaxSubSum(A, Left, Center);
+    MaxRightSum = MaxSubSum(A, Center + 1, Right);
+    // 处理左半部分的情况
+    MaxLeftBorderSum = 0; LeftBorderSum = 0;
+    for (i = Center; i >= Left; --i) {
+      LeftBorderSum += A[i];
+      if (LeftBorderSum > MaxLeftBorderSum)
+        MaxLeftBorderSum = LeftBorderSum;
+    }
+    // 处理右半部分的情况
+    MaxRightBorderSum = 0; RightBorderSum = 0;
+    for (i = Center + 1; i <= Right; ++i) {
+      RightBorderSum += A[i];
+      if (RightBorderSum > MaxRightBorderSum)
+        MaxRightBorderSum = RightBorderSum;
+    }
+    return Max3(MaxLeftSum, MaxRightSum, // Max3 为伪代码
+               MaxLeftBorderSum + MaxRightBorderSum);
+  }
+  int 
+  MaxSubsequenceSum(const int A[], int N) {
+    return MaxSubSum(A, 0, N - 1); // 这解释了为什么 MaxSubSum 
+  }                          // 代码中为什么没处理 > right
+  ```
+
+  ​
+
 
 + 第四种方法, 时间复杂度最低, 为 $O(N)$:
 
@@ -22,7 +108,6 @@
   }
   ```
 
-  + 作者说为何这个算法是正确的需要读者自己思考, 我的想法如下: 代码中第 7 行起到的作用是将序列最左侧的负数全部给排除了, ThisSum 的增大一定是从一个正数开始的, 比如 `-2, -3, 4, -1, 2...`, ThisSum 第一个非零值一定是 4. 这个时候需要用 MaxSum 将 4 存储下来, 以便用于比较, 然后不断地去
 
 ## 2017 年 8 月 6 日
 
