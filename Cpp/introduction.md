@@ -254,89 +254,86 @@
             string *first_free;
             string *cap;
         };
-        ```
-
 
         // 静态成员要在类外初始化
         allocator<string> StrVec::alloc;
-    
+
         void StrVec::push_back(const string &s) {
-            chk_n_alloc(); // 确保有空间容纳新元素
-            // 在 first_free 指向的元素中构造 s 的副本
-            alloc.construct(first_free++, s);
+          chk_n_alloc(); // 确保有空间容纳新元素
+          // 在 first_free 指向的元素中构造 s 的副本
+          alloc.construct(first_free++, s);
         }
-    
+
         pair<string*, string*>
-        StrVec::alloc_n_copy(const string *b, const string *e) {
-            // 分配空间保存给定范围中的元素
-            auto data = alloc.allocate(e - b);
-            // 初始化并返回一个 pair, 该 pair 由 data 和 uninitialize_copy 返回
-            // 的返回值构成
-            return {data, uninitialized_copy(b, e, data)};
+          StrVec::alloc_n_copy(const string *b, const string *e) {
+          // 分配空间保存给定范围中的元素
+          auto data = alloc.allocate(e - b);
+          // 初始化并返回一个 pair, 该 pair 由 data 和 uninitialize_copy 返回
+          // 的返回值构成
+          return {data, uninitialized_copy(b, e, data)};
         }
-    
+
         void StrVec::free() {
-            // 不能传递给 deallocate 一个空指针, 如果 elements 为 0,
-            // 函数什么也不做
-            if (elements) {
-                // 逆序销毁旧元素
-                for (auto p = first_free; p != elements; )
-                    alloc.destroy(--p);
-                alloc.deallocate(elements, cap - elements);
-            }
+          // 不能传递给 deallocate 一个空指针, 如果 elements 为 0,
+          // 函数什么也不做
+          if (elements) {
+            // 逆序销毁旧元素
+            for (auto p = first_free; p != elements; )
+              alloc.destroy(--p);
+            alloc.deallocate(elements, cap - elements);
+          }
         }
-    
+
         StrVec::StrVec(const StrVec &s) {
-            // 调用 alloc_n_copy 分配空间以容纳与 s 中一样多的元素
-            auto newdata = alloc_n_copy(s.begin(), s.end());
-            elements = newdata.first;
-            first_free = cap = newdata.second;
+          // 调用 alloc_n_copy 分配空间以容纳与 s 中一样多的元素
+          auto newdata = alloc_n_copy(s.begin(), s.end());
+          elements = newdata.first;
+          first_free = cap = newdata.second;
         }
-    
+
         // 析构函数调用 free 分配的内存空间
         StrVec::~StrVec() { free(); }
-    
+
         StrVec& StrVec::operator=(const StrVec &rhs) {
-            // 调用 alloc_n_copy 分配内存, 大小与 rhs 中元素占用空间一样多
-            auto data = alloc_n_copy(rhs.begin(), rhs.end());
-            free();
-            elements = data.first;
-            first_free = cap = data.second;
-            return *this;
+          // 调用 alloc_n_copy 分配内存, 大小与 rhs 中元素占用空间一样多
+          auto data = alloc_n_copy(rhs.begin(), rhs.end());
+          free();
+          elements = data.first;
+          first_free = cap = data.second;
+          return *this;
         }
-    
+
         void StrVec::reallocate() {
-            // 每次重新分配内存时将容量加倍,
-            // 如果 StrVec 为空, 我们将分配容纳一个元素的空间
-            auto newcapacity = size() ? 2 * size() : 1;
-            auto newdata = alloc.allocate(newcapacity);
-            auto dest = newdata; // 指向新数组中下一个空闲位置
-            auto elem = elements; // 指向旧数组中下一个元素
-            for (size_t i = 0; i != size(); ++i)
-                alloc.construct(dest++, std::move(*elem++));
-            free(); // 一旦我们移动完元素就释放旧内存空间
-            elements = newdata;
-            first_free = dest;
-            cap = elements + newcapacity;
+          // 每次重新分配内存时将容量加倍,
+          // 如果 StrVec 为空, 我们将分配容纳一个元素的空间
+          auto newcapacity = size() ? 2 * size() : 1;
+          auto newdata = alloc.allocate(newcapacity);
+          auto dest = newdata; // 指向新数组中下一个空闲位置
+          auto elem = elements; // 指向旧数组中下一个元素
+          for (size_t i = 0; i != size(); ++i)
+            alloc.construct(dest++, std::move(*elem++));
+          free(); // 一旦我们移动完元素就释放旧内存空间
+          elements = newdata;
+          first_free = dest;
+          cap = elements + newcapacity;
         }
-    
+
         int main(int argc, const char* argv[]) {
-            
-            //StrVec vec("string");
-            StrVec vec;
-            string str;
-            vec.push_back("string");
-            while (cin >> str)
-                vec.push_back(str);
-            for (const auto &s : vec) {
-                cout << s << " ";
-            }
-            cout << endl;
-            return 0;
+
+          //StrVec vec("string");
+          StrVec vec;
+          string str;
+          vec.push_back("string");
+          while (cin >> str)
+            vec.push_back(str);
+          for (const auto &s : vec) {
+            cout << s << " ";
+          }
+          cout << endl;
+          return 0;
         }
         ```
-    
-        ​
+
 
 ## 2017 年 8 月 8 日
 
@@ -1493,17 +1490,16 @@
             cout << i << " ";
         cout << endl;
     }
-    ```
-
 
     int main(int argc, const char *argv[]) {
         shared_ptr<vector<int>> p = returnVec(); // 可以使用 auto
         read(cin, p);
         print(p);
-    
+
         return 0;
     }
-    ​```
+    ```
+
 
 +   习题 12.10: 下面的代码调用了第 413 页中定义的 process 函数, 解释此调用是否正确. 如果不正确, 应该如何修改?
 
@@ -1765,8 +1761,6 @@
         phones.push_back(word);
       people.push_back(info);  // 将此记录追加到 people 末尾
     }
-    ```
-
 
     // 本题修改
     struct PersonInfo {
@@ -1785,7 +1779,8 @@
         phones.push_back(word);
       people.push_back(info); 
     }
-    ​```
+    ```
+
 
 +   习题 8.12: 为什么我们没有在 PersonInfo 中使用类内初始化?
 
@@ -4703,57 +4698,56 @@
     void show();
 
     #endif
-    ```
-
 
     // func.cpp
     // 在 func.cpp 文件中定义了 show() 函数, 同时定义了可供外部访问的 bufSize
     // show() 负责输出这个 bufSize 的大小
     #include <iostream>
     #include "func.hpp"
-    
+
     extern const int bufSize = 512;
-    
+
     void show(){
-    
+
         std::cout << "Func.cpp >> bufSize: " << bufSize << std::endl;
     }
-
 
     // main.cpp
     // 要让 main.cpp 中能访问到 func.cpp 中定义的 bufSize, 需要在 main.cpp 中使用
     // extern const int bufSize 进行声明.
     #include <iostream>
     #include "func.hpp"
-    
+
     using namespace std;
     extern const int bufSize;
-    
+
     int main(){
-    
+
         show();
         cout << "main.cpp >> bufSize: " << bufSize << endl;
         return 0;
     }
-    
+
     // 运行程序, 使用
     // g++ -Wall -std=c++0x -o main main.cpp func.cpp
     // 输出如下: 
     Func.cpp >> bufSize: 512
     main.cpp >> bufSize: 512
-    ​```
-    
-    +   现在注意 4 个问题:
-    
-        1.  如果在 main.cpp 中没有使用 `extern const int bufSize;`, 结果会报错, 说 `bufSize was not declared in this scope`.
-    
-        2.  如果对 main.cpp 中的 `extern const int bufSize = 100;` 进行了重新赋值, 结果会报错, 说
-    
-            `multiple definition of bufSize`.
-    
-        3.  如果将 main.cpp 中改为 `extern int bufSize;` 也就是去掉了 `const`, 程序正常运行...
-    
-        4.  如果将 `func.cpp` 中改为 `extern int bufSize = 512;`, 那么虽然程序可以正常运行, 但是编译的时候会出现警告: `warning: ‘bufSize’ initialized and declared ‘extern’`, 我想这应该是编译器想提醒我这个变量有在其他文件中被修改的风险.
+    ```
+
+
++   现在注意 4 个问题:
+
+    1.  如果在 main.cpp 中没有使用 `extern const int bufSize;`, 结果会报错, 说 `bufSize was not declared in this scope`.
+
+    2.  如果对 main.cpp 中的 `extern const int bufSize = 100;` 进行了重新赋值, 结果会报错, 说
+
+        `multiple definition of bufSize`.
+
+    3.  如果将 main.cpp 中改为 `extern int bufSize;` 也就是去掉了 `const`, 程序正常运行...
+
+    4.  如果将 `func.cpp` 中改为 `extern int bufSize = 512;`, 那么虽然程序可以正常运行, 但是编译的时候会出现警告: `warning: ‘bufSize’ initialized and declared ‘extern’`, 我想这应该是编译器想提醒我这个变量有在其他文件中被修改的风险.
+
 
 +   顶层 const (top-level const) 与底层 const (low-level const): 顶层 const 表示指针本身是一个常量, 底层 const 表示指针所指的对象是一个常量. (更一般的, 顶层 const 可以表示任意对象是常量, 这一点对任何数据类型都适用, 如算术类型, 类, 指针等. 比如 `const int ci = 42;` 是一个顶层 const. 而底层 const 则与指针和引用等复合类型的基本类型部分有关. 比较特殊的是指针类型既可以是顶层 const 也可以是底层 const.)
 
