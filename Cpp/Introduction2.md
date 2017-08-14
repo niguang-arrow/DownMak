@@ -1,32 +1,372 @@
 # Introduction 2
 
-## 2017 年 8 月 11 日
+## 2017 年 8 月 14 日
+
+### 二分查找
+
++   写了个二分查找, 以后再来批判:
+
+    ```cpp
+    #include <iostream>
+    #include <vector>
+    #include <algorithm>
+    #include <random>
+    #include <ctime>
+
+    using namespace std;
+
+    // 将 vec 中的元素输出
+    template <typename T>
+    void output(const vector<T> &vec) {
+        for(auto it = vec.begin(); it != vec.end(); ++it)
+            cout << *it << " ";
+        cout << endl;
+    }
+
+    // 随机产生序列
+    static uniform_int_distribution<unsigned> uniform(0, 10);
+    static default_random_engine engine(time(0));
+
+    vector<int> generateArray(size_t N) {
+        vector<int> vec;
+        for (size_t i = 0; i != N; ++i)
+            vec.push_back(uniform(engine));
+        return vec;
+    }
+
+    // 二分查找代码
+    // 找到了则输出迭代器的位置, 否则输出 vec.end()
+    template <typename T>
+    auto BinarySearch(const vector<T> &vec, T elem) {
+        auto left = vec.cbegin();
+        auto right = vec.cend();
+        while (left != right) {
+            auto mid = left + (right - left) / 2;
+            if (*mid == elem)
+                return mid;
+            else if (*mid < elem) { left = ++mid; }
+            else if (elem < *mid) { right = mid; }
+        }
+        return vec.end();
+    }
+
+    int main()
+    {
+        vector<int> vec = generateArray(10);
+        cout << "Before Sorting: " << endl;
+        output(vec);
+        sort(vec.begin(), vec.end());
+        cout << "After Sorting: " << endl;
+        output(vec);
+        auto pe = BinarySearch(vec, 5);
+        if (pe != vec.end()) {
+            cout << "I found it: " << *pe << endl;
+            cout << "Position is: " << pe - vec.begin() + 1 << endl;
+        } else {
+            cout << "Failed!" << endl;
+        }
+
+        return 0;
+    }
+    ```
+
++   对字符串进行排序, 并将其中重复的 word 给去除
+
+    ```cpp
+    #include <iostream>
+    #include <sstream>
+    #include <vector>
+    #include <algorithm>
+
+    // 将 vec 中的元素输出
+    template <typename T>
+    void output(const vector<T> &vec) {
+        for(auto it = vec.begin(); it != vec.end(); ++it)
+            cout << *it << " ";
+        cout << endl;
+    }
+
+    int main() {
+      string str = "the quick red fox jumps over the slow red turtle";
+      istringstream is(str); // istringstream 处理带空格的字符串非常方便
+      vector<string> vec;
+      string word;
+      while (is >> word)
+        vec.push_back(word);
+      sort(vec.begin(), vec.end());
+      auto end_unique = unique(vec.begin(), vec.end());
+      vec.erase(end_unique, vec.end()); // 删除多余的字符串
+      output(vec);
+      return 0;
+    }    
+    ```
+
+### 第 10 章 泛型算法
+
++   大多数算法都定义在头文件 `#include <algorithm>` 中. 标准库还在头文件 `#include <numeric>` 中定义了一组数值泛型算法.
+
++   标准库算法都对一个范围内的元素进行操作. 我们将此元素范围称为 "输入范围". 接受输入范围的算法总是使用前两个参数来表示此范围, **两个参数分别是指向要处理的第一个元素和尾元素之后位置的迭代器.**
+
++   **只读算法**: 比如 find, equal, count
+
++   使用迭代器的好处:
+
+    ```cpp
+    // 本节中对 roster 调用 equal 的例子
+    // 操作两个序列的算法
+    // roster2 中的元素的数目至少与 roster1 中的元素一样多
+    equal(roster1.cbegin(), roster1.cend(), roster2.cbegin())
+    ```
+
+    其中 equal 利用迭代器完成操作, 因此我们可以通过调用 equal 来**比较两个不同类型的容器中的元素, 而且元素类型也不必一样, 只要我们能用 == 来比较两个元素类型即可.** 比如在此例中, roster1 可以是 `vector<string>`, 而 roster2 是 `list<const char*>`.
+
++   写容器的算法: 比如 `fill_n`
+
+    +   算法不检查写操作: **向目的位置迭代器写入数据的算法假定目的位置足够大, 能容纳要写入的元素.**
+
++   介绍 `back_inserter`
+
+    +   一种保证有足够元素空间来容纳输出数据的方法是使用 **插入迭代器** (insert iterator). 插入迭代器是一种向容器中添加元素的迭代器. 它定义在 `#include <iterator>` 头文件中.
+
+    +   `back_iterator` 接受一个指向容器的引用, 返回一个与该容器绑定的插入迭代器. 当我们通过该迭代器赋值时, 赋值运算符会调用 `push_back` 将一个具有给定值的元素添加到容器中.
+
+        ```cpp
+        vector<int> vec;
+        auto it = back_iterator(vec);
+        *it = 42; // vec 中现在有一个元素, 值为 42
+        ```
+
+        我们常使用 `back_iterator` 来创建一个迭代器, 作为算法的目的位置来使用, 比如
+
+        ```cpp
+        vector<int> vec;
+        // 灾难: 修改 vec 中的 10 个不存在的元素
+        fill_n(vec.begin(), 10, 0);
+
+        // 正确:
+        fill_n(back_inserter(vec), 10, 0);
+        ```
+
+        在每次迭代中, `fill_n` 向给定序列的一个元素赋值. 由于我们传递的参数是 `back_inserter` 返回的迭代器, 因此每次赋值都会在 `vec` 上调用 `push_back`. 最终, 这条 `fill_n` 调用语句向 `vec` 的末尾添加了 10 个元素, 每个元素的值都是 0.
+
++   拷贝算法: 比如 copy, replace, `replace_copy`
+
+    +   此算法接受三个迭代器, 前两个表示一个输入范围, 第三个表示**目的序列**的起始位置. 此算法将输入范围中的元素拷贝到目的序列中. 传递给 copy 的目的序列至少要包含与输入序列一样多的元素.
+
+        ```cpp
+        int a1[] = {1, 2, 3, 4, 5};
+        int a2[sizeof(a1)/sizeof(*a1)]; // a2 与 a1 大小一样
+        // ret 指向拷贝到 a2 的尾元素之后的位置
+        auto ret = copy(begin(a1), end(a1), a2);// 把 a1 的内容拷贝给 a2
+        ```
+
+        注意 copy 返回的是其目的位置迭代器 (递增后) 的值. 
+
++   重排容器元素的算法: 比如 sort
+
+    +   调用 sort 会重排输入序列中的元素, 使之有序, 它利用元素类型的 `<` 运算符来实现排序的.
+
+    +   书上一个例子, **消除重复单词**: 思路是首先对 vector 中的元素进行排序, 然后调用 `unique` 标准库算法来重排 vector, 使不重复的元素出现在 vector 的开始部分. 由于算法不能执行容器的操作, 我们将使用 vector 的 `erase` 成员来完成真正的删除操作:
+
+        ```cpp
+        void elimDups(vector<string> &words) {
+          // 按字典序排序 words, 以便查找重复单词
+          sort(words.begin(), words.end());
+          // unique 重排输入范围, 使得每个单词只出现一次
+          // 排列在范围的前部, 返回指向不重复区域之后一个位置的迭代器
+          auto end_unique = unique(words.begin(), words.end());
+          words.erase(end_unique, words.end());
+        }
+        ```
+
+        +   unique 不删除任何元素, 它只是覆盖相邻的重复元素, 使得不重复元素出现在序列开始部分. unique 返回的迭代器指向最后一个不重复元素之后的位置. 此位置之后的元素仍然存在, 但我们不知道它们的值是什么.
+        +   **标准库算法对迭代器而不是容器进行操作, 因此, 算法不能(直接)添加或删除元素.**
+        +   为了真正删除无用元素, 我们必须使用容器操作.
+
++   定制操作:
+
+    +   向算法传递函数: 比如将 vec 中的字符串按单词的长度排序, 相同大小的再按字典序排列.
+
+        ```cpp
+        // 比较函数, 用来按长度排序单词
+        bool isShorter(const string &s1, const string &s2) {
+          return s1.size() < s2.size();
+        }
+
+        // 按长度由短至长排序 words
+        sort(words.begin(), words.end(), isShorter);
+
+        // 使用 sort 只能从短到长排序, 如果要保持相同的大小按字典排序, 应该使用
+        // stable_sort, 这种稳定排序算法维持相等元素的原有顺序.
+        elimDups(words);// 将 words 按字典序重排, 并消除重复单词
+        stable_sort(words.begin(), ends.end(), isShorter);
+        ```
+
++   介绍 lambda:
+
+    +   一个 lambda 表达式表示一个可调用的代码单元. 我们可以将其理解为一个未命名的内联函数. 与函数不同的是, lambda 可能定义在函数内部. 一个 lambda 表达式具有如下形式:
+
+        ```cpp
+        [capture list] (parameter list) -> return type { function body }
+        ```
+
+        capture list 是一个 lambda 所在函数中定义的局部变量的列表 (通常为空).
+
+        **lambda 函数必须使用尾置返回来指定返回类型.**
+
+        **另外, 我们可以忽略参数列表和返回类型, 但是必须永远包含捕获列表 (capture list) 和函数体.** 
+
+        ```cpp
+        auto f = [] { return 42; }
+        ```
+
++   调用 `find_if`
+
+    +   我们可以使用 `find_if` 来查找第一个具有特定大小的元素. 但是传递给 `find_if` 的任何函数**都必须严格接受一个参数**, 因此没有办法传递给它第二个参数来表示长度. 此时可以使用 lambda 函数.
+
+        ```cpp
+        // find_if 返回一个迭代器, 指向第一个满足 size() >= sz 的元素
+        auto wc = find_if(words.begin(), words.end(),
+                     [sz](const string &a) { return a.size() >= sz; })
+        ```
+
+    +   `make_plural` (201 页), 可以根据数字的大小输出某单词是单数或复数形式.
+
++   `for_each` 算法
+
+    +   上面问题中打印 words 中长度大于等于 sz 的元素, 可以使用 `for_each` 算法. 此算法接受一个可调用对象, 并对输入序列每个元素调用此对象:
+
+        ```cpp
+        // 打印长度大于等于给定值的单词, 每个单词后面接一个空格
+        for_each(wc, words.end(), 
+                 [] (const string &s) { cout << s << " "; } );
+        cout << endl;
+        ```
+
++   lambda 捕获和返回
+
+    +   当定义一个 lambda 时, 编译器生成一个与 lambda 对应的新的 (未命名的) 类类型. 
+
+    +   最好采用值捕获. 因为和参数不同, 被捕获的变量的值是在 lambda 创建时拷贝, 而不是调用时拷贝. 但是我们不能拷贝 ostream 对象, 因此捕获 os 的唯一方法就是捕获其引用.
+
+    +   **隐式捕获**:
+
+        +   除了可以显式列出我们希望使用的来自所在函数的变量之外, **还可以让编译根据 lambda 体中的代码来推断我们要使用的变量**. 应在捕获列表中写一个 `&` 或 `=`. `&` 告诉编译器采用捕获引用方式, `=` 则表示采用值捕获方式. 重写传递给 `find_if` 的 lambda:
+
+            ```cpp
+            // sz 为隐式捕获, 值捕获方式
+            wc = find_if(words.begin(), words.end(),
+                      [=] (const string &s) { return s.size() >= sz; });
+            ```
+
+        +   还可以混合使用隐式捕获和显示捕获.
+
+    +   可变 lambda
+
+        +   在参数列表后加上 mutable 关键字, 可变 lambda 能省略参数列表:
+
+            ```cpp
+            auto f = [v1] () mutable { return ++v1; };
+            ```
+
+    +   指定 lambda 的返回类型
+
+        +   目前遇到的 lambda 都只包含单一的 return 语句, 因为编译器可以根据函数体中的返回代码推出返回类型. 但是下面这个例子, 使用标准库的 transform 算法和一个 lambda 来将一个序列中的每个负数替换为其绝对值:
+
+            ```cpp
+            // transform 接受 3 个迭代器和一个可调用对象, 前两个迭代器表示输入
+            // 范围, 第三个迭代器表示目的位置, 算法会输入序列中每个元素调用可调用
+            // 对象, 并将结果写到目的位置
+            transform(vi.begin(), vi.end(), vi.begin(),
+                     [] (int i) { return i < 0 ? -i : i; });
+
+            // 但代码如果写成下面的形式就会出现问题
+            transform(vi.begin(), vi.end(), vi.begin(),
+                     [] (int i) { if (i < 0) return -i; else return i; });
+            // 编译器推断这个版本的 lambda 返回类型为 void, 但是它返回一个 int 值
+
+            // 可以使用尾置返回类型为 lambda 定义返回类型
+            transform(vi.begin(), vi.end(), vi.begin(),
+                     [] (int i) -> int 
+                      { if (i < 0) return -i; else return i; });
+            ```
+
+            ​
+
+
+
+习题
+
++   习题 10.4: 假定 v 是一个 `vector<double>`, 那么调用 `accumulate(v.cbegin(), v.cend(), 0)` 有何错误 (如果存在的话)? 
+
+    +   有错误. accumulate 的第三个参数是和的初值, 它还决定函数的返回类型以及函数中使用哪个加法运算符. 本题中的调用是错误的, 应该传递 `0.0`, 否则最后的结果是整型加法运算, 出现精度损失.
+
++   习题 10.5: 在本节对 roster 调用 equal 的例子中, 如果两个 roster 中保存的都是 c 风格字符串而不是 string, 会发生什么?
+
+    ```cpp
+    // 本节中对 roster 调用 equal 的例子
+    // 操作两个序列的算法
+    // roster2 中的元素的数目至少与 roster1 中的元素一样多
+    equal(roster1.cbegin(), roster1.cend(), roster2.cbegin())
+    ```
+
+    +   **注意: **equal 使用 `==` 运算符比较两个序列中的元素. string 类重载了 `==`, 可以比较两个字符串是否长度相等并且其中元素对位相等. **而 C 风格字符串本质是 `char*` 类型, 用 `==` 比较两个 `char*` 对象, 只是检查两个指针值是否相等, 即地址是否相等, 而不会比较其中的字符是否相同.**
 
 ### 第 16 章 模板与泛型编程
 
-+   模板定义以关键字 template 开始, 后跟一个**模板参数列表**(template parameter list), 这是一个逗号分隔的一个或多个模板参数(template parameter)的列表, 用 `<>` 包围起来, 在模板定义中, 模板参数列表不能为空.
+-   模板定义以关键字 template 开始, 后跟一个**模板参数列表**(template parameter list), 这是一个逗号分隔的一个或多个模板参数(template parameter)的列表, 用 `<>` 包围起来, 在模板定义中, 模板参数列表不能为空.
 
     ```cpp
     template <typename T>
     void func(const T &) {}
     ```
 
-+   实例化函数模板
+-   实例化函数模板
 
-    +   当我们调用一个函数模板时, 编译器通常用函数实参来为我们推断模板实参.
+    -   当我们调用一个函数模板时, 编译器通常用函数实参来为我们推断模板实参.
 
-+   模板类型参数: 类型参数可以用来指定返回类型或函数的参数类型, 以及在函数体内用于变量声明或类型转换. 类型参数前面必须加上 `typename` 关键字.
+-   模板类型参数: 类型参数可以用来指定返回类型或函数的参数类型, 以及在函数体内用于变量声明或类型转换. 类型参数前面必须加上 `typename` 关键字.
 
     ```cpp
     template <typename T, U> ... // 错误: U 之前也要加上 typename
     template <typename T, typename U> ... // 正确
     ```
 
-+   非类型模板参数 (nontype parameter)
+-   非类型模板参数 (nontype parameter)
 
-    +   一个非类型参数表示一个值而非一个类型. 我们通过一个特定的类型名而非关键字 typename 来指定非类型参数.
+    -   一个非类型参数表示一个值而非一个类型. 我们通过一个特定的类型名而非关键字 typename 来指定非类型参数.
+    -   比如下面的代码就在比较不同长度字符串字面常量, 两个非类型参数分别表示两个数组的长度.
 
+    ```cpp
+    template <unsigned M, unsigned N>
+    int compare(const char (&p1)[M], const char (&p2)[N]) {
+      return strcmp(p1, p2);
+    }
+    ```
 
+    +   当我们调用这个版本的 compare 时, 编译器会使用字面常量的大小来替代 M 和 N: `compare("hi", "mom");`  由于编译器会在一个字符串字面常量的末尾插入一个空字符作为终结符, 因此编译器会实例化出如下版本:
+
+        ```cpp
+        int compare(const char (&p1)[3], const char (&p2)[4])
+        ```
+
+-   编写类型无关的代码
+
+    -   编写泛型代码的两个重要原则:
+        -   模板中的函数参数是 const 的引用 (这样可用于不能拷贝的类型)
+        -   函数体中的条件判断仅使用 `<` 比较运算 (如果代码中只使用 `<` 运算符, 我们就降低了 compare 函数对要处理的类型的要求.)
+
+-   模板编译: 模板的头文件通常既包含声明也包括定义.
+
+    -   大多数编译错误在实例化期间报告
+
+-   类模板
+
+    -   与函数模板不同之处是, **编译器不能为类模板推断模板参数类型.** 为了使用类模板, 我们必须在模板名后的尖括号中提供额外信息 -- 用来代替模板参数的模板实参列表.
+    -   实例化类模板
+        -   一个类模板的每个实例都形成一个独立的类.
+
+## 2017 年 8 月 11 日
 
 注意 15.7.1 节(虚析构函数)之后的第 15 章的内容没有看, 这一节是关于构造函数与拷贝控制的内容. 以后再补上.
 

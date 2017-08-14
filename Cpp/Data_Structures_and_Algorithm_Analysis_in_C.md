@@ -1,6 +1,26 @@
 # Data Structures and Algorithm Analysis in C
 
-### 2017 年 8 月 11 日
+## 2017 年 8 月 12 日
+
++   在算法这本书上看到的:
+
+    ```cpp
+    // for 语句
+    for (<initialize>; <boolean expression>; <increment>) {
+      <block statement>
+    }
+
+    // 除了几种特殊的情况外, 这段代码都等价于:
+    <initialize>;
+    while (<boolean expression>) {
+      <block statement>
+      <increment>;
+    }
+    ```
+
+    ​
+
+## 2017 年 8 月 11 日
 
 ### 第三章 表, 栈和队列
 
