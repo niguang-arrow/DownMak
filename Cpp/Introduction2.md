@@ -1,5 +1,687 @@
 # Introduction 2
 
+## 2017 年 8 月 16 日
+
+### 15.7 构造函数与拷贝控制
+
++   如果一个类(基类或派生类)没有定义拷贝控制函数, 则编译器将为它合成一个版本. 当然, 这个合成的版本也可以定义成被删除的函数.
+
++   虚析构函数
+
+    +   继承关系对基类拷贝控制最直接的影响是基类通常应该定义一个虚析构函数, 这样我们就能动态分配继承体系中的对象了.
+
+
+    +   当我们 delete 一个动态分配的对象的指针时执行析构函数, 如果该指针指向继承体系中的某个类型, 则有可能出现指针的静态类型与被删除对象的动态类型不符的情况. 比如我们 delete 一个 `Quote*` 类型的指针, 则该指针有可能实际指向了一个 `Bulk_quote` 类型的对象, 如果这样的话, 编译器就必须清楚它应该执行的是 `Bulk_quote` 的析构函数. 我们通过在基类中将析构函数定义为虚函数以确保执行正确的析构函数版本. 
+    +   和其他虚函数一样, 析构函数的虚属性也会被继承. **因此, 无论 Quote 的派生类使用合成的析构函数还是定义自己的析构函数, 都将是虚析构函数.** 只要基类的析构函数是虚函数, 就能确保当我们 delete 基类指针时将运行正确的析构函数版本.
+    +   注意: **如果基类的析构函数不是虚函数, 则 delete 一个指向派生类对象的基类指针将产生未定义的行为.**
+
++   派生类的拷贝控制成员
+
+    +   派生类构造函数在其初始化阶段中不但要初始化派生类自己的成员, 还负责初始化派生类对象的基类部分. 因此, 派生类的拷贝和移动构造函数在拷贝和移动自有成员的同时, 也要拷贝和移动基类部分的成员. 派生类赋值运算符也必须为其基类部分的成员赋值.
+
++   定义派生类的拷贝或移动构造函数:
+
+    +   我们通常使用对应的基类构造函数初始化对象的基类部分:
+
+        ```cpp
+        class Base {/*  ... */};
+        class D : public Base {
+        public:
+          D(const D &d): Base(d)  // 拷贝基类成员
+              /* D 的成员的初始值 */ { /* ... */ }
+          D(D &&d): Base(std::move(d))  // 移动基类成员
+            /* D 的成员的初始值 */ { /* ... */ }
+        };
+        ```
+
+        ​
+
+## 2017 年 8 月 15 日
+
+### 第 11 章 关联容器
+
+关联容器和顺序容器有着根本的不同: 关联容器中的元素是按照关键字来保存和访问的. 与之相对, 顺序容器中的元素是按它们在容器中的位置来顺序保存和访问的. 
+
++   两个主要的关联容器 (associative-container) 类型是 map 和 set. map 中的元素是一些关键字-值(key-value) 对. set 中每个元素只包含一个关键字: set 支持高效的关键字查询操作.
+
++   标准库提供 8 个关联容器, 它们的不同体现在 3 个维度上:
+
+    1.  或是是一个 set, 或是一个 map
+    2.  或者要求不重复的关键字, 或者允许重复关键字
+    3.  按顺序保存元素, 或者无序保存
+
++   使用关联容器: 一个经典的使用关联数组的例子是单词计数程序:
+
+    ```cpp
+    // 统计每个单词在输入中出现的次数
+    map<string, size_t> word_count; // string 到 size_t 的空 map
+    string word;
+    while (cin >> word)
+      ++word_count[word];
+    for (const auto &w : word_count)
+      cout << w.first << " occurs " << w.second
+       << ((w.second > 1) ? "times" : "time") << endl;
+    ```
+
+    +   while 循环每次从标准输入中读取一个单词, 它使用每个单词对 `word_count` 进行下标操作. 如果 word 还没有在 map 中, 下标运算符会创建一个新元素, 其关键字为 word, 值为 0. 不管元素是否是新创建的, 我们将其值加 1.
+    +   **当从一个 map 中提取一个元素时, 会得到一个 pair 类型的对象.** 保存两个名为 first 和 second 的公有数据成员.
+
+    上一个程序的合理扩展是: 忽略常见单词, 比如 "the", "and" 等, 我们可以使用 set 保存想忽略的单词, 只对不在集合中的单词进行统计:
+
+    ```cpp
+    // 统计每个单词在输入中出现的次数
+    map<string, size_t> word_count; // string 到 size_t 的空 map
+    set<string> exclude = {"The", "But", "the", "or", "An"}; // 剩下的就不抄了
+    string word;
+    while (cin >> word)
+      // 只统计不在 exclude 中的单词
+      if (exclude.find(word) == exclude.end()) // 说明 word 不在 exclude 中
+      	++word_count[word];
+    for (const auto &w : word_count)
+      cout << w.first << " occurs " << w.second
+       << ((w.second > 1) ? "times" : "time") << endl;
+    ```
+
++   关联容器概述
+
+    +   **关联容器的迭代器都是双向的**
+
+    +   关联容器不支持顺序容器的位置相关的操作, 原因是关联容器中元素是根据关键字存储的, 这些操作对关联容器没有意义. 而且, 关联容器也不支持构造函数或插入操作这些接受一个元素值和一个数量值的操作.
+
+    +   定义关联容器
+
+        ```cpp
+        map<string, size_t> word_count; // 空容器
+        set<string> exclude = {"a", "b"}; // 列表初始化
+        map<string, string> authors = {
+          {"Joy", "James"},
+          {"Lily", "Jane"}
+        };
+        ```
+
+        +   当初始化一个 map 时, 必须提供关键字类型和值类型. 我们将每个关键字-值对包围在花括号中:
+
+            ```cpp
+            {key, value}
+            ```
+
+            key 是第一个元素, value 是第二个元素
+
++   初始化 multimap 和 multiset
+
+    +   map 和 set 中的关键字必须是唯一的, 但 multimap 和 multiset 并没有此限制, 它们都允许多个元素具有相同的关键字.
+
++   关键字类型的要求
+
+    +   对于有序容器 -- map, multimap set 和 multiset, 关键字类型必须定义元素比较的方法
+
+    +   在实际编程中, 如果一个类型定义了满足 "严格弱序" 的 < 运算符, 则它可以用作关键字类型**.**
+
+    +   **用来组织一个容器中元素的操作的类型也是该容器类型的一部分.** 为了指定使用自定义的操作, 必须在定义关联容器类型时提供此操作的类型. 我们用尖括号指出要定义哪种类型的容器, **自定义的操作类型必须在尖括号中紧跟元素类型给出**.
+
+        比如我们不能直接定义一个 `Sales_data` 的 multiset, 因为 `Sales_data` 没有 `<` 运算符. 但是可以用 345 页中定义的 `compareIsbn` 函数来定义一个 multiset. 此函数在 `Sales_data` 对象的 ISBN 成员上定义了一个严格弱序:
+
+        ```cpp
+        bool compareIsbn(const Sales_data &lhs, const Sales_data &rhs) {
+          return lhs.isbn() < rhs.isbn();
+        }
+        ```
+
+        **为了使用自己定义的操作, 在定义 multiset 时我们必须提供两个类型**: 关键字类型 `Sales_data` 以及比较操作类型 -- 应该是一种函数指针类型, 可以指向 compareIsbn. **当定义此容器类型的对象时, 需要提供想要使用的操作的指针.**
+
+        在本例中, 我们提供一个指向 compareIsbn 的指针:
+
+        ```cpp
+        // bookstore 中多条记录可以有相同的 ISBN
+        // bookstore 中的元素以 ISBN 的顺序进行排序
+        multiset<Sales_data, decltype(compareIsbn)*> // decltype(compareIsbn)* 才是函数指针类型
+          bookstore(compareIsbn);
+        ```
+
+        用 compareIsbn 来初始化 bookstore 对象, 这表示当我们向 bookstore 中添加元素时, 通过 compareIsbn 来为这些元素排序. 即 bookstore 中的元素将按它们的 ISBN 成员的值排序. 可以用 compareIsbn 代替 `&compareIsbn` 作为构造函数的参数, 因为当我们使用一个函数的名字时, 在需要的情况下它会自动转换为一个指针. 当然, 使用 `&compareIsbn` 的效果也是一样的.
+
++   pair 类型
+
+    +   pair 类型定义在头文件 `#include <utility>` 中. 一个 pair 保存两个数据成员. 当创建一个 pair 时, 我们必须提供两个类型名.
+    +   与标准库类型不同, pair 的数据成员是 public 的, 两个成员分别命名为 first 和 second.
+    +   可以使用 `make_pair` 生成 pair 对象.
+
++   关联容器操作
+
+    +   下列类型表示容器关键字和值的类型
+
+        ```cpp
+        key_type  // 此容器类型的关键字类型
+        mapped_type  // 每个关键字关联的类型: 只适用于 map
+        value_type  // 对于 set, 与 key_type 相同
+                 // 对于 map, 为 pair<const key_type, mapped_type>
+        ```
+
+    +   对于 set 类型, `key_type` 和 `value_type` 是一样的; set 中保存的值就是关键字. 在一个 map 中, 元素是关键字-值对. **即, 每个元素是一个 pair 对象, 包含一个关键字和一个关联的值.** 由于我们不能改变一个元素的关键字, 因此这些 pair 的关键字部分是 const 的:
+
+        ```cpp
+        set<string>::value_type v1;  // v1 是一个 string
+        set<string>::key_type v2;  // v2: string
+        map<string, int>::value_type v3;  // v3 是一个 pair<const string, int>
+        map<string, int>::key_type v4;  // v4 是一个 string
+        map<string, int>::mapped_type v5; // v5 是一个 int
+        ```
+
+        +   只有 map 类型(包括无序, multimap 等)才定义了 `mapped_type`.
+
++   关联容器的迭代器
+
+    +   **当解引用一个关联容器迭代器时, 我们会得到一个类型为容器的 `value_type` 的值的引用.** 对 map 而言, `value_type` 是一个 pair 类型, 其 first 成员保存 const 的关键字, second 成员保存值.
+    +   set 的迭代器是 const 的: 虽然 set 类型同时定义了 `iterator` 和 `const_iterator` 类型, 但是两种类型都只允许只读访问 set 中的元素, 与不能改变一个 map 元素的关键字一样, 一个 set 中的关键字也是 const 的.
+
++   关联容器和算法: map 中的元素是 pair, 其第一个成员是 const 的. 我们通常不对关联容器使用泛型算法.
+
++   添加元素
+
+    +   关联容器有 insert 成员, 向容器中添加一个元素或**一个元素范围**. **由于 map 和 set (以及对应的无序类型) 包含不重复的关键字, 因此插入一个已存在的元素对容器没有任何影响.**
+
+        ```cpp
+        vector<int> ivec = {1, 2, 3, 1, 2, 3}; 
+        set<int> set2;
+        set2.insert(ivec.cbegin(), ivec.end()); // set2 中只有 3 个元素
+        set2.insert({4, 5, 6}); // set2 中有 6 个元素 
+        ```
+
+    +   向 map 中添加元素
+
+        必须记住元素的类型是 pair.
+
+        ```cpp
+        // word_count 是 map<string, size_t> 
+        word_count.insert({word, 1});
+        word_count.insert(make_pair(word, 1));
+        word_count.insert(pair<string, size_t>(word, 1));
+        word_count.insert(map<string, size_t>::value_type(word, 1));
+        ```
+
+    +   检测 insert 的返回值
+
+        +   insert (或 emplace) 返回的值依赖于容器类型和参数. 对于不包含重复关键字的容器, 添加单一元素的 insert 和 emplace 版本返回一个 pair, **告诉我们插入操作是否成功. pair 的 first 成员是一个迭代器, 指向具有给定关键字的元素.** second 成员则是一个 bool 值, 指出元素是插入成功还是已经存在与容器中. 如果关键字已在容器中, 则 insert 什么也不做, 且返回值中的 bool 部分为 false. 如果关键字不存在, 元素被插入容器中, 且 bool 值为 true.
+
+            ```cpp
+            // 使用 insert 重写单词计数程序
+            map<string, size_t> word_count;
+            string word;
+            while (cin >> word) {
+              // 插入一个元素, 关键字等于 word, 值为 1
+              // 若 word 已在 word_count 中, insert 什么也不做
+              auto ret = word_count.insert({word, 1});
+              if (!ret.second) // ret.second 为 false, 即 word 已在 word_count 中
+                ++ret.first->second; // ret.first 指向元素 pair, 要递增 pair 中的值
+            }
+            ```
+
+            +   ret 的类型如下:
+
+                ```cpp
+                pair<map<string, size_t>::iterator, bool> ret = 
+                  word_count({word, 1});
+
+                // ret.first 为 map<string, size_t>::iterator, 
+                // 即 pair 的第一个成员, 指向具有给定关键字的元素,
+                // ret.first->second 为 map 中元素的值部分.
+                ```
+
+    +   向 multiset 或 multimap 添加元素
+
+        +   比如作者到他所著书籍题目的映射, 每个作者可能有多个条目:
+
+            ```cpp
+            multimap<string, string> authors;
+            authors.insert({"Jane", "I'm flying"});
+            authors.insert({"Jane", "Why you fly?"});
+            ```
+
+            +   由于一个 multi 容器中的关键字不必唯一, 在这些类型上调用 insert 总会插入一个元素.
+            +   对允许重复关键字的容器, 接受单个元素的 insert 操作返回一个指向新元素的迭代器. 这里无须返回一个 bool 值, 因为 insert 总是向这类容器中加入一个新元素.
+
++   删除元素
+
+    +   与顺序容器一样, 我们可以通过传递给 erase 一个迭代器或一个迭代器对来删除一个元素或一个元素范围. 
+    +   关联容器提供一个额外的 erase 操作, 它接受一个 `key_type` 参数. 此版本删除所有匹配给定关键字的元素 (如果存在的话), 返回实际删除的元素的数量. 
+
++   map 的下标操作
+
+    +   map 和 `unordered_map` 容器提供了下标运算符和一个对应的 at 函数. 
+
+    +   如果关键字并不在 map 中, 会为它创建一个元素并插入到 map 中, 关联值将进行值初始化.
+
+        ```cpp
+        map<string, size_t> word_count;
+        // 插入一个关键字 Anna 的元素, 关联值进行值初始化; 然后将 1 赋给它
+        word_count["Anna"] = 1; // 注意关键字是 const string
+        ```
+
+        +   map 和 `unordered_map` 的下标操作
+
+            ```cpp
+            c[k] // 返回关键字为 k 的元素; 如果 k 不在 c 中, 添加一个
+                 // 关键字为 k 的元素, 对其进行值初始化
+            c.at(k) // 访问关键字为 k 的元素, 带参数检查: 若 k 不在 c 中, 抛出一个 
+                   // out_of_ranger 异常
+            ```
+
++   使用下标操作的返回值
+
+    +    map 的下标运算符与我们用过的其他下标运算符的另一个不同之处是其返回类型, 通常情况下, 解引用一个迭代器所返回的类型与下标运算符返回的类型是一样的. 但对 map 则不然, **当对一个 map 进行下标操作时, 会获得一个 `mapped_type` 对象; 但当解引用一个 map 迭代器时, 会得到一个 `value_type` 对象.**
+
++   访问元素
+
+    +   在一个关联容器中查找元素的操作
+
+    ```cpp
+    // lower_bound 和 upper_bound 不适用于无序容器
+    // 下标和 at 操作只适用于非 const 的 map 和 unordered_map
+    c.find(k)  // 返回一个迭代器, 指向第一个关键字为 k 的元素,
+              // 如果 k 不在容器中, 则返回尾后迭代器
+    c.count(k) // 返回关键字等于 k 的元素的数量, 对于不允许重复关键字的容器, 
+              // 返回值永远是 0 或 1
+    c.lower_bound(k) // 返回一个迭代器
+    c.upper_bound(k) // 返回一个迭代器
+    c.equal_range(k) // 返回一个迭代器 pair, 表示关键字等于 k 的元素的范围,
+                  // 若 k 不存在, pair 的两个成员均等于 c.end()
+    ```
+
+    +   `lower_bound` 和 `upper_bound` 会得到一个迭代器范围.
+
++   在 multimap 或 multiset 中查找元素
+
+    +   一种方法是先使用 count 方法找到它们中有多少个相应关键字的元素, 然后通过一个 while 以及使用 find 得到的迭代器找到所有的关键字 (书上 385 页)
+
+    +   另一个方法是使用 `lower_bound` 和 `upper_bound` 会得到一个迭代器范围. `lower_bound` 返回的迭代器会指向第一个具有给定关键字的元素, 而 `upper_bound` 会返回指向最后给定关键字的元素之后位置的迭代器. 它们组合在一起会得到一个迭代器范围, 表示所有具有该关键字元素的范围. 如果没有元素与给定关键字匹配, 则 `lower_bound` 和 `upper_bound` 会返回相等的迭代器, 都指向给定关键字的插入点, 能保持容器中元素顺序的插入位置.
+
+        ```cpp
+        for (auto beg = authors.lower_bound(k), end = authors.upper_bound(k);
+            	beg != end; ++beg)
+          cout << beg->second << endl;
+        ```
+
+    +   最后一种解决方法是直接调用 `equal_range`, 它接受一个关键字,返回一个迭代器 pair. 
+
+        ```cpp
+        for (auto pos = authors.equal_range(k);
+            	pos.first != pos.second; ++pos.first)
+          cout << pos.first->second << endl;
+        ```
+
++   无序容器
+
+    +   这些容器不是使用比较运算符来组织元素, 而是使用一个哈希函数 (hash function) 和关键字类型的 == 运算符.
+    +   管理桶: 无序容器在存储上组织为一组桶, 每个桶保存零个或多个元素. 无序容器使用一个哈希函数将元素映射到桶.
+
+### 10.3.4 参数绑定
+
++   `find_if` 调只能接受一元谓词, 比如找出一个 `vector<string>` 中长度大于 `sz` 的字符串, 我们使用的是
+
+    ```cpp
+    auto wc = find_if(vec.begin(), vec.end(), 
+                   [sz] (const string &s) { return s.size() > sz; })
+    ```
+
+    当然我们可以使用一个函数来替代上面的 lambda 函数:
+
+    ```cpp
+    bool check_size(const string &s, string::size_type sz) {
+      return s.size() > sz;
+    }
+    ```
+
+    但是我们不能将 `check_size` 传递给 `find_if`, 因为它只接受一个一元谓词, 也就是 `check_size` 只能接受一个参数, 但此处的 `check_size` 却接受两个参数, 为了用 `check_size` 替代 lambda, 必须解决如何向 `sz` 形参传递一个参数的问题.
+
++   bind 函数
+
+    +   我们可以使用 bind 标准库函数, 定义在头文件 `#include <functional>` 中, 可以将 bind 函数看作一个通用的函数适配器, 它接受一个可调用对象, 生成一个新的可调用对象来 "适应" 原对象的参数列表. 调用 bind 的一般形式为:
+
+        ```cpp
+        auto newCallable = bind(callable, arg_list);
+        ```
+
+        +   newCallable 是一个可调用对象, `arg_list` 是一个逗号分隔的参数列表, 对应给定的 `callable` 的参数. 即, 当我们调用 newCallable 时, newCallable 会调用 callable, 并传给它 `arg_list` 中的参数.
+        +   `arg_list` 中的参数可能包含形如 `_n` 的名字, 其中 `n` 是一个整数. 这些参数是 "占位符", 表示 newCallable 的参数, 它们占据了传递给 newCallable 的参数的 "位置". `_1` 表示 newCallable 中的第一个参数, `_2` 表示它的第二个参数, 以此类推.
+
+    +   绑定 `check_size` 的 sz 的参数
+
+        ```cpp
+        // check6 是一个可调用对象
+        auto check6 = bind(check_size, _1, 6);
+        ```
+
+        +   `check6` 只接受单一参数, 它使用了一个占位符.
+
+        我们还可以将原来的 `find_if` 改为:
+
+        ```cpp
+        auto wc = find_if(vec.begin(), vec.end(), 
+                          bind(check_size, _1, sz));
+        ```
+
+    +   **使用 placeholders 名字**
+
+        +   名字 `_n` 都定义在一个名为 placeholders 的命名空间中, 而这个命名空间又定义在 std 命名空间中. 为了使用这些名字, 两个命名空间都要写上:
+
+            ```cpp
+            using std::placeholders::_1;
+            ```
+
+    +   另一种 using 声明语句:
+
+        ```cpp
+        using namespace namespace_name;
+
+        // 比如
+        using namespace std::placeholders;
+        ```
+
+        +   这种形式说明希望使用来自 `namespace_name` 的名字都可以在我们的程序中直接使用.
+
+    +   用 bind 重排参数顺序
+
+        +   下面可以用 bind 颠倒 isShorter 的含义
+
+            ```cpp
+            // 按单词长度由短至长排序
+            sort(words.begin(), words.end(), isShorter);
+            // 按单词长度由长至短排序
+            sort(words.begin(), words.end(), bind(isShorter, _2, _1));
+
+            // isShorter 的定义
+            bool isShorter(const string &s1, const string &s2) {
+              return s1.size() < s2.size();
+            }
+            ```
+
+    +   绑定引用参数
+
+        默认情况下, bind 的那些不是占位符的参数被拷贝到 bind 返回的可调用对象中. 但是, 与 lambda 类似, 有时对有些绑定的参数我们希望以引用方式传递, 或是要绑定参数的类型无法拷贝.
+
+        ```cpp
+        // 为了替换一个引用方式捕获 ostream 的 lambda
+        // os 是一个局部变量, 引用一个输出流
+        // c 是一个局部变量, 类型为 char
+        for_each(words.begin(), words.end(), 
+               [&os, c] (const string &s) { os << s << c; });
+        ```
+
+        可以很容易编写一个函数完成相同的工作
+
+        ```cpp
+        ostream& print(ostream &os, const string &s, char c) {
+          return os << s << c;
+        }
+        ```
+
+        **但是我们不能使用 bind 来替代对 os 的捕获**:
+
+        ```cpp
+        // 错误: 不能拷贝 os
+        for_each(words.begin(), words.end(),
+                bind(print, os, _1, c));
+        ```
+
+        **原因在于 bind 拷贝其参数**, 而我们不能拷贝一个 ostream. 如果我们希望传递给 bind 一个对象而又不拷贝它, 就必须使用标准库 ref 函数:
+
+        ```cpp
+        for_each(words.begin(), words.end(),
+                bind(print, ref(os), _1, c));
+        ```
+
+        **函数 ref 返回一个对象, 包含给定的引用, 此对象是可以拷贝的.** 标准库还有一个 cref 函数, 生成一个保存 const 引用的类. 与 bind 一样, 函数 ref 和 cref 也定义在 `#include <functional>` 中.
+
++   再探迭代器: 标准库在头文件 `#include <iterator>` 中还定义了额外几种迭代器:
+
+    1.  插入迭代器 (insert iterator): 这些迭代器被绑定到一个容器上, 可用来向容器插入元素.
+    2.  流迭代器 (stream iterator): 绑定到输入或输出流上, 用来遍历所有关联的 IO 流.
+    3.  反向迭代器 (reverse iterator): 这些迭代器向后而不是向前移动, 除了 `forward_list` 之外的标准库容器都有反向迭代器.
+    4.  移动迭代器 (move iterator): 这些专用的迭代器不是拷贝其中的元素, 而是移动它们 (在 480 页介绍).
+
++   插入迭代器:
+
+    +   它接受一个容器, 生成一个迭代器, 能实现向给定容器添加元素. 当我们通过一个插入迭代器进行赋值时, 该迭代器调用容器操作来向给定容器的指定位置插入一个元素.
+
+        ```cpp
+        it = t;  // 在 it 指定的当前位置插入值 t. 假定 c 是 it 绑定的容器, 依赖于
+                 // 插入迭代器的不同种类, 此赋值会分别调用 c.push_back(t),
+                 // c.push_front(t) 或 c.insert(p, t), p 为传递给 inserter
+                 // 的迭代器位置.
+        *it, ++it, --it  // 这些操作虽然都存在, 但不会对 it 做任何事情. 每个操作都
+                         // 返回 it.
+        ```
+
+        +   `cout << *it;` 是会报错的.
+
+    +   插入器有三种类型, 差异在于元素插入的位置:
+
+        1.  `back_inserter`: 创建一个使用 `push_back` 的迭代器
+        2.  `front_inserter`: 创建一个使用 `push_front` 的迭代器
+        3.  `inserter`: 创建一个使用 `insert` 的迭代器. 此函数接受两个参数, **这个参数必须是一个指向给定容器的迭代器**. 元素将被插入到给定迭代器所表示的元素之前.
+
+        这里主要注意 `inserter` 和 `front_inserter` 的区别:
+
+        ```cpp
+        vector<int> vec1, vec2;
+        vector<int> a = {1, 2, 3, 4};
+        // 拷贝完成后, vec1 的结果为 1 2 3 4
+        copy(a.begin(), a.end(), inserter(vec1, vec1.begin()));
+
+        // 拷贝完成后, vec2 的结果为 4 3 2 1
+        copy(a.begin(), a.end(), front_inserter(vec2));
+        ```
+
+        `auto it = inserter(vec, iter)` 会将元素插入到 iter 原来指向的元素之前, `it = val` 的效果等于:
+
+        ```cpp
+        it = vec.insert(it, val); // 在 it 之前的位置插入 val, 同时返回指向
+                                 // 新元素位置的 it
+        ++it;                // it 现在又返回到刚开始的位置
+        ```
+
++   iostream 迭代器
+
+    +   虽然 iostream 不是容器类型, 但是标准库定义了可用于这些 IO 类型对象的迭代器. `istream_iterator` 读取输入流, `ostream_iterator` 想一个输出流写数据. 这些迭代器将它们对应的流当作一个特定类型的元素序列来处理. 通过使用流迭代器, 我们可以用泛型算法从流对象读取数据以及向其写入数据.
+
+    +   `istream_iterator` 操作
+
+        +   当创建一个流迭代器时, 必须指定迭代器将要读写的对象类型. 一个 `istream_iterator` 使用 `>>` 来读取流. 因此, `istream_iterator` 要读取的类型必须定义了输入运算符. 当创建一个 `istream_iterator` 时, 我们可以将它绑定到一个流. 当然, 我们还可以默认初始化迭代器, 这样就创建了一个可以当作**尾后值**使用的迭代器.
+
+            ```cpp
+            istream_iterator<int> int_it(cin);  // 从 cin 读取 int
+            istream_iterator<int> int_eof; // 尾后迭代器
+            ifstream in("afile");
+            istream_iterator<string> str_it(in); // 从 "afile" 读取字符串
+            ```
+
+        +   下面是一个用 `istream_iterator` 从标准输入读取数据, 存入一个 vector 的例子:
+
+            ```cpp
+            istream_iterator<int> in_iter(cin); // 从 cin 读取 int
+            istream_iterator<int> eof;  // istream 尾后迭代器
+            while (in_iter != eof)
+              // 后置递增运算读取流, 返回迭代器的旧值
+              // 解引用迭代器, 获得从流读取的前一个值
+              vec.push_back(*in_iter++);
+            ```
+
+            +   eof 被定义为空的 `istream_iterator`, 从而可以当作尾后迭代器来使用. **对于一个绑定到流的迭代器, 一旦其关联的流遇到文件尾或遇到 IO 错误, 迭代器的值就与尾后迭代器相等.**
+
+        +   我们还可以将上面的程序重写为下式, 这体现了 `istream_iterator` 更有用的地方:
+
+            ```cpp
+            istream_iterator<int> in_iter(cin), eof; // 从 cin 读取 int
+            vector<int> vec(in_iter, eof); // 从迭代器范围构造 vec
+            ```
+
+            **我们使用一对表示范围的迭代器来构造 vec**.
+
+    +   使用算法来操作流迭代器
+
+        +   由于算法使用迭代器操作来处理数据, 而流迭代器又至少支持某些迭代器操作, 因此我们可以用某些算法来操作流迭代器.
+
++   `ostream_iterator` 操作
+
+    +   我们可以对任何具有输出运算符 (`<<` 运算符) 的类型定义 `ostream_iterator`. 必须将 `ostream_iterator` 绑定到一个指定的流, 不允许空的或表示尾后位置的 `ostream_iterator`. 同时, 创建一个 `ostream_iterator` 时, 我们可以提供(可选的)第二个参数, 它必须是一个 C 风格的字符串, 在输出每个元素后都会打印此字符串.
+
+        ```cpp
+        ostream_iterator<int> out_iter(cout, " ");
+        for (auto e : vec)
+          *out_iter++ = e; // 赋值语句实际上将元素写到 cout
+        cout << endl;
+
+        // 实际上, 我们也可以忽略解引用和递增运算, 循环可重写如下
+        for (auto e : vec)
+          out_iter = e;
+        cout << endl;
+        ```
+
+        +   虽然可以忽略解引用和递增运算, 但是推荐第一种写法, 因为可以和其他的流迭代器的使用保持一致.
+
+        +   **可以调用 copy 来打印 vec 中的元素, 这比编写循环更为简单**:
+
+            ```cpp
+            copy(vec.begin(), vec.end(), out_iter);
+            cout << endl;
+            ```
+
++   使用流迭代器处理类类型
+
+    +   我们可以为任何定义了输入运算符 (`>>`) 的类型创建 `istream_iterator` 对象, 只要类型有输出运算符 `<<`, 我们也可以为其定义 `ostream_iterator`.
+
++   看个例子:
+
+    习题 10.29: 编写程序, 使用流迭代器读取一个文本文件, 存入一个 vector 中的 string 里.
+
+    ```cpp
+    #include <iostream>
+    #include <fstream>
+    #include <vector>
+    #include <iterator>
+    #include <algorithm>
+
+    using namespace std;
+
+    int main() {
+        vector<string> vec;
+        ifstream in("test.cpp");
+        istream_iterator<string> in_iter(in), eof;
+        ostream_iterator<string> out_iter(cout, "\n");
+        while (in_iter != eof)
+            vec.push_back(*in_iter++);
+      	// 使用 copy 算法, 但是第三个参数为输出流迭代器, 这样可以将
+      	// vec 中的内容输出
+        copy(vec.begin(), vec.end(), out_iter); 
+        return 0;
+    }
+    ```
+
+    +   **但是上面的方法只能将 test.cpp 中所有单词一个一个输出, 因为读入的时候 string 是一个接一个读入的. 但是现在我想输出每一行.** 参考 [Is there a C++ iterator that can iterate over a file line by line?](https://stackoverflow.com/questions/2291802/is-there-a-c-iterator-that-can-iterate-over-a-file-line-by-line) 可以得到使用输入流迭代器读取文件的每一行的方法, 即定义一个新的类, 包括重定义该类型的 `>>` 输入运算符.
+
+        ```cpp
+        #include <iostream>
+        #include <fstream>
+        #include <vector>
+        #include <iterator>
+        #include <algorithm>
+
+        using namespace std;
+
+        // 主要注意继承时需使用 public 访问控制符, 如果是
+        // class Line : string {}; 会报错. 这样默认为 private
+        class Line : public string {
+            friend istream& operator>>(istream &is, Line &l) {
+                return getline(is, l);
+            }
+        };
+
+        int main() {
+            vector<Line> vec;
+            ifstream in("test.cpp");
+            istream_iterator<Line> in_iter(in), eof;
+            ostream_iterator<Line> out_iter(cout, "\n");
+            while (in_iter != eof)
+                vec.push_back(*in_iter++);
+            copy(vec.begin(), vec.end(), out_iter);
+            return 0;
+        }
+        ```
+
++   反向迭代器
+
+    +   反向迭代器就是在容器中从尾元素向首元素反向移动的迭代器. 对于反向迭代器, 递增(以及递减)操作的含义会颠倒过来. 递增一个反向迭代器 (`++it`) 会移动到前一个元素; 递减一个迭代器 (`--it`) 会移动到下一个元素. 除了 `forward_list` 外, 其他容器都支持反向迭代器. 我们可以通过调用 `rbegin`, `rend`, `crbegin` 和 `crend` 成员函数来获得反向迭代器. 这些成员函数返回指向容器尾元素和首元素之前一个位置的迭代器.
+
+    +   比如, 使用 sort 默认从小到大排序:
+
+        ```cpp
+        sort(vec.begin(), vec.end()); // 按 "正常序" 排序 vec
+        // 按逆序排序: 将最小的元素放在 vec 的末尾
+        sort(vec.rbegin(), vec.rend()); 
+        // 由于从右向左处理 vec, 当两个数进行比较后, 
+        // 最小的数先放置在右边, 所以最后的效果是从大到小排序.
+        ```
+
+    +   反向迭代器需要递减运算符. 注意流迭代器不支持递减运算.
+
+    +   反向迭代器和其他迭代器间的关系
+
+        +   反向迭代器的目的是表示元素范围, 而这写范围是不对称的, 这导致一个重要的结果: 当我们从一个普通迭代器初始化一个反向迭代器, 或是给一个反向迭代器赋值时, 结果迭代器与原迭代器指向的并不是相同的元素.
+        +   书上 364 页有个例子, 将 "FIRST, MIDDLE, LAST" 这个逗号分隔的字符串中第一个或最后一个字符串给打印出来. 主要要注意其中的 `reverse_iterator` 有成员函数名为 `base`, 可以将一个反向迭代器转换为普通的迭代器. **注意图 10.2**, 揭示了反向迭代器和普通迭代器间的关系.
+
++   泛型算法结构
+
+    +   任何算法的基本特性是它要求其迭代器提供哪些操作. 某些算法, 比如 find, 只要求通过迭代器能访问元素, 而 sort 之类的算法, 还要求读写和随机访问元素的能力.
+
+    +   算法所要求的迭代器操作可以分为 5 个迭代器类别:
+
+        1.  输入迭代器
+        2.  输出迭代器
+        3.  前向迭代器
+        4.  双向迭代器
+        5.  随机访问迭代器
+
+    +   算法形参模式
+
+        在任何其他算法分类之上, 还有一组参数规范, 理解这些参数规范对学习新算法很有帮助 -- 通过理解参数的含义, 你可以将注意力集中在所做的操作上. 大多数算法具有如下 4 种形式之一:
+
+        ```cpp
+        alg(beg, end, other args);
+        alg(beg, end, dest, other args);
+        alg(beg, end, beg2, other args);
+        alg(beg, end, beg2, end2, other args);
+        ```
+
+        +   其中 alg 是算法的名字, beg 和 end 表示算法所操作的输入范围. 几乎所有算法都接受一个输入范围, 是否有其他参数依赖于要执行的操作. 这里列出了常见的一种 -- dest, beg2 和 end2, 都是迭代器参数. 顾名思义, 如果用到了这些迭代器参数, 它们分别承担了指定目的位置和第二个范围的角色. 除了这些参数, 一些算法还接受额外的, 非迭代器的特定参数.
+
+    +   接受单个目标迭代器的算法
+
+        +   dest 参数是一个表示算法可以写入的目的位置的迭代器. 算法假定 (assume): 按其需要写入数据, 不管写入多少个元素都是安全的.
+        +   如果 dest 是一个直接指向容器的迭代器, 那么算法将输出数据写到容器中已存在的元素内. 
+        +   更常见的情况是, **dest 被绑定到一个插入迭代器, 或是一个 `ostream_iterator`. 插入迭代器会将新元素添加到容器中, 因而保证空间是足够的. `ostream_iterator` 会将数据写入到一个输出流, 同样不管要写入多少个元素都没有问题.**
+
++   算法命名规范
+
+    +   一些算法使用重载形式传递一个谓词
+
+        ```cpp
+        unique(beg, end); // 使用 == 运算符比较元素
+        unique(beg, end, comp); // 使用 comp 比较元素
+        ```
+
+        两个调用都重新整理给定序列, **将相邻的重复元素删除**. (注意不是真的删除, 算法不删除元素, 只是将那些重复元素移到容器的最后, 返回的是迭代器, 指向最后一个不重复元素的后一个位置) 
+
+    +   `_if` 版本的算法: 比如 find 和 `find_if`
+
+    +   区分拷贝元素的版本和不拷贝的版本
+
+        +   默认情况下, 重排元素的算法将重排后的元素写回给定的输入序列中. 这些算法还提供另一个版本, 将元素写到一个指定的输出目的位置. 写到额外目的空间的算法都在名字后面附加一个 `_copy`.
+
++   特定容器算法
+
+    +   与其他容器不同, 链表类型 list 和 `forward_list` 定义了几个成员函数形式的算法. 通用版本的 sort 要求随机访问迭代器, 因此不能用于 list 和 `forward_list`, 因此它们定义了独有的 sort, merge, remove, reverse 和 unique.
+    +   链表特有的操作会改变容器.
+
 ## 2017 年 8 月 14 日
 
 ### 二分查找
