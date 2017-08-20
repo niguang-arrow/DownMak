@@ -1,5 +1,248 @@
 # Data Structures and Algorithm Analysis in C
 
+## 2017 年 8 月 18 日
+
+### 实现 Vector 和双向链表
+
++   Vector
+
+    ```cpp
+    #include <initializer_list>
+
+    using namespace std;
+
+    template <typename Object>
+    class Vector {
+    public:
+        Vector(size_t sz = 0) :
+            Size(sz), Capacity(sz > 0 ? 2 * sz : 1), objects(new Object[Capacity]) {}
+        Vector(initializer_list<Object> il) :
+            Size(il.size()), Capacity(2 * Size), objects(new Object[Capacity]) {
+                copy(il.begin(), il.end(), objects);
+        }
+        Vector(const Vector &rhs) :
+            Size(rhs.Size), Capacity(rhs.Capacity), objects(new Object[Capacity]) {
+            for (auto i = 0; i != Size; ++i)
+                objects[i] = rhs.objects[i];
+        }
+        Vector& operator=(const Vector &rhs) {
+            if (this != &rhs) {
+                Size = rhs.Size;
+                Capacity = rhs.Capacity;
+                delete[] objects;
+                objects = new Object[Capacity];
+                for (auto i= 0; i != Size; ++i)
+                    objects[i] = rhs.objects[i];
+            }
+            return *this;
+        }
+        Object& operator[](size_t index) { return objects[index]; }
+        const Object& operator[](size_t index) const { return objects[index]; }
+
+        size_t size() const { return Size; }
+        size_t capacity() const { return Capacity; }
+        bool empty() const { return size() == 0; }
+
+        typedef Object *iterator;
+        typedef const Object *const_iterator;
+
+        iterator begin() { return objects; }
+        iterator end() { return objects + Size; }
+        const_iterator begin() const { return objects; }
+        const_iterator end() const { return objects + Size; }
+
+
+        void reserve(size_t sz) {
+            if (sz < Size)
+                return;
+            auto oldArray = objects;
+            objects = new Object[sz];
+            for (auto i = 0; i != Size; ++i)
+                objects[i] = oldArray[i];
+            Capacity = sz;
+            delete[] oldArray;
+        }
+        void push_back(const Object &x) {
+            if (size() == capacity())
+                reserve(2 * capacity());
+            objects[Size++] = x;
+        }
+
+
+        ~Vector() { delete[] objects; }
+    private:
+        size_t Size;
+        size_t Capacity;
+        Object *objects;
+    };
+    ```
+
+    ​
+
++   List
+
+    ```cpp
+    #include <initializer_list>
+
+    using namespace std;
+
+    template <typename Object>
+    class List {
+    private:
+        struct Node;
+    public:
+        class const_iterator {
+        public:
+            const_iterator() :
+                current(nullptr) {}
+            const Object& operator*() const { return retrieve(); }
+            const_iterator operator++() {
+                current = current->next;
+                return *this;
+            }
+            const_iterator operator++(int) {
+                const_iterator old = *this;
+                ++*this;
+                return old;
+            }
+            const_iterator operator--() {
+                current = current->prev;
+                return *this;
+            }
+            const_iterator operator--(int) {
+                const_iterator old = *this;
+                --*this;
+                return old;
+            }
+            bool operator==(const const_iterator &rhs) const {
+                return current == rhs.current;
+            }
+            bool operator!=(const const_iterator &rhs) const {
+                return !(*this == rhs);
+            }
+        protected:
+            Node *current;
+            Object& retrieve() const { return current->data; }
+            const_iterator(Node *p) :
+                current(p) {}
+            friend class List<Object>;
+        };
+        class iterator : public const_iterator {
+        public:
+            iterator() {}
+            Object& operator*() { return this->retrieve(); }
+            const Object& operator*() const { return const_iterator::operator*(); }
+            iterator& operator++() {
+                this->current = this->current->next;
+                return *this;
+            }
+            iterator operator++(int) {
+                auto old = *this;
+                ++*this;
+                return old;
+            }
+            iterator& operator--() {
+                this->current = this->current->prev;
+                return *this;
+            }
+            iterator operator--(int) {
+                auto old = *this;
+                --*this;
+                return old;
+            }
+
+        protected:
+            iterator(Node *p) :
+                const_iterator(p) {}
+            friend class List<Object>;
+        };
+
+    public:
+        List() : Size(0), head(new Node), tail(new Node) {
+            head->next = tail;
+            tail->prev = head;
+        }
+        List(initializer_list<Object> &il) :
+            Size(il.size()), head(new Node), tail(new Node) {
+            for (auto it = il.begin(); il != il.end(); ++il)
+                push_back(*il);
+        }
+        List(const List &rhs) :
+            List() {
+            *this = rhs;
+        }
+        const List& operator=(const List &rhs) {
+            if (this != &rhs) {
+                clear();
+                for (const_iterator itr = rhs.begin(); itr != rhs.end(); ++itr)
+                    push_back(*itr);
+            }
+            return *this;
+        }
+        ~List() {
+            clear();
+            delete head;
+            delete tail;
+        }
+
+        iterator begin() { return iterator(head->next); }
+        iterator end() { return iterator(tail); }
+        const_iterator begin() const { return const_iterator(head->next); }
+        const_iterator end() const { return const_iterator(tail); }
+
+        size_t size() const { return Size; }
+        bool empty() const { return size() == 0; }
+
+        void clear() {
+            while (!empty())
+                pop_front();
+        }
+        Object& front() { return *begin(); }
+        const Object& front() const { return *begin(); }
+        Object& back() { return *--end(); }
+        const Object& back() const { return *--end(); }
+        void push_front(const Object &x) { insert(begin(), x); }
+        void push_back(const Object &x) { insert(end(), x); }
+        void pop_front() { erase(begin()); }
+        void pop_back() { erase(--end()); }
+
+        iterator insert(iterator itr, const Object &x) {
+            auto p = itr.current;
+            ++Size;
+            return iterator(p->prev = p->prev->next = new Node(x, p->prev, p));
+        }
+        iterator erase(iterator itr) {
+            auto p = itr.current;
+            iterator newit = iterator(p->next);
+            p->prev->next = p->next;
+            p->next->prev = p->prev;
+            delete p;
+            --Size;
+            return newit;
+        }
+        iterator erase(iterator start, iterator end) {
+            auto it = start;
+            for (; it != end;)
+                it = erase(it);
+            return it;
+        }
+
+    private:
+        struct Node {
+            Object data;
+            Node *prev;
+            Node *next;
+            Node(const Object &d = Object(), Node *p = nullptr, Node *n = nullptr) :
+                data(d), prev(p), next(n) {}
+        };
+        size_t Size;
+        Node *head;
+        Node *tail;
+    };
+    ```
+
+    ​
+
 ## 2017 年 8 月 12 日
 
 +   在算法这本书上看到的:
