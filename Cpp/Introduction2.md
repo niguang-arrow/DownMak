@@ -1,5 +1,246 @@
 # Introduction 2
 
+## 2017 年 8 月 30 日
+
++   `weak_ptr`: https://www.zhihu.com/question/26851369
+    +   智能指针一个很重要的概念是“所有权”，所有权意味着当这个智能指针被销毁的时候，它指向的内存（或其它资源）也要一并销毁。这技术可以利用智能指针的生命周期，来自动地处理程序员自己分配的内存，避免显示地调用delete，是自动资源管理的一种重要实现方式。
+        为什么要引入“弱引用”指针呢？弱引用指针就是没有“所有权”的指针。有时候我只是想找个指向这块内存的指针，但我不想把这块内存的生命周期与这个指针关联。这种情况下，弱引用指针就代表“我指向这东西，但这东西什么时候释放不关我事儿……”
+        有些地方为了方便，直接用原始指针（raw pointer）来表示弱引用。然后用这种原始指针，其弱引用的含义不够明确，万一别人写个delete xxxx，你就被坑了……而且弱引用指针还有其它一些方便你正确使用它的好处。
+
+
++   智能指针, 动态分配内存, 书上的 StrBlob 例子:
+
+    ```cpp
+    #include <iostream>
+    #include <memory>
+    #include <vector>
+    #include <string>
+    #include <initializer_list>
+
+    using namespace std;
+
+    class strBlob {
+    public:
+        typedef vector<string>::size_type size_type;
+        strBlob() :
+            data(make_shared<vector<string>>()) {}
+        strBlob(initializer_list<string> il) :
+            data(make_shared<vector<string>>(il)) {}
+        size_type size() const { return data->size(); }
+        bool empty() const { return data->empty(); }
+        void push_back(const string &s) { data->push_back(s); }
+        void pop_back() {
+            check(0, "pop_back on empty StrBlob");
+            data->pop_back();
+        }
+    	
+      // 注意写成 *data[index] 会报错, 必须加上括号.
+        string& operator[](size_type index) {
+            return (*data)[index];
+        }
+
+        const string& operator[](size_type index) const {
+            return (*data)[index];
+        }
+
+        string& front() {
+            // 如果 vector 为空, 抛出一个异常
+            check(0, "front on empty StrBlob");
+            return data->front();
+        }
+        string& back() {
+            check(0, "back on empty StrBlob");
+            return data->back();
+        }
+
+    private:
+        shared_ptr<vector<string>> data;
+        // 如果 data[i] 不合法, 抛出一个异常
+        void check(size_type i, const string &msg) const {
+            if (i >= data->size())
+                throw out_of_range(msg);
+        }
+
+    };
+
+
+    int main() {
+
+        initializer_list<string> il = {"a", "b", "c"};
+        shared_ptr<vector<string>> str = make_shared<vector<string>>(il);
+        auto a = *str;
+        cout << (*str)[1] << endl;
+
+
+        strBlob p1 = {"a", "b", "c"};
+        auto p2 = p1;
+        for (size_t i = 0; i < p2.size(); ++i)
+            cout << p2[i] << " ";
+        cout << endl;
+        cout << p2.size() << endl;
+        return 0;
+    }
+
+    ```
+
++   伴随类:
+
+    ```cpp
+    #include <iostream>
+    #include <memory>
+    #include <vector>
+    #include <string>
+    #include <initializer_list>
+
+    using namespace std;
+
+    class strBlobPtr;
+
+    class strBlob {
+        friend class strBlobPtr;
+    public:
+        typedef vector<string>::size_type size_type;
+        strBlob() :
+            data(make_shared<vector<string>>()) {}
+        strBlob(initializer_list<string> il) :
+            data(make_shared<vector<string>>(il)) {}
+        size_type size() const { return data->size(); }
+        bool empty() const { return data->empty(); }
+        void push_back(const string &s) { data->push_back(s); }
+        void pop_back() {
+            check(0, "pop_back on empty StrBlob");
+            data->pop_back();
+        }
+
+        string& operator[](size_type index) {
+            return (*data)[index];
+        }
+
+        const string& operator[](size_type index) const {
+            return (*data)[index];
+        }
+
+        string& front() {
+             //如果 vector 为空, 抛出一个异常
+            check(0, "front on empty StrBlob");
+            return data->front();
+        }
+        string& back() {
+            check(0, "back on empty StrBlob");
+            return data->back();
+        }
+    	
+      // 由于返回类型是 strBlobPtr 而不是指针, 所以 begin 和 end 应该在
+      // strBlobPtr 定义之后才能定义, 此处只给出声明.
+        strBlobPtr begin();
+        strBlobPtr end();
+
+    private:
+        shared_ptr<vector<string>> data;
+         //如果 data[i] 不合法, 抛出一个异常
+        void check(size_type i, const string &msg) const {
+            if (i >= data->size())
+                throw out_of_range(msg);
+        }
+
+    };
+
+    class strBlobPtr {
+      // 如果要使用范围 for, 除了在 strBlob 中定义 begin 和 end 之外, 还要在
+      // strBlobPtr 中定义 == 和 !=, 解引用和递增运算符也是必须的.
+        friend bool operator==(const strBlobPtr &lhs, const strBlobPtr &rhs) {
+            auto l = lhs.wptr.lock(), r = rhs.wptr.lock();
+            if (l == r)
+                // if they are both null or point to the same data;
+                return (!r || lhs.curr == rhs.curr);
+            else
+                return false;
+        }
+        friend bool operator!=(const strBlobPtr &lhs, const strBlobPtr &rhs) {
+            return !(lhs == rhs);
+        }
+    public:
+        strBlobPtr() :
+            curr(0) {}
+        strBlobPtr(strBlob &a, size_t sz = 0) :
+            wptr(a.data), curr(sz) {}
+        string& operator*() const {
+            auto p = check(curr, "dereference past end");
+            return (*p)[curr];
+        }
+        strBlobPtr& operator++() {
+            check(curr, "increment past end");
+            ++curr;
+            return *this;
+        }
+      // 后置运算符....
+        strBlobPtr operator++(int) {
+            check(curr, "increment past end");
+            auto ret = *this;
+            ++(*this);
+            return ret;
+        }
+
+    private:
+        weak_ptr<vector<string>> wptr; 
+        size_t curr; 
+      // 注意 strBlobPtr 的 check 和 strBlob 中的 check 不同. strBlobPtr 中的 check
+      // 还负责检查指定的 strBlob 中的 vector 对象是否还存在, 使用 weak_ptr 的 lock()
+      // 来达到这一个目的.
+        shared_ptr<vector<string>> check(size_t t, const string &msg) const {
+            auto ret = wptr.lock();
+            if (!ret)
+                throw runtime_error("unbound StrBlobPtr");
+            if (t >= ret->size())
+                throw out_of_range(msg);
+            return ret;
+        }
+    };
+
+
+    inline strBlobPtr strBlob::begin() { return strBlobPtr(*this); }
+    inline strBlobPtr strBlob::end() { return strBlobPtr(*this, this->size()); }
+
+    int main() {
+
+        initializer_list<string> il = {"a", "b", "c"};
+        shared_ptr<vector<string>> str = make_shared<vector<string>>(il);
+        auto a = *str;
+        cout << (*str)[1] << endl;
+
+        strBlob p1 = {"a", "b", "c", "d"};
+        // 使用下标运算符
+        auto p2 = p1;
+        for (size_t i = 0; i < p2.size(); ++i)
+            cout << p2[i] << " ";
+        cout << endl;
+        cout << p2.size() << endl;
+
+        // 使用 begin()
+        cout << *(p1.begin()) << endl;
+
+        // 使用伴随类
+        strBlobPtr strp(p1);
+        cout << *strp << endl;
+
+        // 使用范围 for
+        for (const auto &p : p1)
+            cout << p << " ";
+        cout << endl;
+        return 0;
+    }
+
+    // g++ -Wall -std=c++0x -o main main.cpp ./main -> 结果如下:
+    // b
+    // a b c d
+    // 4
+    // a
+    // a
+    // a b c d 
+    ```
+
+    ​
+
 ## 2017 年 8 月 20 日
 
 +   `delete p` 是释放 p 所指对象的内存, 此时 p 自身成为了空悬指针 (411 页), 通过析构函数可以释放它. 但在这之前我们可以使用 `p = nullptr` 指出 p 不再绑定到任何对象.
