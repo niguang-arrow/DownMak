@@ -1,5 +1,216 @@
 # Introduction 2
 
+## 2017 年 8 月 31 日
+
++   new 和 delete 一次分配/释放一个对象, 但某些应用需要一次为很多对象分配内存的功能. 为了支持这种需求, C++ 语言和标准库提供了两种一次分配一个对象数组的方法. 一个是 new 表达式, 用于分配并初始化一个对象数组, 另一个是 allocator 类, 允许我们将分配和初始化分离.
+
++   使用智能指针来管理动态数组
+
+    +   主要要注意销毁动态数组时需要使用 `delete[]`; 另一方面, 标准库提供了支持动态数组的 `unique_ptr` 版本, 因此可以使用 `unique_ptr` 来管理动态数组, 但是其类型后面需要加上 `[]`, 表示指向数组类型. 而 `shared_ptr` 不直接支持动态数组, 我们需要自定义删除器, 否则由于 `shared_ptr` 默认使用 delete 销毁对象, 当使用 `shared_ptr` 处理动态数组时, 会因为忘记使用 `delete[]` 而出现错误, 但是这个错误编译器是不会提示的Orz.
+
+    ```cpp
+    #include <iostream>
+    #include <memory>
+
+    using namespace std;
+
+    int main() {
+        
+        // 动态分配数组, 使用列表初始化
+        string* p1 = new string[3]{"ab", "cd", string(3, 'e')};
+        for (size_t i = 0; i != 3; ++i)
+            cout << *(p1 + i) << " ";
+        cout << endl;
+        delete[] p1; // 注意最后要 delete 动态数组
+
+        typedef int arrT[5]; // 使用类型别名
+        using arrY = int[5];
+        int* p2 = new arrT{1, 2, 3, 4, 5};
+        int* p3 = new arrY{10, 10, 10};
+        for (size_t i = 0; i != 5; ++i)
+            cout << *(p2 + i) << " " << *(p3 + i) << " ";
+        cout << endl;
+        // 千万不要忘了 delete[], 即使使用了类型别名, 需要 delete 数组
+        // 如果忘了, 编译器根本不会提示错误.
+        delete[] p2;
+        delete[] p3;
+
+        /* 使用智能指针来管理动态数组 */
+        /*
+         * 1. 标准库提供了一个可以管理 new 分配的数组的 unique_ptr 版本
+         * 2. 但是 shared_ptr 不直接支持管理动态数组
+         */
+        // unique_ptr 中的类型后面需要加上方括号, 说明 uq 指向的是一个数组而不是一个字符串
+        // 因此当 uq 销毁它管理的指针时, 会自动调用 delete[]
+        unique_ptr<string[]> uq(new string[5]{"a", "b", "c", "d", "e"});
+        // 这个版本的 unique_ptr 提供了下标运算符操作, 但是解引用操作, 以及
+        // 点和箭头成员运算符都没有提供
+        for (size_t i = 0; i != 5; ++i)
+            cout << uq[i] << " ";
+        cout << endl;
+
+        // 使用 shared_ptr 管理一个动态数组, 条件是必须提供自己定义的删除器
+        // 下面的 int 类型后面是没有方括号的; 由于 shared_ptr 默认使用 delete 
+        // 销毁它指向的对象, 若没有自定义的删除器, 删除动态数组时就忘了 delete[]
+        shared_ptr<int> sp(new int[5]{1, 2, 3, 4, 5}, [] (int *p) { delete[] p; });
+        // 另外, shared_ptr 访问动态数组时, 是没有定义下标运算符, 
+        // 另外智能指针也不支持指针的算术运算
+        // 因此需要使用 get() 来获得内置指针, 使用它来访问数组o
+        for (size_t i = 0; i != 5; ++i)
+            cout << *(sp.get() + i) << " ";
+        cout << endl;
+
+        return 0;
+    }
+    ```
+
++   使用 allocator 来管理动态数组, 需要注意的是 allocator 将内存分配和对象构造分离开来, 这意味着我们可以分配大块内存, 但只在真正需要的时候才真正执行对象创建操作. 下面的代码定义了 StrVec, 模仿 vector 的行为. 当没有可用的空间时, StrVec 会分配新的空间来加入新的对象. 还有注意 `uninitialized_copy` 等的结合使用. 另外, alloc 为静态对象, 需要在类外定义; 另一方面, alloc 需要使用 construct 方法才能在原始内存中创建对象.
+
+    ```cpp
+    #include <iostream>
+    #include <memory>
+    #include <initializer_list>
+    #include <utility> // pair 定义在该头文件中, move 也定义在该文件中.
+
+    using namespace std;
+
+    /*
+     * vector 类将其元素定义在连续的内存当中, 为了获得可接受的性能, vector 预先分配
+     * 足够的内存来保存可能需要的更多元素. vector 的每个添加元素的成员函数会检查是否
+     * 有空间容纳更多的元素. 如果有, 成员函数会在下一个可用位置构造一个对象; 如果没有
+     * 可用空间, vector 就会重新分配空间: 它获得新的空间, 将已有元素移动到新空间中,
+     * 释放旧空间, 并添加新元素.
+     * 
+     * 下面定义 StrVec, 使用 allocator来获得原始内存, 由于其分配的内存是未构造的, 我们
+     * 需要使用 construct 成员在原始内存中创建对象. 当我们删除一个元素时, 我们将使用
+     * destroy 成员来销毁元素.
+     * 
+     * StrVec 有三个指针成员指向其元素所使用的内存:
+     * elements, 指向分配的内存中的首元素
+     * first_free, 指向最后一个实际元素之后的位置
+     * cap, 指向分配的内存末尾之后的位置
+     * 还有一个 alloc 的静态成员, 用于分配内存.
+     */
+    class StrVec {
+    public:
+        StrVec() :
+            elements(nullptr), first_free(nullptr), cap(nullptr) {}
+        StrVec(const StrVec&);
+        StrVec(const initializer_list<string>);
+        StrVec& operator=(const StrVec&);
+        ~StrVec() { free(); }
+
+        string& operator[](size_t index) {
+            if (index >= size())
+                throw out_of_range("index is out of range");
+            return *(elements + index);
+        }
+        void push_back(const string&);
+        size_t size() const { return first_free - elements; }
+        size_t capacity() const { return cap - elements; }
+        string* begin() const { return elements; }
+        string* end() const { return first_free;  }
+
+    private:
+        static allocator<string> alloc; // 分配元素
+        // 被添加元素的函数所使用
+        void chk_n_alloc() {
+            if (size() == capacity())
+                reallocate();
+        }
+        // 辅助函数, 被拷贝构造函数, 赋值运算符和析构函数所使用
+        pair<string*, string*> alloc_n_copy(const string*, const string*);
+        void free(); // 销毁元素并释放内存
+        void reallocate(); // 获得更多内存并拷贝已有元素
+        string *elements; // 指向数组的首元素
+        string *first_free; // 指向数组第一个空闲元素的指针
+        string *cap; // 指向数组尾后位置的指针
+    };
+
+    allocator<string> StrVec::alloc;
+
+    void StrVec::push_back(const string &s) {
+        chk_n_alloc(); // 确保有空间容纳新元素
+        // 在 first_free 指向的元素中构造 s 的副本
+        alloc.construct(first_free++, s);
+    }
+
+
+    /*
+     * 在写 reallocate 函数之前, 想一下它的作用:
+     * 1. 为一个新的更大的 string 数组分配内存
+     * 2. 在内存空间中的前一部分构造对象, 保存现有元素
+     * 3. 销毁原内存空间中的元素, 并释放这块内存
+     * 
+     */
+    void StrVec::reallocate() {
+        // 我们将分配当前大小两倍的内存空间
+        auto newcapacity = size() ? 2 * size() : 1;
+        // 分配新内存
+        auto newdata = alloc.allocate(newcapacity);
+        // 将数据从旧内存移动到新内存
+        auto dest = newdata; // 指向新数组中下一个空闲位置
+        auto elem = elements; // 指向旧数组中下一个元素
+        for (size_t i = 0; i != size(); ++i)
+            alloc.construct(dest++, std::move(*elem++));
+        free(); // 一旦移动完元素就释放内存
+        // 更新我们的数据结构
+        elements = newdata;
+        first_free = dest;
+        cap = elements + newcapacity;
+    }
+
+    void StrVec::free() {
+        // 不能传递给 deallocate 一个空指针, 如果 elements 为 0, 函数什么也不做
+        if (elements) {
+            // 逆序销毁旧元素
+            for (auto p = first_free; p != elements; /*空*/)
+                alloc.destroy(--p);
+            alloc.deallocate(elements, cap - elements);
+        }
+    }
+
+    pair<string*, string*>
+    StrVec::alloc_n_copy(const string *b, const string *e) {
+        // 分配空间保存给定范围中的元素
+        auto data = alloc.allocate(e - b);
+        // 初始化并返回一个 pair, 该 pair 由 data 和 uninitialized_copy 的返回值构成
+        return {data, uninitialized_copy(b, e, data)};
+    }
+
+    StrVec::StrVec(const StrVec &s) {
+        // 调用 alloc_n_copy 分配空间以容纳和 s 中一样多的元素
+        auto newdata = alloc_n_copy(s.begin(), s.end());
+        elements = newdata.first;
+        first_free = cap = newdata.second;
+    }
+
+    StrVec& StrVec::operator=(const StrVec &s) {
+        auto newdata = alloc_n_copy(s.begin(), s.end());
+        free();
+        elements = newdata.first;
+        first_free = cap = newdata.second;
+        return *this;
+    }
+
+    StrVec::StrVec(const initializer_list<string> il) {
+        auto data = alloc.allocate(il.size());
+        elements = data;
+        first_free = cap = uninitialized_copy(il.begin(), il.end(), elements);
+    }
+
+    int main() {
+        
+        StrVec vec({"a", "b", "c", "d"});
+        for (size_t i = 0; i != vec.size(); ++i)
+            cout << vec[i] << " ";
+        cout << endl;
+        return 0;
+    }
+    ```
+
+    ​
+
 ## 2017 年 8 月 30 日
 
 +   `weak_ptr`: https://www.zhihu.com/question/26851369
