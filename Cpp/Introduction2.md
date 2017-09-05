@@ -1,5 +1,557 @@
 # Introduction 2
 
+## 2017 年 9 月 5 日
+
++   今天看了最后一章, 虚继承, 名字空间, 运行时类型识别等:
+
+    ```cpp
+    #include <iostream>
+    #include <vector>
+    #include <typeinfo> // 定义 dynamic_cast 和 typeid
+
+    namespace myspace {
+
+        class Student {
+            friend std::ostream& operator<<(std::ostream& os, const Student &s) {
+                return os << s.name;
+            }
+            friend void print(std::ostream& os, const Student &s) {
+                os << s.name << std::endl;
+            }
+        public:
+            void print() { std::cout << name << std::endl; }
+        private:
+            std::string name = "Student";
+        };
+
+        void print(const Student &s) {
+            std::cout << "myspace Student" << std::endl;
+        }
+    }
+
+    class Base1 {
+
+    public:
+        Base1() = default;
+        Base1(const int &s) { count = s; }
+        static int count;
+    };
+
+    int Base1::count = 100;
+
+    class Base2 {
+
+    public:
+        Base2() = default;
+        Base2(const int &s) { count = s; }
+        static int count;
+    };
+
+    int Base2::count = 200;
+
+    class Derived : public Base1, public Base2 {
+    public:
+        using Base1::Base1;
+        using Base2::Base2;
+        Derived(const int &s) { count = s; }
+        Derived() = default;
+        static int count;
+
+    };
+    int Derived::count = 10;
+
+    int main() {
+
+        myspace::Student stu;
+        stu.print();
+        std::cout << stu << std::endl;
+        print(std::cout, stu);
+
+        print(stu);
+
+        Derived b;
+        Derived a(1000);
+        std::cout << a.Base1::count << std::endl;
+        std::cout << a.Base2::count << std::endl;
+        std::cout << a.count << std::endl;
+
+        // RTTI 测试
+        const int w = 10;
+        if (typeid(w) == typeid(int))
+            std::cout << "int is int" << std::endl;
+
+        Derived p, *dp = &p;
+        Base1 *bp = dp; // 指向派生类对象
+        if (typeid(*bp) == typeid(Derived))
+            std::cout << "Derived" << std::endl;
+        else if (typeid(*bp) == typeid(Base1))
+            std::cout << "Base1" << std::endl;
+        std::cout << typeid(*bp).name() << std::endl;
+
+        return 0;
+    }
+    ```
+
+    ​
+
+## 2017 年 9 月 4 日
+
++   今日将 C++ 模板看完, 然后看了一下标准库的特殊设施:
+
+    ```cpp
+    #include <iostream>
+    #include <tuple>
+    #include <random>
+    #include <cmath>
+
+    /*
+     * 操纵符可以修改流的状态, 一个操纵符是一个函数或是一个对象, 会影响流的状态, 并能
+     * 用作输入或输出运算符的运算对象. 操纵符也返回它所处理的流对象.
+     * 
+     */
+
+    using namespace std;
+
+    static default_random_engine e;
+    static uniform_real_distribution<double> u(0, 1); // 生成随机实数
+    static normal_distribution<> n(4, 1.5); //使用默认模板参数
+
+
+    int main() {
+
+        // 关于 tuple
+        tuple<int, string, string> a(42, "Hello", "world");
+        cout << get<2>(a) << endl;
+        cout << tuple_size<decltype(a)>::value << endl;
+        tuple_element<1, decltype(a)>::type b("helloooo");
+        cout << b << endl;
+
+        // 生成随机实数
+        for (size_t i = 0; i != 5; ++i)
+            cout << u(e) << " ";
+        cout << endl;
+        cout << u.max() << " " << u.min() << endl;
+
+        // 生成非均匀分布的随机数
+        vector<unsigned> vals(9);
+        for (size_t i = 0; i != 200; ++i) {
+            unsigned v = lround(n(e));
+            if (v < vals.size())
+                ++vals[v];
+        }
+        for (size_t j = 0; j != vals.size(); ++j)
+            cout << j << ": " << string(vals[j], '*') << endl;
+
+        // 使用操纵符, 控制 bool 值输出的格式状态
+        cout << "default bool values: " << true << " " << false
+            << "\nalpha bool values: " << boolalpha
+            << true << " " << false << endl;
+        // 控制整型值的进制
+        cout << showbase; // 打印整型数时显示进制
+        cout << "default: " << 20 << endl;
+        cout << "octal: " << oct << 20 << endl;
+        cout << "hex: " << hex << 20 << endl;
+        cout << "decimal: " << dec << 20 << endl;
+        cout << noshowbase; //  恢复正常状态
+
+        return 0;
+    }
+    ```
+
+    ​
+
+## 2017 年 9 月 3 日
+
++   今日开学报到;
+
++   今日主要研究 C++ 模板以及泛型编程:
+
+    ```cpp
+    #include <iostream>
+    #include <vector>
+    #include <memory>
+    #include <utility>
+    #include <initializer_list>
+    #include <type_traits> // 包含 remove_reference 等类型转换模板
+
+    using namespace std;
+
+    template <typename T>
+    class Blob {
+    public:
+        typedef T value_type;
+        typedef typename vector<T>::size_type size_type;
+        Blob() : data(make_shared<vector<T>>()) {}
+        Blob(initializer_list<T> il) : data(make_shared<vector<T>>(il)) {}
+        Blob(const Blob &b) : data(shared_ptr<vector<T>>(b.data)) {}
+        // 自己定义了移动构造函数
+        Blob(Blob &&b) : data(shared_ptr<vector<T>>(new vector<T>(std::move(*(b.data))))) {}
+        size_type size() const { return data->size(); }
+        bool empty() const { return data->empty(); }
+
+        // 添加或删除元素
+        void push_back(const T &t) { data->push_back(t); }
+        void push_back(T &&t) { data->push_back(std::move(t)); }
+        void pop_back();
+        // 元素访问
+        T& back();
+        T& operator[](size_type i);
+    private:
+        shared_ptr<vector<T>> data;
+        void check(size_type i, const string &msg) const;
+    };
+
+    template <typename T>
+    void Blob<T>::check(size_type i, const string &msg) const {
+        if (i >= data->size())
+            throw out_of_range(msg);
+    }
+
+    template <typename T>
+    T& Blob<T>::back() {
+        check(0, "back on empty Blob");
+        return data->back();
+    }
+
+    template <typename T>
+    T& Blob<T>::operator[](size_type i) {
+        check(i, "subscript out of range");
+        return (*data)[i];
+    }
+
+    template <typename T>
+    void Blob<T>::pop_back() { 
+        check(0, "pop back on empty Blob");
+        data->pop_back();
+    }
+
+    template <typename T>
+    int compare(const T &lhs, const T &rhs) {
+        if (lhs < rhs) return 1;
+        else if (rhs < lhs) return -1;
+        else return 0;
+    }
+
+    // 我希望最后返回的是类型为 T 的值
+    // 当然这个例子有点强行..
+    template <typename T>
+    auto retVal(const T *pt) ->  // 使用尾置返回类型
+            typename remove_pointer<decltype(pt)>::type // 推断 pt 的类型为指针
+    {
+        return *pt;
+    }
+
+    // 翻转函数, flip 接受一个函数指针, 以及两个类型为 T1&& 和 T2&& 的额外参数
+    // 使用右值引用的目的是: 对于指向模板类型参数的右值引用, 它对应的实参的左值/右值
+    // 属性以及 const 属性能够得到保持.
+    // 为了理解为什么要使用 std::forward<Type> 函数, 首先需要观察 func 和 gunc 两个函数,
+    // 如果我使用 flip(f, j, 42), (f可以为 func 或者 gunc), j 是一个左值, 42 是右值
+    // 那么对于 f 为 func 时, 如果没有std::forward 也没有问题, 因为此时 T1 被推断为 int&,
+    // 而 T2 被推断为 int, 刚好符合 func 参数要求的类型.
+    // 但是当 f 为 gunc 时, 如果没有 std::forward, 这时候就有问题了, 虽然
+    // T1 仍是推断为 int&, T2 推断为 int, 但是将 t2 参数传入到 gunc 中的 int &&x 参数中就会
+    // 产生问题, 因此 x 是右值引用(和模板参数类型的右值引用不同), 无法绑定到 t2 这个左值
+    // 上! 所以为了保持 t2 的右值属性(因为传递给 t2 的实参是 42), 我们需要使用 std::forward
+    // 它能保持实参类型的所有细节(当它用于一个指向模板参数类型的右值引用时), 此时 
+    // std::forward<T2>(t2) 的类型为 int&&, 而 std::forward<T1>(t1) 为 int&.
+    template <typename F, typename T1, typename T2>
+    void flip(F f, T1 &&t1, T2 &&t2) {
+        f(std::forward<T2>(t2), std::forward<T1>(t1));
+    }
+
+    void func(int x, int &y) { // 注意该函数第二个参数为左值引用
+        cout << "func: " << x << " " << y << endl;
+    }
+
+    void gunc(int &&x, int &y) { // 注意该函数的第一个参数为左值引用
+        cout << "gunc: " << x << " " << y << endl;
+    }
+
+    // 可变参数模板
+    template <typename ... Args>
+    void foo(const Args& ... rest) {
+        cout << sizeof ... (Args) << endl;
+        cout << sizeof ... (rest) << endl;
+    }
+
+
+    int main(int argc, const char *argv[]) {
+
+
+        Blob<string> b1({"a", "b", "c"}), b2({"hello"}), b3 = {"World"};
+        cout << b1.size() << " " << b2.size() << " " << b3.size() << endl;
+        Blob<string> b4(b1);
+        Blob<string> b5 = std::move(b2);
+        cout << b4.size() << " " << b5.size() << endl;
+        
+        long num = 1000;
+        // 显式模板实参, 实例化为 compare(const long&, const long&)
+        // 同时 1024 还会转换为 long
+        auto res = compare<long>(num, 1024);
+        cout << res << endl;
+
+        // 测试 type_traits 头文件中的 remove_reference
+        string str = "abc";
+        string *pstr = &str;
+        cout << retVal(pstr) << endl;
+
+        // 翻转函数
+        int aa = 100;
+        flip(func, aa, 42);
+        flip(gunc, aa, 42);
+
+        // char* 字符数组
+        char p[] = "abcde";
+        cout << p << endl; // 注意打印的不是地址值, 而是字符数组的内容
+
+        // 可变参数模板
+        foo(42, 42, 42);
+        foo(42, 32);
+        return 0;
+    }
+    ```
+
+    ​
+
+## 2017 年 9 月 2 日
+
++   原来看到个例子, 从文件中往 string 中读入字符串, 每次都是读入一个词, 而不是一个句子, 写成下面这种形式就解决了这个问题:
+
+    ```cpp
+    #include <iostream>
+    #include <fstream>
+    #include <string>
+
+    class Line : public string {
+        friend istream& operator>>(istream &is, Line &l) {
+            return getline(is, l);
+        }
+    };
+
+    int main() {
+        vector<Line> vec;
+        Line l;
+        ifstream in("array.py");
+        if (in.is_open()) {
+            while (in >> l)
+                vec.push_back(l);
+        }
+        in.close();
+
+        for (const auto &s : vec)
+            cout << s << endl;
+      // 或者 #include <algorithm>, #include <iterator>
+      // ostream_iterator<Line> scout(cout, "\n");
+      // copy(vec.begin(), vec.end(), scout);
+      
+        return 0;
+    }
+    ```
+
+    但是, 当时我写的时候, 没有把 public 写上, 因此默认 Line 是从 string 私有继承的, 这样的话, 程序会报错. 当时想不通为什么, 今天看派生类向基类转换的可访问性(544页)时终于找到原因了:
+
+    ```cpp
+    #include <iostream>
+    #include <fstream>
+    #include <string>
+
+    class Line : protected string {  // 此处用 private 也可以
+        friend istream& operator>>(istream &is, Line &l) {
+            return getline(is, l);
+        }
+        friend ostream& out(ostream &os, const Line &l) {
+            return os << l;
+        }
+    };
+
+    int main() {
+
+        vector<Line> vec;
+        Line l;
+        ifstream in("array.py");
+        if (in.is_open()) {
+            while (in >> l)
+                vec.push_back(l);
+        }
+        in.close();
+
+        for (const auto &s : vec)
+            out(cout, s) << endl;
+      
+        return 0;
+    }
+    ```
+
+    +   在书上 544 页中提到, 假定 D 继承自 B, 那么不论 D 以什么方式继承自 B, D 的成员函数和友元都能使用派生类向基类的转换; 这就是说, 上面的 `operator>>` 友元函数中能使用 `getline` 的原因是, 此时 `l` 已经从 Line 转换为基类的 string. 
+
+    +   另一方面, 只有当 D 公有地继承 B 时, 用户代码才能使用派生类向基类的转换; 如果 D 继承 B 的方式是受保护的或私有的, 则用户代码不能使用该转换. 这就是说, 当我们要输出 Line 时, 是会报错的, 比如 `cout << l` 肯定是不可行的, 因此此时 `operator<<` 函数是普通函数, 此时无法实现 l 向基类 string 的转换, 因此 `operator<<(ostream&, const string&)` 不能使用.
+
+    +   那么现在我就在想, 如果要让 `<<` 能将 Line 转换为 string, 那么只要将 `operator<<` 定义成 Line 的友元, 就像 `operator>>` 一样. 因此, 我本来是这样写的:
+
+        ```cpp
+        class Line : protected string {
+          // ...
+          friend ostream& operator<<(ostream &os, const Line &l) {
+            return os << l;
+          }
+        };
+        ```
+
+        +   但是最后程序报错... 这是为什么呢? 原因在于上面的这种定义是循环定义, `os << l` 处理的对象依然是 Line, 而不会调用 string 的 `operator<<(ostream&, const string&)`. 这个 `getline` 不一样, `getline` 可以将 Line 转换为 string.
+
+    +   最后, 要修改的话, 只有自定义一个名为 `out` 的函数来处理这样的状况. 就像上面代码显示的, 能用 `out(cout, l)` 将 Line 给输出了. 注意此时 Line 是以 protected 继承自 string 的.
+
+    +   总结一下, 用 public 继承, 这样用户代码比如 `operator<<` 就能直接处理 Line. 另外, 用 protected 或者 private 的情况将代码弄得非常复杂了, 还是得用 public.
+
++   另外写了一下继承的程序:
+
+    ```cpp
+    #include <iostream>
+    #include <fstream>
+    #include <vector>
+    #include <algorithm>
+    #include <iterator>
+    #include <string>
+
+    /*
+     * 作为根节点的类通常会定义一个虚析构函数. 
+     * 
+     * 因为在派生类对象中含有与其基类对应的组成部分, 所以我们能把派生类对象当成基类对象
+     * 来使用, 而且我们也能将基类的指针或引用绑定到派生类对象中的基类部分上.
+     * 可以将基类的指针或引用绑定到派生类对象上有一层极为重要的含义: 当使用基类的引用(或指针)
+     * 时, 实际上我们并不清楚该引用(或指针)所绑定对象的真实类型. 该对象可能是基类的对象, 
+     * 也可能是派生类的对象.
+     *  
+     * 当我们使用基类的引用或指针调用一个虚成员函数时会执行动态绑定(注意区分对象的静态类型
+     * 和动态类型区分开来). 对非虚函数的调用在编译时进行绑定. 对对象进行的函数(虚函数或
+     * 非虚函数)调用也在编译时绑定.
+     * 
+     * 用 override 可以帮我们检查在覆盖基类中的虚函数时可能出现的错误, 比如形参不匹配. 注意:
+     * override 只能用于虚函数...
+     * 
+     * 回避虚函数机制: 调用虚函数的某个特定版本, 可以通过作用域运算符实现这一目的.
+     * 
+     * =0 将一个虚函数说明为纯虚函数, 它只能出现在类内部的虚函数声明语句处.
+     *  
+     * 注意派生类向基类转换的可访问性
+     * 
+     * 可以使用 using 声明改变个别成员的可访问性. 另外, 使用 using 声明可以将该类的直接基类
+     * 或间接基类中任何可访问成员给标记出来.
+     * 
+     * struct 和 class 的唯一差别就是默认成员访问符以及默认派生访问符;
+     * 
+     * 继承中的类作用域: 派生类的作用域嵌套在基类的作用域中, 一个对象, 引用或指针的静态类型
+     * 决定了该对象的哪些成员是可见的. 使用作用域运算符能覆盖掉原有的查找规则.
+     *  
+     * 名字查找先于类型检查
+     * 
+     * 只要基类的析构函数是虚函数, 就能确保当 delete 基类指针时将运行正确的析构函数版本. 
+     * 
+     * 派生类的拷贝控制成员: 定义派生类的拷贝或移动构造函数, 只要在构造函数的初始值列表中
+     * 使用基类的构造函数初始化基类部分就可以了. 但是对于派生类的赋值运算符, 我们需要显示使用
+     * Base::operator=(const Base&)
+     */ 
+
+
+    using namespace std;
+
+    class Quote {
+    public:
+        Quote() = default;
+        Quote(const string &book, double sales_price) :
+            bookNo(book), price(sales_price) {}
+        Quote(const Quote&) = default; // 显式定义默认的拷贝构造函数
+        // 由于基类定义了虚析构函数, 会阻止合成移动操作, 因此这里显式
+        // 定义移动操作, 这样, 派生类才能编写自己的移动操作, 如果基类
+        // 缺少移动操作会阻止派生类拥有自己的合成移动操作.
+        Quote(Quote&&) = default;
+        Quote& operator=(const Quote&) = default; // 拷贝赋值
+        Quote& operator=(Quote&&) = default; // 移动赋值
+        string isbn() const { return bookNo; }
+        // 返回给定数量书籍的销售总额
+        // 派生类负责改写并使用不同的折扣计算算法
+        virtual double net_price(size_t n) const {
+            return n * price; 
+        }
+        // 如果我们删除的是指向派生类对象的基类指针, 则需要虚析构函数
+        virtual ~Quote() = default; // 对析构函数进行动态绑定
+
+    private:
+        string bookNo; // 书籍的 ISBN 编号
+    protected:
+        double price = 0.0; // 代表普通状态下不打折的价格
+    };
+
+    // 抽象基类 Disc_quote, 它表示打折书籍的通用概念, 我们不希望定义它的对象,
+    // 因为这是没有意义的.
+    // 但是它为每个具体的打折策略(比如 Bulk_quote) 保存相应的购买量和折扣值.
+    class Disc_quote : public Quote {
+    public:
+        Disc_quote() = default;
+        Disc_quote(const string &book, double sales_price, size_t qty, double disc) :
+            Quote(book, sales_price),
+            quantity(qty), discount(disc) {}
+        double net_price(size_t) const = 0;  // 纯虚函数
+    protected:
+        size_t quantity = 0; // 折扣适用的购买量
+        double discount = 0.0; // 表示折扣的小数值
+    };
+
+    class Bulk_quote : public Disc_quote {
+    public:
+        Bulk_quote() = default;
+        Bulk_quote(const string &book, double sales_price, size_t qty, double disc) :
+            Disc_quote(book, sales_price, qty, disc) {}
+        // 覆盖基类的函数版本以实现基于大量购买的折扣政策
+        double net_price(size_t cnt) const override {
+            if (cnt >= quantity)
+                return cnt * (1 - discount) * price;
+            else
+                return cnt * price;
+        }
+    };
+
+    double print_total(ostream &os, const Quote &item, size_t n) {
+        // 根据传入的 item 形参的对象类型调用 Quote::net_price 或者 Bulk_quote::net_price
+        double ret = item.net_price(n);
+        os << "ISBN: " << item.isbn()
+            << " # sold: " << n << " total due: " << ret << endl;
+        return ret;
+    }
+
+    class Line : private string {
+        friend istream& operator>>(istream &is, Line &l) {
+            return getline(is, l);
+        }
+        friend ostream& out(ostream &os, const Line &l) {
+            return os << l;
+        }
+    };
+
+    int main() {
+
+
+        Bulk_quote a("999-99999-99", 100, 10, 0.3);
+        print_total(cout, a, 20);
+
+        vector<Line> vec;
+        Line l;
+        ifstream in("array.py");
+        if (in.is_open()) {
+            while (in >> l)
+                vec.push_back(l);
+        }
+        in.close();
+
+        for (const auto &s : vec)
+            out(cout, s) << endl;
+        
+        return 0;
+    }
+    ```
+
+    ​
+
 ## 2017 年 9 月 1 日
 
 +   关于移动构造函数以及移动赋值运算符, 把书上460的例子结合 479 页中的移动操作看了一下, 写了下面的完整程序:
