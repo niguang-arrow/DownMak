@@ -115,7 +115,7 @@
 +   下面程序打印不同对象的字节表示:
 
     ```c
-    #include <stio.h>
+    #include <stdio.h>
     #include <string.h>
 
     typedef unsigned char *byte_pointer;

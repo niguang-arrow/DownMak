@@ -1,58 +1,62 @@
 # Introduction 2
 
+## 2017 年 9 月 7 日
+
++   在函数内部使用 extern 的话, 将会改变变量的链接属性, 使得它所引用的是全局变量而非局部变量. 因此, 在函数内部如果试图初始化一个由 extern 标记的变量, 将引发错误.
+
 ## 2017 年 9 月 6 日
 
 +   今日终于看完了 Primer
 
 +   类成员指针
 
-    ```cpp
-    #include <iostream>
 
 
-    /*
-     * 在 * 前添加 classname:: 以表示当前定义的指针可以指向 classname 的成员 
-     */
+```cpp
+#include <iostream>
+/*
+ * 在 * 前添加 classname:: 以表示当前定义的指针可以指向 classname 的成员 
+ */
 
-    using namespace std;
+using namespace std;
 
-    class Screen {
-        friend void show(const Screen&);
-    public:
-        typedef string::size_type pos;
-        Screen() = default;
-        Screen(const string &s) : contents(s) {}
-        char get_cursor() const { return contents[cursor]; }
-        // 定义静态成员函数 pm, 返回成员指针. 返回类型
-        // 为 const string Screen::*
-        static const string Screen::*pm() {
-            return &Screen::contents;
-        }
-
-    private:
-        string contents;
-        pos cursor;
-    };
-
-    void show(const Screen &s) {
-        // 使用类数据成员指针, 类型也可以使用 auto 等进行推断
-        // 注意在我们初始化一个成员指针或为成员指针赋值时, 该指针并没有
-        // 指向任何数据.
-        const string Screen::*pdata = &Screen::contents; // contents 为 private, 要用友元
-        cout << s.*pdata << endl;
+class Screen {
+    friend void show(const Screen&);
+public:
+    typedef string::size_type pos;
+    Screen() = default;
+    Screen(const string &s) : contents(s) {}
+    char get_cursor() const { return contents[cursor]; }
+    // 定义静态成员函数 pm, 返回成员指针. 返回类型
+    // 为 const string Screen::*
+    static const string Screen::*pm() {
+        return &Screen::contents;
     }
 
-    int main() {
-        
-        Screen data("myScreen");
-        show(data);
-        // 通过这种方式, 竟然可以在类外访问一个 private 的成员.
-        const string Screen::*pdata = Screen::pm();
-        cout << data.*pdata << endl;
+private:
+    string contents;
+    pos cursor;
+};
 
-        return 0;
-    }
-    ```
+void show(const Screen &s) {
+    // 使用类数据成员指针, 类型也可以使用 auto 等进行推断
+    // 注意在我们初始化一个成员指针或为成员指针赋值时, 该指针并没有
+    // 指向任何数据.
+    const string Screen::*pdata = &Screen::contents; // contents 为 private, 要用友元
+    cout << s.*pdata << endl;
+}
+
+int main() {
+    
+    Screen data("myScreen");
+    show(data);
+    // 通过这种方式, 竟然可以在类外访问一个 private 的成员.
+    const string Screen::*pdata = Screen::pm();
+    cout << data.*pdata << endl;
+
+    return 0;
+}
+```
 
 ## 2017 年 9 月 5 日
 
@@ -170,9 +174,7 @@
     static uniform_real_distribution<double> u(0, 1); // 生成随机实数
     static normal_distribution<> n(4, 1.5); //使用默认模板参数
 
-
     int main() {
-
         // 关于 tuple
         tuple<int, string, string> a(42, "Hello", "world");
         cout << get<2>(a) << endl;
@@ -212,7 +214,6 @@
     }
     ```
 
-    ​
 
 ## 2017 年 9 月 3 日
 
@@ -328,10 +329,8 @@
         cout << sizeof ... (rest) << endl;
     }
 
-
-    int main(int argc, const char *argv[]) {
-
-
+    int main(int argc, const char *argv[]) {    
+        
         Blob<string> b1({"a", "b", "c"}), b2({"hello"}), b3 = {"World"};
         cout << b1.size() << " " << b2.size() << " " << b3.size() << endl;
         Blob<string> b4(b1);
@@ -365,7 +364,8 @@
     }
     ```
 
-    ​
+
+
 
 ## 2017 年 9 月 2 日
 
@@ -505,10 +505,7 @@
      * 使用基类的构造函数初始化基类部分就可以了. 但是对于派生类的赋值运算符, 我们需要显示使用
      * Base::operator=(const Base&)
      */ 
-
-
     using namespace std;
-
     class Quote {
     public:
         Quote() = default;
@@ -583,8 +580,6 @@
     };
 
     int main() {
-
-
         Bulk_quote a("999-99999-99", 100, 10, 0.3);
         print_total(cout, a, 20);
 
@@ -604,7 +599,6 @@
     }
     ```
 
-    ​
 
 ## 2017 年 9 月 1 日
 
@@ -685,7 +679,6 @@
         // 
         void move_Folders(Message*);
     };
-
 
     // 现在来看, Folder 和 Message 是对称的
     class Folder {
@@ -864,6 +857,7 @@
     // World World
     ```
 
+
     +   注意我写程序的时候曾犯了一个大错:
 
         ```cpp
@@ -1012,7 +1006,6 @@
         alloc.construct(first_free++, s);
     }
 
-
     /*
      * 在写 reallocate 函数之前, 想一下它的作用:
      * 1. 为一个新的更大的 string 数组分配内存
@@ -1086,7 +1079,6 @@
     }
     ```
 
-    ​
 
 ## 2017 年 8 月 30 日
 
@@ -1150,6 +1142,7 @@
         }
 
     };
+    ```
 
 
     int main() {
@@ -1168,8 +1161,8 @@
         cout << p2.size() << endl;
         return 0;
     }
-
-    ```
+    
+    ​```
 
 +   伴随类:
 
@@ -1284,18 +1277,19 @@
             return ret;
         }
     };
+    ```
 
 
     inline strBlobPtr strBlob::begin() { return strBlobPtr(*this); }
     inline strBlobPtr strBlob::end() { return strBlobPtr(*this, this->size()); }
-
+    
     int main() {
-
+    
         initializer_list<string> il = {"a", "b", "c"};
         shared_ptr<vector<string>> str = make_shared<vector<string>>(il);
         auto a = *str;
         cout << (*str)[1] << endl;
-
+    
         strBlob p1 = {"a", "b", "c", "d"};
         // 使用下标运算符
         auto p2 = p1;
@@ -1303,21 +1297,21 @@
             cout << p2[i] << " ";
         cout << endl;
         cout << p2.size() << endl;
-
+    
         // 使用 begin()
         cout << *(p1.begin()) << endl;
-
+    
         // 使用伴随类
         strBlobPtr strp(p1);
         cout << *strp << endl;
-
+    
         // 使用范围 for
         for (const auto &p : p1)
             cout << p << " ";
         cout << endl;
         return 0;
     }
-
+    
     // g++ -Wall -std=c++0x -o main main.cpp ./main -> 结果如下:
     // b
     // a b c d
@@ -1325,8 +1319,8 @@
     // a
     // a
     // a b c d 
-    ```
-
+    ​```
+    
     ​
 
 ## 2017 年 8 月 20 日
