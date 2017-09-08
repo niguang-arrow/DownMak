@@ -73,10 +73,6 @@ inline void parse_mnist_image(std::ifstream &ifs,
                             double_t scale_max = 1.0,
                             int x_padding = 0,
                             int y_padding = 0) {
-   if (x_padding < 0 || y_padding < 0)
-       std::cerr << "padding size must not be negative" << std::endl;
-   if (scale_max <= scale_min)
-       std::cerr << "scale_max must be greater than scale_min" << std::endl;
    const int width = header.num_cols + 2 * x_padding;
    const int height = header.num_rows + 2 * y_padding;
 
@@ -90,6 +86,33 @@ inline void parse_mnist_image(std::ifstream &ifs,
            dst[width * (y + y_padding) + x + x_padding]
             = (image_vec[y * header.num_cols + x] / double_t(255))
               * (scale_max - scale_min) + scale_min;
+}
+
+inline void parse_mnist_images(const std::string &image_file,
+                        std::vector<std::vector<double_t>> *images,
+                        double_t scale_min = 0.0,
+                        double_t scale_max = 1.0,
+                        int x_padding = 0,
+                        int y_padding = 0) {
+   if (x_padding < 0 || y_padding < 0)
+       std::cerr << "padding size must not be negative" << std::endl;
+   if (scale_max <= scale_min)
+       std::cerr << "scale_max must be greater than scale_min" << std::endl;
+
+    std::ifstream ifs(image_file.c_str(), std::ios::in | std::ios::binary);
+
+    if (ifs.fail() || ifs.bad())
+        std::cerr << "image files open error!" << std::endl;
+    mnist_header header; // 保存数据集的 header 信息
+    parse_mnist_header(ifs, header);
+    std::vector<double_t> image; // 存储一张图的数据
+    for (uint32_t i = 0; i < header.num_items; ++i) {
+        parse_mnist_image(ifs, header, image, scale_min, scale_max, x_padding, y_padding);
+        images->push_back(image);
+    }
+
+    ifs.close();
+
 }
 
 /*
@@ -126,27 +149,15 @@ inline void parse_mnist_labels(const std::string &label_file,
 int main() {
     const std::string image_file = data_dir_path + "/t10k-images.idx3-ubyte";
     const std::string label_file = data_dir_path + "/t10k-labels.idx1-ubyte";
-    std::ifstream ifs(image_file.c_str(), std::ios::in | std::ios::binary);
-    if (ifs.fail() || ifs.bad())
-        std::cerr << "file error!" << std::endl;
-    mnist_header header; // 保存数据集的 header 信息
-    parse_mnist_header(ifs, header);
-    std::vector<double_t> image; // 存储一张图的数据
-    parse_mnist_image(ifs, header, image);
+
+    std::vector<std::vector<double_t>> images;
+    parse_mnist_images(image_file, &images);
+    std::cout << "image num items: " << images.size() << std::endl;
 
     std::vector<label_t> labels; // 存储所有的 labels
     parse_mnist_labels(label_file, &labels);
     std::cout << "label number: " << labels.size() << std::endl;
     std::cout << labels[0] << std::endl;
-
-    // 这样设置之后, 全屏看效果更佳
-    std::cout << std::setprecision(3);
-    for (size_t i = 0; i < image.size(); ++i) {
-        std::cout << std::setw(6) << image[i];
-        if ((i + 1) % header.num_rows == 0)
-            std::cout << std::endl;
-    }
-
 
     return 0;
 }
