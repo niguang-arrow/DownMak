@@ -301,7 +301,7 @@ Commands:
 +   安装 scipy 之前需要安装许多依赖项, 参考: https://stackoverflow.com/questions/2213551/installing-scipy-with-pip 中 elaichi 的回答, 使用如下命令安装依赖项:
 
     ```bash
-    $ sudo apt-get install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev
+    sudo apt-get install libblas3gf libc6 libgcc1 libgfortran3 liblapack3gf libstdc++6 build-essential gfortran python-all-dev
 
     # 下面是 Abhishek Gupta 给出的回答, 可以用来参考.
     # 我在我的电脑上两条命令都试了一下, 发现所有的依赖项都安装好了, 比如上面的

@@ -38,5 +38,11 @@ int main() {
     int z = ((y ^ ~0xFF) & ~0xFF) | (y & 0xFF);
     show_int(z);
 
+    int m = -1;
+    unsigned int n = m;
+    show_int(m);
+    show_bytes((byte_pointer) &n, sizeof(unsigned));
+    printf("%u\n", n);
+
     return 0;
 }
