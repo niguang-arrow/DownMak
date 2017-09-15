@@ -148,6 +148,8 @@
 
 8.  安装 vim
 
+    不要下最新的 vim, 编译时会报错. perl 有问题之类的.... 使用 v8.0.1101 版本以及之前的版本.
+
     通过源码编译 Vim, 按照 https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source 中的详细介绍安装 Vim. **注意不要参考那个网站了, 有的地方发生了改变, 采用下面的步骤:**
 
     ```bash
@@ -239,71 +241,71 @@
 
 10.  安装 clang
 
-     这个耗时是非常久的. 参考 https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1
+    这个耗时是非常久的. 参考 https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1
 
-     ```bash
-     # 由于下面代码需要使用 svn, 所以需要先安装
-     sudo apt-get install subversion
+    ```bash
+    # 由于下面代码需要使用 svn, 所以需要先安装
+    sudo apt-get install subversion
 
-     # 下载 LLVM、clang 及辅助库源码：
-     cd ~/Programs
-     # Checkout LLVM
-     svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm 
-     # Checkout Clang
-     cd llvm/tools 
-     svn co http://llvm.org/svn/llvm-project/cfe/trunk clang 
-     cd ../.. 
-     # Checkout extra Clang Tools
-     cd llvm/tools/clang/tools 
-     svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra 
-     cd ../../../.. 
-     # Checkout Compiler-RT
-     cd llvm/projects 
-     svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt 
-     cd ../..  
-     # 注意这里已经调回到了 Programs/
+    # 下载 LLVM、clang 及辅助库源码：
+    cd ~/Programs
+    # Checkout LLVM
+    svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm 
+    # Checkout Clang
+    cd llvm/tools 
+    svn co http://llvm.org/svn/llvm-project/cfe/trunk clang 
+    cd ../.. 
+    # Checkout extra Clang Tools
+    cd llvm/tools/clang/tools 
+    svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra 
+    cd ../../../.. 
+    # Checkout Compiler-RT
+    cd llvm/projects 
+    svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt 
+    cd ../..  
+    # 注意这里已经调回到了 Programs/
 
-     # 关掉其他应用，尽量多的系统资源留给 GCC 编译 clang 源码:
-     # 下面的 build 是在 Programs 目录下创建的, 这个编译的过程
-     #　特别特别久, 估计一个小时～两个小时左右.
-     mkdir build
-     cd build
-     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
-     make && sudo make install
+    # 关掉其他应用，尽量多的系统资源留给 GCC 编译 clang 源码:
+    # 下面的 build 是在 Programs 目录下创建的, 这个编译的过程
+    #　特别特别久, 估计一个小时～两个小时左右.
+    mkdir build
+    cd build
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
+    make && sudo make install
 
-     # 安装好后确认下:
-     clang --version 
+    # 安装好后确认下:
+    clang --version 
 
-     # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
-     cd ~/Programs
-     mv build/ llvm/
+    # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
+    cd ~/Programs
+    mv build/ llvm/
 
-     # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
-     # 前者是接口层（即，上层的封装）, 后者是实现层（即，底层的具体实现），对应实物文件，你得需要两个子库
-     # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
-     # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
-     # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
-     cd ~/Programs/ 
-     svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
-     mkdir build   
-     cd build
-     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
-     make && sudo make install
-     cd ~/Programs
-     mv build/ libcxx/
+    # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
+    # 前者是接口层（即，上层的封装）, 后者是实现层（即，底层的具体实现），对应实物文件，你得需要两个子库
+    # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
+    # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
+    # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
+    cd ~/Programs/ 
+    svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
+    mkdir build   
+    cd build
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
+    make && sudo make install
+    cd ~/Programs
+    mv build/ libcxx/
 
-     # 类似，源码安装 libc++abi 的头文件和动态链接库：
-     cd ~/Programs/ 
-     svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
-     mkdir build   
-     cd build
-     cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
-     make && sudo make install
-     cd ~/Programs
-     mv build/ libcxxabi/
+    # 类似，源码安装 libc++abi 的头文件和动态链接库：
+    cd ~/Programs/ 
+    svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
+    mkdir build   
+    cd build
+    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
+    make && sudo make install
+    cd ~/Programs
+    mv build/ libcxxabi/
 
-     # 完成.
-     ```
+    # 完成.
+    ```
 
 11.  安装 java
 
@@ -328,11 +330,11 @@
 
      ```bash
      sudo apt-get install libevent-dev libncurses5-dev
-
+     sudo apt-get install automake
      # 安装 tmux
      git clone https://github.com/tmux/tmux.git
      cd tmux
-     sh autogen.sh
+     sh autogen.sh # 需要 automake aclocal
      ./configure && make
      sudo make install
      ```
@@ -342,7 +344,7 @@
      从 [http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run](http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run) 中下载 `qt-opensource-linux-x64-5.7.0.run` 文件, 然后使用:
 
      ```bash
-     sudo chmod a+x qt-opensource-linux-x64-5.7.0.run
+     chmod a+x qt-opensource-linux-x64-5.7.0.run
      ./qt-opensource-linux-x64-5.7.0.run
      ```
 
