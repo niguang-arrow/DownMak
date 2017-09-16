@@ -8,14 +8,16 @@
 
 +   在 Dell 电脑上装的时候, 碰到了新的问题~ 以后需要注意! 
 
-    +   从 U 盘启动的时候, 按 F12 进入 Bios 选择从 USB 进行启动. (如果按 F2 则看不到从 USB 启动的选项)
+    +   从 U 盘启动的时候, 按 F12 进入 Bios 选择从 USB 进行启动.  (如果按 F2 则看不到从 USB 启动的选项)
+    +   **在系统安装成功之后， 需要按 F2 进入 BIOS， 将 Secure Boot 设置为 Disabled， 否则装 NVIDIA 驱动的时候会出现各种莫名其妙的问题.**  还有一个重要的问题是装 vim 的时候, 我在 9 月 15 日选择了最新的版本(话说 vim 的更新速度那是快得吓人, 已经发布 6000 多版本了.  下面会说到要安装哪个版本最好.)
+    +   另外, DELL 电脑的功能键和我平时认识的相反(比如放大声音一般需要 Fn + F3, 但是 DELL 默认直接按 F3 即可放大音量. 这个是可以在 BIOS 里调整的, 不然很多快捷键都要加上个 Fn 才能使用, 太麻烦了.)
     +   分区的时候, 我这台电脑有 128G 的固态硬盘, 1T 的机械硬盘, 分区如下:
 
      ```bash
     # 128G 固态
-    500MB Logical EFI  # 注意这个必须是第一个出现
+    500MB Logical EFI  # 注意这个必须是第一个出现 只会用 33 MB 左右, 可以更小一些
     12G   Logical swap 
-    剩下  Primer  /   
+    剩下  Premier  /   
     # 1T 机械
     32G  Logical swap 
     剩下  Logical /home
@@ -73,7 +75,7 @@
     ```bash
     sudo apt-get install python-pip
     sudo pip install --upgrade pip
-    pip install shadowsocks
+    sudo pip install shadowsocks
     ```
 
     然后配置 shadowsocks, 编写 shadowsocks.json 文件:
@@ -112,7 +114,7 @@
     +   在地址栏中输入 `chrome://extensions`, 然后将第 2 步中下载的  `SwitchyOmega_Chromium.crx` 文件拖入到该网页中, SwitchyOmega 插件就安装成功了.
     +   打开 SwitchyOmega 进行配置
         +   首先创建一个 `New profile...`, 名字随便取(我取名 **US**), 之后 `Protocol` 选择 SOCKS5, `Server` 写 `127.0.0.1`, `Port` 写 1080. 然后 Apply changes.
-        +   点击 `auto switch`, (首先可以删除默认已经有的两个 Profile), 点击下面的蓝色按钮(忘了叫什么, 上面好像有 "download profile now" 之类的), 然后会出现一个 Rule List URL, 然后记起第 2 步中的 gfwlist 网站  https://github.com/gfwlist/gfwlist/blob/master/gfwlist.txt , 进入该网站, 点击其中的 Raw 按钮, 得到网址: https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt, 将该网址复制到前面的 Rule List URL. 此时 Switch Rules 中出现了一个新的 Condition Type, 此时将 Profile 选择 **US**, 即前一步中设置的 profile.
+        +   点击 `auto switch`, (首先可以删除默认已经有的两个 Profile), 点击下面的按钮 add new rule, 然后会出现一个 Rule List URL, 然后记起第 2 步中的 gfwlist 网站  https://github.com/gfwlist/gfwlist/blob/master/gfwlist.txt , 进入该网站, 点击其中的 Raw 按钮, 得到网址: https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt, 将该网址复制到前面的 Rule List URL. 此时 Switch Rules 中出现了一个新的 Condition Type, 此时将 Profile 选择 **US**, 即前一步中设置的 profile.
     +   打开新的标签页, 并且打开 SwitchyOmega, 然后确认是否可以 Google... (注意 sslocal -c shadowsocks.json 要运行).
 
 6.  下载 Chrome 浏览器. 
@@ -120,6 +122,17 @@
     根据网站: [How to install Chrome browser properly via command line?](https://askubuntu.com/questions/79280/how-to-install-chrome-browser-properly-via-command-line)
 
     可以使用命令行下载 Google Chrome:
+
+    + 方法 1
+
+    ```bash
+    sudo apt-get install libxss1 libappindicator1 libindicator7
+    # 可以直接到官网上下载 deb 文件的, 主要是如果没有上面的库的话, 就没法直接装 deb
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo dpkg -i google-chrome*.deb
+    ```
+
+    + 方法 2
 
     ```bash
     wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add - 
@@ -144,11 +157,11 @@
     sudo apt-get update
     ```
 
-    然后打开 Ubuntu Software Center, 在搜索栏中输入: **fcitx**, 然后把出现的软件都安装! 之后会出现一个 linux 的企鹅拿只笔的软件 (Fcitx Configuration), 有这个就没问题. 之后只要 Log out 再进入配置就可以了.
+    然后打开 Ubuntu Software Center, 在搜索栏中输入: **fcitx**, 然后把出现的软件都安装! 之后会出现一个 linux 的企鹅拿只笔的软件 (Fcitx Configuration), 有这个就没问题. 搜索 SogouPinyiin, 之后只要 Log out 再进入配置就可以了.
 
 8.  安装 vim
 
-    不要下最新的 vim, 编译时会报错. perl 有问题之类的.... 使用 v8.0.1101 版本以及之前的版本.
+    **不要下最新的 vim, 编译时会报错. perl 有问题之类的.... 使用 v8.0.1101 版本以及之前的版本.**
 
     通过源码编译 Vim, 按照 https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source 中的详细介绍安装 Vim. **注意不要参考那个网站了, 有的地方发生了改变, 采用下面的步骤:**
 
@@ -161,6 +174,7 @@
         
     # remove vim if you have it already
     sudo apt-get remove vim vim-runtime gvim
+    sudo apt-get remove vim-tiny vim-common vim-gui-common vim-nox
 
     # 正式安装 vim, 从源码安装.
     # 但是有个重要问题要注意, python 的 config 文件也许不在下面代码中的路径中,
@@ -241,71 +255,71 @@
 
 10.  安装 clang
 
-    这个耗时是非常久的. 参考 https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1
+   这个耗时是非常久的. 参考 https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1
 
-    ```bash
-    # 由于下面代码需要使用 svn, 所以需要先安装
-    sudo apt-get install subversion
+   ```bash
+   # 由于下面代码需要使用 svn, 所以需要先安装
+   sudo apt-get install subversion
 
-    # 下载 LLVM、clang 及辅助库源码：
-    cd ~/Programs
-    # Checkout LLVM
-    svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm 
-    # Checkout Clang
-    cd llvm/tools 
-    svn co http://llvm.org/svn/llvm-project/cfe/trunk clang 
-    cd ../.. 
-    # Checkout extra Clang Tools
-    cd llvm/tools/clang/tools 
-    svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra 
-    cd ../../../.. 
-    # Checkout Compiler-RT
-    cd llvm/projects 
-    svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt 
-    cd ../..  
-    # 注意这里已经调回到了 Programs/
+   # 下载 LLVM、clang 及辅助库源码：
+   cd ~/Programs
+   # Checkout LLVM
+   svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm 
+   # Checkout Clang
+   cd llvm/tools 
+   svn co http://llvm.org/svn/llvm-project/cfe/trunk clang 
+   cd ../.. 
+   # Checkout extra Clang Tools
+   cd llvm/tools/clang/tools 
+   svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra 
+   cd ../../../.. 
+   # Checkout Compiler-RT
+   cd llvm/projects 
+   svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt 
+   cd ../..  
+   # 注意这里已经调回到了 Programs/
 
-    # 关掉其他应用，尽量多的系统资源留给 GCC 编译 clang 源码:
-    # 下面的 build 是在 Programs 目录下创建的, 这个编译的过程
-    #　特别特别久, 估计一个小时～两个小时左右.
-    mkdir build
-    cd build
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
-    make && sudo make install
+   # 关掉其他应用，尽量多的系统资源留给 GCC 编译 clang 源码:
+   # 下面的 build 是在 Programs 目录下创建的, 这个编译的过程
+   #　特别特别久, 估计一个小时～两个小时左右.
+   mkdir build
+   cd build
+   cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
+   make && sudo make install
 
-    # 安装好后确认下:
-    clang --version 
+   # 安装好后确认下:
+   clang --version 
 
-    # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
-    cd ~/Programs
-    mv build/ llvm/
+   # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
+   cd ~/Programs
+   mv build/ llvm/
 
-    # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
-    # 前者是接口层（即，上层的封装）, 后者是实现层（即，底层的具体实现），对应实物文件，你得需要两个子库
-    # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
-    # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
-    # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
-    cd ~/Programs/ 
-    svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
-    mkdir build   
-    cd build
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
-    make && sudo make install
-    cd ~/Programs
-    mv build/ libcxx/
+   # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
+   # 前者是接口层（即，上层的封装）, 后者是实现层（即，底层的具体实现），对应实物文件，你得需要两个子库
+   # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
+   # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
+   # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
+   cd ~/Programs/ 
+   svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
+   mkdir build   
+   cd build
+   cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
+   make && sudo make install
+   cd ~/Programs
+   mv build/ libcxx/
 
-    # 类似，源码安装 libc++abi 的头文件和动态链接库：
-    cd ~/Programs/ 
-    svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
-    mkdir build   
-    cd build
-    cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
-    make && sudo make install
-    cd ~/Programs
-    mv build/ libcxxabi/
+   # 类似，源码安装 libc++abi 的头文件和动态链接库：
+   cd ~/Programs/ 
+   svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
+   mkdir build   
+   cd build
+   cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
+   make && sudo make install
+   cd ~/Programs
+   mv build/ libcxxabi/
 
-    # 完成.
-    ```
+   # 完成.
+   ```
 
 11.  安装 java
 
@@ -331,6 +345,7 @@
      ```bash
      sudo apt-get install libevent-dev libncurses5-dev
      sudo apt-get install automake
+
      # 安装 tmux
      git clone https://github.com/tmux/tmux.git
      cd tmux
@@ -344,21 +359,70 @@
      从 [http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run](http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run) 中下载 `qt-opensource-linux-x64-5.7.0.run` 文件, 然后使用:
 
      ```bash
-     chmod a+x qt-opensource-linux-x64-5.7.0.run
+     chmod a+x qt-opensource-linux-x64-5.7.0.run # 不需要 sudo
      ./qt-opensource-linux-x64-5.7.0.run
+
+     # 如果使用了 sudo, 也可以用 sudo chown -R ieric:ieric Qt5.7 来更改权限
      ```
 
    将安装目录设置为 `/home/ieric/Programs/Qt5.7.0` 即可.
 
 14.  安装 codeblocks
 
-     从 Ubuntu Software Center 中搜索 codeblocks, 注意出现后不要立即安装, 先点击 `More Info`, 然后将其中的 Optional add-ons 中的所有内容都给勾选上. 之后就可以安装了. 注意安装的不是最新的 16.01 版, 而是 13.12 版.
+     从 Ubuntu Software Center 中搜索 codeblocks, **注意出现后不要立即安装**, 先点击 `More Info`, 然后将其中的 Optional add-ons 中的所有内容都给勾选上. 之后就可以安装了. 注意安装的不是最新的 16.01 版, 而是 13.12 版.
 
 15.  安装 typora
 
      参考 https://typora.io
 
+     或直接 https://typora.io/#linux
+
 16.  安装 sublime text
+
+     到官网上下载 https://www.sublimetext.com/3
+
+     然后到 https://packagecontrol.io/installation 下载 Package Control, 通过 Ctrl + Shift + P, 搜索 Install 关键字来安装 SublimeREPL, ConvertToUTF8, Anaconda
+
+     + 配置
+
+     在 Preference -> Key Bindings -> Default(Linux).sublime-keymap - User 文件中加入:
+
+     ```json
+     [
+         {
+             "keys":["f5"],
+             "caption": "SublimeREPL: Python - RUN current file",
+             "command": "run_existing_window_command", 
+             "args":
+             {
+                 "id": "repl_python_run",
+                 "file": "config/Python/Main.sublime-menu"
+             }
+         } /*后面有内容的话, 注意这里加逗号*/
+     ]    
+     ```
+
+     在 Preference -> Settings -> Preferences.sublime-settings - User 文件中加入:
+
+     ```json
+     {
+     	"color_scheme": "Packages/Color Scheme - Default/Monokai.tmTheme",
+     	"detect_indentation": false,
+     	"font_size": 12,
+     	"ignored_packages":
+     	[
+     		"Vintage"
+     	],
+     	"indent_to_bracket": true,
+     	"tab_size": 4,
+     	"translate_tabs_to_spaces": true,
+     	"update_check": false
+     }
+     ```
+
+     ​
+
+     ​
 
 17.  右键菜单出现 Open in terminal:
 
@@ -461,11 +525,8 @@
          cp gtkrc-2.0 ~/.gtkrc-2.0
          ```
 
-         +   将 `Vim/config` 文件夹中的 init.zshrc 文件做如下处理:
+         +   将 `Vim/config` 文件夹中的 my.zshrc 文件做如下处理: 对照自己**已安装**的软件, 设置好相应的环境变量等.
 
-         ```bash
-         cp init.zshrc ~/.zshrc
-         ```
 
          先配置好 Vim 后再修改.
 
@@ -476,9 +537,11 @@
          # 然后打开 vim .vimrc
          :PluginInstall
          # 使用如上命令将一些基本的插件安装好, 复杂的插件暂时不装.
+         # 其中被两个 "" 注释掉的插件是基本不用的, 放在这里是为了记忆, 不然以后需要的时候那就
+         # 不好找了, 其中最后的 ctrlsf 需要安装 ctags, ack, ag 等, ranger.vim 需要把 ranger安装好, ipyb_notedown 需要装好 notedown
          ```
 
-         +   安装 YouCompleteMe
+         +   安装 YouCompleteMe (编译好 clang 之后再装 YCM)
 
          ```bash
          # 使用 Vundle 安装好 YCM
@@ -560,9 +623,14 @@
 
      # 切换 python
      pyenv global 2.7.13
+     exec $SHELL
 
      # 安装必要的包
-     pip install shadowsocks pygments notedown psutil
+     pip install shadowsocks pygments notedown psutil 
+     # 如果 gpu 配置好了, 那么可以使用
+     pip install gpustat
+     # 到时候查看 GPU 的状况可以使用 
+     watch --color -n 1.0 gpustat -c
      ```
 
      +   安装 scipy
@@ -579,6 +647,8 @@
      sudo apt-get install gcc gfortran python-dev libblas-dev liblapack-dev cython
 
      # 必须确认 qmake 是前面安装的 Qt 目录中的
+     # 将 qt 的路径加入到 path 中, 参考 my.vimrc 文件
+     qmake -version
      ```
 
      +   首先安装 sip
@@ -611,4 +681,38 @@
      $ make install
      ```
 
-     ​
+     - 安装成功后, 之后就可以安装 spyder 了, 并且 `jupyter qtconsole` 之类的都可以用了.
+
+       ```bash
+       pip install spyder
+       pip install numpy scipy theano keras
+       pip install matplotlib nose ipython jupyter sympy sklearn pandas ipdb
+       pip install pillow # from PIL import Image
+       ```
+
+     - (记录一个问题) 在服务器上安装 PyQt5 时, 出现了 `/usr/lib/ld: cannot find -lGL` 这个问题, 通过参考 https://stackoverflow.com/questions/18406369/qt-cant-find-lgl-error 中的第二个回答, 解决了. 记录如下:
+
+       you don't need to install anything. `libGL` is already installed with Ubuntu, you just need to soft link it. (works for ubuntu 14.x and 15.x)
+
+       1. First locate the GL library
+       2. Then link it under `/usr/lib`
+       3. If the library is missing, it can be installed via `libgl1-mesa-dev` package
+
+       Here is how you could do this:
+
+       ```bash
+       $ locate libGL
+       /usr/lib/i386-linux-gnu/mesa/libGL.so.1
+       /usr/lib/i386-linux-gnu/mesa/libGL.so.1.2.0
+       /usr/lib/x86_64-linux-gnu/libGLEW.so.1.10
+       /usr/lib/x86_64-linux-gnu/libGLEW.so.1.10.0
+       /usr/lib/x86_64-linux-gnu/libGLEWmx.so.1.10
+       /usr/lib/x86_64-linux-gnu/libGLEWmx.so.1.10.0
+       /usr/lib/x86_64-linux-gnu/libGLU.so.1
+       /usr/lib/x86_64-linux-gnu/libGLU.so.1.3.1
+       /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1
+       /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1.2.0
+       /usr/lib/x86_64-linux-gnu/mesa-egl/libGLESv2.so.2
+       /usr/lib/x86_64-linux-gnu/mesa-egl/libGLESv2.so.2.0.0
+       $ sudo ln -s /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1 /usr/lib/libGL.so
+       ```
