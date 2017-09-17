@@ -43,6 +43,17 @@
 
         原因看 [apt-get update stuck: Connecting to security.ubuntu.com](https://askubuntu.com/questions/620317/apt-get-update-stuck-connecting-to-security-ubuntu-com) 还有 [Why is apt-get downloads so slow](https://superuser.com/questions/945015/why-is-apt-get-downloads-so-slow)
 
+    +   更新 git
+
+        参考 [How can I update to a newer version of Git using apt-get?](https://unix.stackexchange.com/questions/33617/how-can-i-update-to-a-newer-version-of-git-using-apt-get)
+
+        ```bash
+        sudo add-apt-repository ppa:git-core/ppa -y
+        sudo apt-get update
+        sudo apt-get install git -y
+        git --version
+        ```
+
 2.  安装 SwitchOmega
 
     打开 firefox 浏览器, 到 https://github.com/FelisCatus/SwitchyOmega/ 下载 `SwitchyOmega_Chromium.crx`, 并且搜索 gfwlist 的地址为: https://github.com/gfwlist/gfwlist/blob/master/gfwlist.txt (不用做什么)
@@ -562,7 +573,7 @@
          ```
 
 
-         + 安装 YouCompleteMe (编译好 clang 之后再装 YCM)
+         +   安装 YouCompleteMe (编译好 clang 之后再装 YCM)
 
          ```bash
          # 使用 Vundle 安装好 YCM
@@ -598,51 +609,51 @@
          $ CXX=/usr/local/bin/clang++ CC=/usr/local/bin/clang ./install.py --clang-completer
          # 成功!
          ```
-
           +   对于 Vim 中的 ctrlsf 等包, 需要安装 ack, ag 等 (查看 `Vim/refer.md`), 还有 ctags 也要装一下. ipynb 插件需要 notedown. (**由于我最终会使用 pyenv, 所以到时候还需要装 notedown**)
 
-         ```bash
-         cpan App::Ack # 安装 ack, 有个选项是选 sudo
-         sudo apt-get install silversearcher-ag # 安装 ag
-         # 通过源码装 ctags, 略... ./configure && make && sudo make install
-         sudo pip install notedown 
-         ```
+              ```bash
+              cpan App::Ack # 安装 ack, 有个选项是选 sudo
+              sudo apt-get install silversearcher-ag # 安装 ag
+              # 通过源码装 ctags, 略... ./configure && make && sudo make install
+              sudo pip install notedown 
+              ```
 
-          +   安装 ranger, 然后使用 vim 中的 ranger.vim 实现在 vim 中使用 ranger.
-              +   地址:  https://github.com/ranger/ranger
 
-         ```bash
-         # 下载 UniCurses-1.2, https://sourceforge.net/projects/pyunicurses/
-         cd UniCurses-1.2
-         python setup.py install # python -c "import curses" 检验
+         +   安装 ranger, 然后使用 vim 中的 ranger.vim 实现在 vim 中使用 ranger.
+             +   地址:  https://github.com/ranger/ranger
 
-         # 安装 w3m
-         sudo apt-get install w3m-img
 
-         # 安装其他配件
-         sudo apt-get install caca-utils highlight atool bsdtar unrar lynx w3m-img elinks poppler-utils transmission-cli transmission-common transmission-daemon mediainfo exiftool odt2txt
+              ```bash
+              # 下载 UniCurses-1.2, https://sourceforge.net/projects/pyunicurses/
+              cd UniCurses-1.2
+              python setup.py install # python -c "import curses" 检验
 
-         # 安装必要的 python 库
-         pip install pytest 
-         pip install flake8
-         sudo pip install pytest 
-         sudo pip install flake8
+              # 安装 w3m
+              sudo apt-get install w3m-img
 
-         # 安装 ranger
-         cd Programs
-         git clone https://github.com/ranger/ranger 
-         cd ranger
-         sudo make install
+              # 安装其他配件
+              sudo apt-get install caca-utils highlight atool bsdtar unrar lynx w3m-img elinks poppler-utils transmission-cli transmission-common transmission-daemon mediainfo exiftool odt2txt
 
-         # 在 .zshrc 中加入如下的关于 ranger 的配置 (当然不加也可以)
-         # ranger config
-         # in case ~/.config/ranger/rc.conf to be loaded twice
-         export RANGER_LOAD_DEFAULT_RC=FALSE
+              # 安装必要的 python 库
+              pip install pytest 
+              pip install flake8
+              sudo pip install pytest 
+              sudo pip install flake8
 
-         # 最后可以完成 vim 中 ranger.vim 插件的安装
-         ```
+              # 安装 ranger
+              cd Programs
+              git clone https://github.com/ranger/ranger 
+              cd ranger
+              sudo make install
 
-         ​
+              # 在 .zshrc 中加入如下的关于 ranger 的配置 (当然不加也可以)
+              # ranger config
+              # in case ~/.config/ranger/rc.conf to be loaded twice
+              export RANGER_LOAD_DEFAULT_RC=FALSE
+
+              # 最后可以完成 vim 中 ranger.vim 插件的安装
+              ```
+
 
 
 21.  安装 pyenv 和 pyenv-virtualenv
