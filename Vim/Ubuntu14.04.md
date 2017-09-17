@@ -255,71 +255,71 @@
 
 10.  安装 clang
 
-   这个耗时是非常久的. 参考 https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1
+  这个耗时是非常久的. 参考 https://github.com/yangyangwithgnu/use_vim_as_ide#7.1.1
 
-   ```bash
-   # 由于下面代码需要使用 svn, 所以需要先安装
-   sudo apt-get install subversion
+  ```bash
+  # 由于下面代码需要使用 svn, 所以需要先安装
+  sudo apt-get install subversion
 
-   # 下载 LLVM、clang 及辅助库源码：
-   cd ~/Programs
-   # Checkout LLVM
-   svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm 
-   # Checkout Clang
-   cd llvm/tools 
-   svn co http://llvm.org/svn/llvm-project/cfe/trunk clang 
-   cd ../.. 
-   # Checkout extra Clang Tools
-   cd llvm/tools/clang/tools 
-   svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra 
-   cd ../../../.. 
-   # Checkout Compiler-RT
-   cd llvm/projects 
-   svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt 
-   cd ../..  
-   # 注意这里已经调回到了 Programs/
+  # 下载 LLVM、clang 及辅助库源码：
+  cd ~/Programs
+  # Checkout LLVM
+  svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm 
+  # Checkout Clang
+  cd llvm/tools 
+  svn co http://llvm.org/svn/llvm-project/cfe/trunk clang 
+  cd ../.. 
+  # Checkout extra Clang Tools
+  cd llvm/tools/clang/tools 
+  svn co http://llvm.org/svn/llvm-project/clang-tools-extra/trunk extra 
+  cd ../../../.. 
+  # Checkout Compiler-RT
+  cd llvm/projects 
+  svn co http://llvm.org/svn/llvm-project/compiler-rt/trunk compiler-rt 
+  cd ../..  
+  # 注意这里已经调回到了 Programs/
 
-   # 关掉其他应用，尽量多的系统资源留给 GCC 编译 clang 源码:
-   # 下面的 build 是在 Programs 目录下创建的, 这个编译的过程
-   #　特别特别久, 估计一个小时～两个小时左右.
-   mkdir build
-   cd build
-   cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
-   make && sudo make install
+  # 关掉其他应用，尽量多的系统资源留给 GCC 编译 clang 源码:
+  # 下面的 build 是在 Programs 目录下创建的, 这个编译的过程
+  #　特别特别久, 估计一个小时～两个小时左右.
+  mkdir build
+  cd build
+  cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../llvm
+  make && sudo make install
 
-   # 安装好后确认下:
-   clang --version 
+  # 安装好后确认下:
+  clang --version 
 
-   # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
-   cd ~/Programs
-   mv build/ llvm/
+  # 然后将 build/ 文件夹移动到 llvm/ 中, 放在 Programs/ 下碍眼
+  cd ~/Programs
+  mv build/ llvm/
 
-   # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
-   # 前者是接口层（即，上层的封装）, 后者是实现层（即，底层的具体实现），对应实物文件，你得需要两个子库
-   # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
-   # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
-   # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
-   cd ~/Programs/ 
-   svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
-   mkdir build   
-   cd build
-   cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
-   make && sudo make install
-   cd ~/Programs
-   mv build/ libcxx/
+  # 玩 C/C++ 你肯定要用到标准库. 概念上，GCC 配套的标准库涉及 libstdc++ 和 libsupc++ 两个子库，
+  # 前者是接口层（即，上层的封装）, 后者是实现层（即，底层的具体实现），对应实物文件，你得需要两个子库
+  # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
+  # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
+  # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
+  cd ~/Programs/ 
+  svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
+  mkdir build   
+  cd build
+  cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxx 
+  make && sudo make install
+  cd ~/Programs
+  mv build/ libcxx/
 
-   # 类似，源码安装 libc++abi 的头文件和动态链接库：
-   cd ~/Programs/ 
-   svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
-   mkdir build   
-   cd build
-   cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
-   make && sudo make install
-   cd ~/Programs
-   mv build/ libcxxabi/
+  # 类似，源码安装 libc++abi 的头文件和动态链接库：
+  cd ~/Programs/ 
+  svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk libcxxabi
+  mkdir build   
+  cd build
+  cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release ../libcxxabi 
+  make && sudo make install
+  cd ~/Programs
+  mv build/ libcxxabi/
 
-   # 完成.
-   ```
+  # 完成.
+  ```
 
 11.  安装 java
 
@@ -352,6 +352,27 @@
      sh autogen.sh # 需要 automake aclocal
      ./configure && make
      sudo make install
+
+     # 安装 tmux 的插件管理
+     # https://github.com/tmux-plugins/tpm
+     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+
+     # 然后到 Vim/config 中将 init.tmux.conf 拷贝
+     cd Vim/config
+     cp init.tmux.conf ~/.tmux.conf
+     tmux # 打开 tmux
+     # 然后根据 tpm (tmux 的插件管理) 中的提示安装插件, 在 tmux 中使用 
+     tmux source ~/.tmux.conf  # 注意要打开 tmux, 并在其中输入该命令
+     # 之后安装插件只需要使用 
+     Prefix + I (我设置了 prefix 为 Ctrl + a), 因此我只需要按
+     Ctrl + a, Shift + i
+
+     # 由于 https://github.com/jimeh/tmux-themepack 主题中的箭头不是很好看, 我对其
+     # 进行了修改, 只要将 Vim/config/ 的配置文件复制到相应的地方即可
+     rm -rf /home/ieric/.tmux/plugins/tmux-themepack/powerline/double
+     cp -r Vim/config/powerline/double /home/ieric/.tmux/plugins/tmux-themepack/powerline/
+
+     # 之后重新打开 tmux 就行, 或者再使用 prefix + r 重载 tmux
      ```
 
 13.  安装 Qt
@@ -419,8 +440,6 @@
      	"update_check": false
      }
      ```
-
-     ​
 
      ​
 
@@ -525,12 +544,13 @@
          cp gtkrc-2.0 ~/.gtkrc-2.0
          ```
 
-         +   将 `Vim/config` 文件夹中的 my.zshrc 文件做如下处理: 对照自己**已安装**的软件, 设置好相应的环境变量等.
+         +   将 `Vim/config` 文件夹中的 my.zshrc 文件做如下处理: 对照自己**已安装**的软件, 设置好相应的环境变量等.    
 
+         ```bash
+         # 不要直接复制 my.zshrc, 自己参考 my.zshrc 慢慢配置当前的 .zshrc
+         ```
 
-         先配置好 Vim 后再修改.
-
-         +   将 `Vim/config` 文件夹中的 init.vimrc 文件做如下处理:
+         + 将 `Vim/config` 文件夹中的 init.vimrc 文件做如下处理:
 
          ```bash
          cp init.vimrc ~/.vimrc
@@ -541,7 +561,8 @@
          # 不好找了, 其中最后的 ctrlsf 需要安装 ctags, ack, ag 等, ranger.vim 需要把 ranger安装好, ipyb_notedown 需要装好 notedown
          ```
 
-         +   安装 YouCompleteMe (编译好 clang 之后再装 YCM)
+
+         + 安装 YouCompleteMe (编译好 clang 之后再装 YCM)
 
          ```bash
          # 使用 Vundle 安装好 YCM
@@ -578,16 +599,51 @@
          # 成功!
          ```
 
-         +   对于 Vim 中的 ctrlsf 等包, 需要安装 ack, ag 等 (查看 `Vim/refer.md`), 还有 ctags 也要装一下. ipynb 插件需要 notedown. (**由于我最终会使用 pyenv, 所以到时候还需要装 notedown**)
+          +   对于 Vim 中的 ctrlsf 等包, 需要安装 ack, ag 等 (查看 `Vim/refer.md`), 还有 ctags 也要装一下. ipynb 插件需要 notedown. (**由于我最终会使用 pyenv, 所以到时候还需要装 notedown**)
 
-             ```bash
-             cpan App::Ack # 安装 ack, 有个选项是选 sudo
-             sudo apt-get install silversearcher-ag # 安装 ag
-             # 通过源码装 ctags, 略... ./configure && make && sudo make install
-             sudo pip install notedown 
-             ```
+         ```bash
+         cpan App::Ack # 安装 ack, 有个选项是选 sudo
+         sudo apt-get install silversearcher-ag # 安装 ag
+         # 通过源码装 ctags, 略... ./configure && make && sudo make install
+         sudo pip install notedown 
+         ```
 
-         +   安装 ranger, 然后使用 vim 中的 ranger.vim 实现在 vim 中使用 ranger.
+          +   安装 ranger, 然后使用 vim 中的 ranger.vim 实现在 vim 中使用 ranger.
+              +   地址:  https://github.com/ranger/ranger
+
+         ```bash
+         # 下载 UniCurses-1.2, https://sourceforge.net/projects/pyunicurses/
+         cd UniCurses-1.2
+         python setup.py install # python -c "import curses" 检验
+
+         # 安装 w3m
+         sudo apt-get install w3m-img
+
+         # 安装其他配件
+         sudo apt-get install caca-utils highlight atool bsdtar unrar lynx w3m-img elinks poppler-utils transmission-cli transmission-common transmission-daemon mediainfo exiftool odt2txt
+
+         # 安装必要的 python 库
+         pip install pytest 
+         pip install flake8
+         sudo pip install pytest 
+         sudo pip install flake8
+
+         # 安装 ranger
+         cd Programs
+         git clone https://github.com/ranger/ranger 
+         cd ranger
+         sudo make install
+
+         # 在 .zshrc 中加入如下的关于 ranger 的配置 (当然不加也可以)
+         # ranger config
+         # in case ~/.config/ranger/rc.conf to be loaded twice
+         export RANGER_LOAD_DEFAULT_RC=FALSE
+
+         # 最后可以完成 vim 中 ranger.vim 插件的安装
+         ```
+
+         ​
+
 
 21.  安装 pyenv 和 pyenv-virtualenv
 
