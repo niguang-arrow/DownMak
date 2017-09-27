@@ -579,18 +579,18 @@
          # 使用 Vundle 安装好 YCM
          # 编辑 .vimrc 文件
          Plugin 'Valloric/YouCompleteMe'
-
+    
          :PluginInstall # 在 vim 中使用命令
          # 要保证安装完成后 YCM 没有给出什么出错的信息, 没有信息就是好消息!!!
          # 之后还要编译 YCM, 首先安装必要的编译工具和库
          #sudo apt-get install build-essential cmake
          sudo apt-get install python-dev python3-dev
-
+    
          # Compiling YCM with semantic support for C-family languages:
          cd ~/.vim/bundle/YouCompleteMe
          ./install.py --clang-completer
          # 成功! 体验太棒了!!! 
-
+    
          #####################
          # 注意意外情况
          #####################
@@ -610,7 +610,7 @@
          # 成功!
          ```
           +   对于 Vim 中的 ctrlsf 等包, 需要安装 ack, ag 等 (查看 `Vim/refer.md`), 还有 ctags 也要装一下. ipynb 插件需要 notedown. (**由于我最终会使用 pyenv, 所以到时候还需要装 notedown**)
-
+    
               ```bash
               cpan App::Ack # 安装 ack, 有个选项是选 sudo
               sudo apt-get install silversearcher-ag # 安装 ag
@@ -627,30 +627,30 @@
               # 下载 UniCurses-1.2, https://sourceforge.net/projects/pyunicurses/
               cd UniCurses-1.2
               python setup.py install # python -c "import curses" 检验
-
+    
               # 安装 w3m
               sudo apt-get install w3m-img
-
+    
               # 安装其他配件
               sudo apt-get install caca-utils highlight atool bsdtar unrar lynx w3m-img elinks poppler-utils transmission-cli transmission-common transmission-daemon mediainfo exiftool odt2txt
-
+    
               # 安装必要的 python 库
               pip install pytest 
               pip install flake8
               sudo pip install pytest 
               sudo pip install flake8
-
+    
               # 安装 ranger
               cd Programs
               git clone https://github.com/ranger/ranger 
               cd ranger
               sudo make install
-
+    
               # 在 .zshrc 中加入如下的关于 ranger 的配置 (当然不加也可以)
               # ranger config
               # in case ~/.config/ranger/rc.conf to be loaded twice
               export RANGER_LOAD_DEFAULT_RC=FALSE
-
+    
               # 最后可以完成 vim 中 ranger.vim 插件的安装
               ```
 
@@ -783,3 +783,18 @@
        /usr/lib/x86_64-linux-gnu/mesa-egl/libGLESv2.so.2.0.0
        $ sudo ln -s /usr/lib/x86_64-linux-gnu/mesa/libGL.so.1 /usr/lib/libGL.so
        ```
+
+22.  安装 netease music
+
+     到官网上下载 https://music.163.com/#/download 客户端, 使用 dpkg 安装, 但是根据 http://forum.ubuntu.org.cn/viewtopic.php?t=478413 中所说, `dpkg -i `命令安装 deb 包不会自动安装依赖，所以要用 `sudo apt-get -f install` 命令修复依赖:
+
+     ```bash
+     # 只用这两条命令即可, 对了, 也许 deb 的 google-chrome 也能用这种方式安装.
+     sudo dpkg -i netease-cloud-music_1.0.0-2_amd64_ubuntu14.04.deb
+     sudo apt-get -f install 
+
+     # 下面是一些依赖项, 不包含所有的, 只安装下面的仍然会报错, 还是需要上面的 apt-get -f install 命令
+     sudo apt-get -f install libqt5multimedia5-plugins libqt5multimediawidgets5 libqgsttools-p1 libqt5x11extras5   
+     ```
+
+     ​
