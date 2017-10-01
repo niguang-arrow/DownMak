@@ -409,6 +409,10 @@
 
      或直接 https://typora.io/#linux
 
+     我最喜欢使用 Engwrite 主题, 但是需要做一些修改, 否则代码的字体太小看不清楚. 可以直接将 `Vim/config/engwrite.css` 拷贝到 `~/.config/Typora/themes` 中, 重新打开 Typora 即可. 另外, 如果代码的字体还没有发生变化, 可以到 Typora 的 File 菜单下找到 Preferences -> Font Size -> Customize, 选择合适大小的字体. 
+
+     还要一点, 经过不断的尝试才找到的, engwrite.css 代码中的 code, tt 表示的是用单引号括起来的代码, 而 pre 则是控制由 3 个引号括起来的代码, 由于前面使用了 Customize 调整代码的字体大小, 可以 3 个单引号括起来的代码边上的方框会和代码交叠在一起, 可以通过调整 pre 的 line-height 和 padding 来修正.
+
 16.  安装 sublime text
 
      到官网上下载 https://www.sublimetext.com/3
