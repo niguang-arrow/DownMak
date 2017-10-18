@@ -207,3 +207,251 @@
 ### allocator 类
 
 +   new 将内存分配和对象构造组合在了一起, 而 delete 将对象析构和内存释放组合在了一起. 在分配大块内存时, 我们希望在这块内存上按需构造对象. 在此情况下, 我们希望将内存分配和对象构造分离. 这意味着我们可以分配大块内存, 而只在真正需要时才真正执行对象创建操作(同时付出一定开销).
+
+
+
+### 代码
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <iterator>
+#include <vector>
+#include <initializer_list>
+#include <utility>
+#include <algorithm>
+
+
+using namespace std;
+
+template <typename> class BlobPtr;
+
+template <typename T>
+class Blob {
+public:
+    friend class BlobPtr<T>;
+    typedef BlobPtr<T> iterator;
+    typedef typename vector<T>::size_type size_type;
+    Blob() : data(make_shared<vector<T>>()) {}
+    Blob(initializer_list<T> il) : data(make_shared<vector<T>>(il)) {}
+    size_type size() const { return data->size(); }
+    bool empty() const { return data->empty(); }
+    void push_back(const T &s) { data->push_back(s); }
+    void pop_back() {
+        check(0, "pop back on empty Blob");
+        return data->pop_back();
+    }
+    T& front() {
+        check(0, "front on empty Blob");
+        return data->front();
+    }
+    T& back() {
+        check(0, "back on empty Blob");
+        return data->back();
+    }
+
+    iterator begin() {
+        return iterator(*this);
+    }
+
+    iterator end() {
+        return iterator(*this, this->size());
+    }
+
+    friend ostream& operator<<(ostream &os, const Blob &blob) {
+        blob.check(0, "cout of empty blob!");
+        for (size_type i = 0; i != blob.size(); ++i)
+            os << (*blob.data)[i] << " ";
+        return os;
+    }
+private:
+    shared_ptr<vector<T>> data;
+    void check(size_type i, const string &msg) const {
+        if (i >= data->size())
+            throw out_of_range(msg);
+    }
+};
+
+
+template <typename T>
+class BlobPtr {
+public:
+    BlobPtr() : curr(0) {}
+    BlobPtr(Blob<T> &blob, size_t i = 0) : wptr(blob.data), curr(i) {}
+
+    T& operator*() {
+        auto iter = check(curr, "dereference out of range");
+        return (*iter)[curr];
+    }
+
+    BlobPtr& operator++() {
+        check(curr, "increment out of range");
+        ++curr;
+        return *this;
+    }
+
+private:
+    shared_ptr<vector<T>> check(size_t i, const string  &msg) {
+        shared_ptr<vector<T>> p = wptr.lock();
+        if (!p)
+            throw runtime_error("Unbound BlobPtr");
+        if (i >= p->size())
+            throw out_of_range(msg);
+        return p;
+    }
+    weak_ptr<vector<T>> wptr;
+    size_t curr;
+};
+
+
+template <typename> class VectorPtr;
+
+template <typename T>
+class Vector {
+public:
+    friend class VectorPtr<T>;
+    Vector() : elements(nullptr), first_free(nullptr), cap(nullptr) {}
+    Vector(const Vector &s) {
+        auto newdata = alloc_n_copy(s.begin(), s.end());
+        elements = newdata.first;
+        cap = first_free = newdata.second;
+    }
+    Vector& operator=(const Vector &s) {
+        auto newdata = alloc_n_copy(s.begin(), s.end());
+        free();
+        elements = newdata.first;
+        cap = first_free = newdata.second;
+        return *this;
+    }
+    Vector(initializer_list<T> il) {
+        auto newdata = alloc_n_copy(il.begin(), il.end());
+        elements = newdata.first;
+        cap = first_free = newdata.second;
+    }
+    ~Vector() { free(); }
+    void push_back(const T &s) {
+        check_n_alloc();
+        alloc.construct(first_free++, s);
+    }
+
+    T& operator[](size_t i) {
+        check(i, "out of range");
+        return *(elements + i);
+    }
+    size_t size() const { return first_free - elements; }
+    size_t capacity() const { return cap - elements; }
+    VectorPtr<T> begin() { return VectorPtr<T>(*this); }
+    VectorPtr<T> end() { return VectorPtr<T>(*this, size()); }
+
+private:
+    static allocator<T> alloc;
+    void check(size_t i, const string &msg) {
+        if (i >= size())
+            throw out_of_range(msg);
+    }
+    void check_n_alloc() { if (size() == capacity()) reallocate(); }
+    pair<T*, T*> alloc_n_copy(const T *b, const T *e) {
+        auto data = alloc.allocate(e - b);
+        return {data, uninitialized_copy(b, e, data)};
+    }
+    void free() {
+        if (elements) {
+            while (first_free != elements) {
+                alloc.destroy(--first_free);
+            }
+            alloc.deallocate(elements, cap - elements);
+        }
+    }
+    void reallocate() {
+        auto newcapaticy = size() ? 2 * size() : 1;
+        auto newdata = alloc.allocate(newcapaticy);
+        auto dset = newdata;
+        auto elem = elements;
+        while (elem != first_free)
+            alloc.construct(dset++, std::move(*elem++));
+        free();
+        elements = newdata;
+        first_free = dset;
+        cap = elements + newcapaticy;
+    }
+    T* elements; 
+    T* first_free;
+    T* cap;
+};
+
+template <typename T>
+allocator<T> Vector<T>::alloc;
+
+
+template <typename T>
+class VectorPtr {
+public:
+    VectorPtr() : ptr(nullptr), curr(0) {}
+    VectorPtr(const Vector<T> &v, size_t i = 0) : ptr(v.elements), curr(i), num(v.size()) {}
+    T& operator*() {
+        check(curr, "out of range");
+        return *(ptr + curr);
+    }
+
+    VectorPtr& operator++() {
+        check(curr, "out_of_range");
+        ++curr;
+        return *this;
+    }
+
+    VectorPtr operator++(int) {
+        auto res = *this;
+        ++*this;
+        return res;
+    }
+    
+    bool operator==(const VectorPtr &rhs) {
+        return (ptr == rhs.ptr) && (curr == rhs.curr);
+    }
+
+    bool operator!=(const VectorPtr &rhs) {
+        return !(*this == rhs);
+    }
+
+private:
+    void check(size_t i, const string &msg) {
+        if (i >= num)
+            throw out_of_range(msg);
+    }
+    T* ptr;
+    size_t curr;
+    size_t num;
+};
+
+
+int main() {
+
+    Blob<string> a({"This", "is", "a", "test"});
+    a.push_back("hello");
+    cout << a << endl;
+    
+    auto b = a.begin();
+    cout << *b << endl;
+    cout << *(++b) << endl;
+
+
+    ostream_iterator<string> scout(cout, " ");
+    Vector<string> str = {"Hello", "World"};
+
+    str.push_back("Ohyeah");
+    cout << str.size() << endl;
+    cout << str.capacity() << endl;
+
+    VectorPtr<string> iter = str.begin();
+    cout << *iter++ << endl;
+    cout << *iter << endl;
+    for (auto it = str.begin(); it != str.end(); ++it) {
+        cout << *it << " ";
+    }
+    cout << endl;
+
+    
+    return 0;
+}
+```
+
