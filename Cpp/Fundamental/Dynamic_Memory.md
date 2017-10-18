@@ -93,7 +93,7 @@
 
     如果 connection 有一个析构函数, 就可以在 f 结束时由析构函数自动关闭连接. 因此, 我们可以使用 `shared_ptr` 来保证 connection 被正确的关闭. 
 
-+   **在默认情况下, `shared_ptr` 假定它们指向的是动态内存.** 因此, 当一个 `shared_ptr` 被销毁时, 它默认对它管理的指针进行 delete 操作. 为了用 `shared_ptr` 来管理上面的 connection, 我们必须首先定义一个函数来替代 delete. 这个删除器函数必须能够完成对 `shared_ptr` 中保存的指针进行释放的操作.
++   **在默认情况下, `shared_ptr` 假定它们指向的是动态内存.** 因此, **当一个 `shared_ptr` 被销毁时, 它默认对它管理的指针进行 delete 操作.** 为了用 `shared_ptr` 来管理上面的 connection, 我们必须首先定义一个函数来替代 delete. 这个删除器函数必须能够完成对 `shared_ptr` 中保存的指针进行释放的操作.
 
     ```cpp
     void end_connection(connection *p) { disconnect(*p); }
@@ -106,5 +106,104 @@
     }
     ```
 
-    ​
 
+
+
+### `unique_ptr`
+
++   定义 `unique_ptr` 时, 需要将其绑定到一个 new 返回的指针上. 
+
++   由于一个 `unique_ptr` 拥有它指向的对象, **因此它不支持普通的拷贝或赋值操作**.
+
++   可以使用 `release()` 或 `reset()` 将指针的所有权从一个非 const 的 `unique_ptr` 转移到另一个 `unique_ptr`.
+
+    +   `release()` 返回 `unique_ptr` 当前保存的指针并将其(这里的"其"指的是 `unique_ptr`)置为空. 调用 `release` 会切断 `unique_ptr` 和它原来管理的对象间的联系. `release` 返回的指针常用来初始化另一个智能指针或给另一个智能指针赋值.
+    +   `reset()` 成员接受一个可选的指针参数, 令 `unique_ptr` 重新指向给定的指针, 比如: `p2.reset(p1.release())`
+
++   不能拷贝 `unique_ptr` 有一个例外: 我们可以拷贝或赋值一个将要被销毁的 `unique_ptr`. 最常见的例子是从函数返回一个 `unique_ptr`
+
++   向 `unique_ptr` 传递删除器: (前面 `shared_ptr` 的例子)
+
+    ```cpp
+    void f(destination &d /* 其他需要的参数 */) {
+      connection c = connect(&d);
+      // 当 p 被销毁时, 连接会被关闭
+      unique_ptr<connection, decltype(end_connection)*> p(&c, end_connection);
+      // 当 f 退出时, connection 会被正确关闭
+    }
+    ```
+
+    由于 `decltype(end_connection)` 返回一个函数类型, 所以我们必须添加一个 `*` 来指出我们正在使用该类型的一个指针.
+
+
+
+### `shared_ptr` 与 `unique_ptr`
+
++   (599 页)`shared_ptr` 是在运行时绑定删除器的, 而 `unique_ptr` 在编译时绑定删除器. 通过在编译时绑定删除器, `unique_ptr` 避免了间接调用删除器的运行时开销. 通过在运行时绑定删除器, `shared_ptr` 使用户重载删除器更为方便.
+
+
+
+### `weak_ptr` 
+
++   `weak_ptr` 指向由一个 `shared_ptr` 管理的对象, 将一个 `weak_ptr` 绑定到 `shared_ptr` 不会改变 `shared_ptr` 的引用计数. 当我们创建一个 `weak_ptr` 时, 要用一个 `shared_ptr` 来初始化它. 由于 `weak_ptr` 不会改变 `shared_ptr` 的引用计数, 所以 `weak_ptr` 的对象可能被释放.
+
++   由于对象可能不存在, 因此我们不能用 `weak_ptr` 直接访问对象, 而 **必须调用 lock()**
+
+    +   该函数检查 `weak_ptr` 指向的对象是否存在, 如果存在, 返回一个指向该对象 `shared_ptr`, 否则返回一个空 `shared_ptr.`
+
++   `weak_ptr` 的方法:
+
+    ```cpp
+    w.reset(); // 将 w 置为空
+    w.use_count(); // 与 w 共享对象的 shared_ptr 的数量
+    w.expired(); // (过期的, 失效的) 若 w.use_count() 为 0, 返回 true
+    w.lock();  // 如果 expired 为 true, 返回一个空 shared_ptr, 否则返回一个指向 w 的对象的 shared_ptr
+    ```
+
+
+
+### new 和 数组
+
++   可以用一个表示数组类型的类型别名来分配一个数组;
++   通常称 `new T[]` 分配的内存为 "动态数组", 但这种叫法有一定的误导. **当用 new 分配一个数组时, 我们并未得到一个数组类型的对象, 而是得到一个数组元素类型的指针**. 由于分配的内存并不是一个数组类型, 因此不能对动态数组调用 `begin` 或 `end`, 这些函数使用数组的维度来返回指向首元素和尾后元素的指针. 出于同样的原因, 也不能用范围 for 语句来处理 (所谓的) 动态数组中的元素.
++   动态分配一个空数组是合法的, 但是不能解引用相应的指针.
+
+
+
+#### 释放动态数组
+
++   `delete[] pa;` 数组中的元素按逆序销毁, 即最后一个元素首先被销毁, 然后是倒数第二个, 以此类推.
+
+
+
+### 智能指针和动态数组
+
++   标准库提供了一个可以管理 new 分配的动态数组的 `unique_ptr` 版本. 为了用一个 `unique_ptr` 来管理动态数组, 我们必须在对象类型后面跟一对空方括号:
+
+    ```cpp
+    unique_ptr<int[]> u(new int[42]);
+    u.release(); // 自动用 delete[] 来销毁其指针.
+    ```
+
++   `unique_ptr` 指向一个数组时, 我们可以使用下标运算符来访问数组中的元素.
+
++   `shared_ptr` 不支持管理动态数组. 如果希望使用 `shared_ptr` 来管理动态数组, 则需要自己定义删除器: (默认情况下, `shared_ptr` 是使用 delete 来销毁它指向的对象的.)
+
+    ```cpp
+    shared_ptr<int> sp(new int[10], [](int *p) { delete[] p; });
+    sp.reset(); // 使用 lambda 来释放数组
+    ```
+
+    另外, `shared_ptr` 未定义下标运算符, 而且智能指针类型不支持指针算术运算. 因此, 为了访问数组中的元素, 必须用 get 获取一个内置指针, 然后用它来访问数组:
+
+    ```cpp
+    for (size_t i = 0; i != 10; ++i) {
+      *(sp.get() + i) = i;
+    }
+    ```
+
+
+
+### allocator 类
+
++   new 将内存分配和对象构造组合在了一起, 而 delete 将对象析构和内存释放组合在了一起. 在分配大块内存时, 我们希望在这块内存上按需构造对象. 在此情况下, 我们希望将内存分配和对象构造分离. 这意味着我们可以分配大块内存, 而只在真正需要时才真正执行对象创建操作(同时付出一定开销).
