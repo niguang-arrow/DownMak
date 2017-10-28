@@ -382,9 +382,9 @@ private:
 template <typename T>
 allocator<T> Vector<T>::alloc;
 
-
+// 由于符合迭代器的协议, 之后可以使用 stl 的算法处理 VectorPtr
 template <typename T>
-class VectorPtr {
+class VectorPtr : std::iterator<std::forward_iterator_tag, T> {
 public:
     VectorPtr() : ptr(nullptr), curr(0) {}
     VectorPtr(const Vector<T> &v, size_t i = 0) : ptr(v.elements), curr(i), num(v.size()) {}
@@ -448,6 +448,10 @@ int main() {
     for (auto it = str.begin(); it != str.end(); ++it) {
         cout << *it << " ";
     }
+    cout << endl;
+  	 
+   	// 或者使用 STL 算法
+    copy(str.begin(), str.end(), scout);
     cout << endl;
 
     
