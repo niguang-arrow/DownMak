@@ -1,0 +1,51 @@
+\begin{dispExample*}{%
+	 sidebyside,
+	 lefthand ratio=0.7,
+	 halign lower=right}
+	
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{6pt}
+
+\tikzset{
+arrStyle/.style = {->, >=stealth, 
+	line width=\arrlinewidth,#1},
+arrStyle/.default = {\arrcolor}
+}	
+	
+\begin{tikzpicture}
+\newcommand{\radius}{2}
+\coordinate (origin) at (0, 0);
+\draw[arrStyle] (origin) -- ++(\radius, 0);
+
+% 连接 (A) -| -- (B)
+% 先得到 (A) 和 (B) 直线连接的中间点 (C)
+% 由于使用了 (C|-B), 所以还需要考虑 (C-|B) 的情况
+\node (A) at ([shift={(0, -1)}]origin) {A};
+\node (B) at ([shift={(3, -2)}]origin) {B};
+\coordinate (C) at ($(A)!.5!(B)$) node[right=of C,right=4pt] {C};
+\draw[arrStyle] (A)
+	-| (C|-B) -- (B);
+
+% 另一种情况
+\node (A1) at ([shift={(3, -3)}]origin) {A};
+\node (B1) at ([shift={(.5, -5)}]origin) {B};
+\coordinate (C1) at ($(A1)!.5!(B1)$) node[above=of C1,above=4pt] {C};
+\draw[arrStyle] (A1) |- (C1-|B1) -- (B1);
+
+% 弯曲
+\node (A2) at ([shift={(0, -7)}]origin) {A};
+\node (B2) at ([shift={(3, -5)}]origin) {B};
+\path[arrStyle] (A2.east) edge[out=0, in=180] (B2.west);
+
+% rounded corners
+\node (A3) at ([shift={(0, -9)}]origin) {A};
+\node (B3) at ([shift={(3, -7)}]origin) {B};
+\coordinate (C3) at ($(A3)!.5!(B3)$) node[right=of C3,right=4pt] {C};
+\draw[arrStyle, rounded corners=5pt] (A3)
+-| (C3|-B3) -- (B3);
+
+% 换种风格
+\draw[->, line width=4pt] ([shift={(0, -10)}]origin) -- ++(\radius, 0);
+\end{tikzpicture}
+\end{dispExample*}

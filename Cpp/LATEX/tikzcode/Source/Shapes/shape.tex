@@ -1,0 +1,131 @@
+\subsection{流程图}
+
+\begin{dispExample*}{%
+		sidebyside,
+		lefthand ratio=0.7,
+		halign lower=center}
+% 这里给出的是流程图的 shape
+% 需要使用 \usetikzlibrary{arrows,shapes}
+% 例子中用到 \vv 向量命令和 \bm, 需要 \usepackage{esvect}
+% 和 \usepackage{bm}
+\tikzstyle{start}=[ellipse,draw,text=red]
+\tikzstyle{end}=[ellipse,draw,text=red]
+\tikzstyle{initial}=[rectangle,draw,rounded corners=4pt,
+fill=blue!25]
+% 指令
+\tikzstyle{instruct}=[rectangle,draw,fill=yellow!50]
+% 判断
+\tikzstyle{test}=[diamond, aspect=2.5,thick,
+draw=blue,fill=yellow!50,text=blue]
+% 箭头
+\tikzstyle{suite}=[->,>=stealth',thick,rounded corners=4pt]
+
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+\newcommand{\dis}{1cm}
+\node[start](start) at (origin) {Input: A, y};
+\node[initial, below=of start, below=\dis](initial)  	
+	{\shortstack{$x^\ast\leftarrow\vv{\bm{0}}$,\\
+	 $\tau\leftarrow\max_i\vert\Phi^Ty\vert$}};
+\node[test, below=of initial, below=\dis] (test) 
+	 {$\tau > \varepsilon ?$};
+\node[instruct,below=of test, below=\dis](instruct)  
+	{$\partial x\leftarrow (\Phi_\Gamma^T\Phi_\Gamma)^{-1}z$};
+\node[end, below=of instruct, below=\dis] (end) 
+	{Output: $x^\ast$};
+\draw[suite] (start) -- (initial);
+\draw[suite] (initial) -- (test);
+\draw[suite] (test) -- (instruct) node[midway,fill=ExampleBack]{Yes};
+\draw[suite] (instruct) -- (end);
+\coordinate (B) at ($(instruct)!.5!(end)$);
+\coordinate (C) at ([shift={(2.6, 0)}]$(test)!.5!(B)$);
+\draw[suite] (test)  -| (C|-B) -- (B) ;
+\node[right=of test, right=3pt, fill=ExampleBack]{No};
+\end{tikzpicture}
+\end{dispExample*}
+
+\subsection{神经元}
+
+\begin{dispExample*}{%
+		sidebyside,
+		lefthand ratio=0.7,
+		halign lower=center}
+\tikzset{%
+	neuralStyle/.style={draw, circle,
+		inner sep=0pt, minimum size=2em,
+		outer sep=1pt, line width=1pt, #1},
+	neuralStyle/.default={orange}
+}
+% 不要忘了最后的分号;
+% \neural{<颜色>}{<名字>}{<位置>};
+% \neuralPos{<颜色>}{<名字>}{<相对位置>}{<基准名字>}{<相对基准的偏移>};
+\newcommand{\neural}[3]{\node[neuralStyle=#1] (#2) at #3 {}}
+\newcommand{\neuralPos}[5]{\node[neuralStyle=#1,
+		#3=of #4, #3=0pt, shift={#5}] (#2) {}}
+% 可以在神经元内添加文字, 前缀用 t 表示 text
+\newcommand{\tneural}[4]{\node[neuralStyle=#1] (#2) at #3 {#4}}
+\newcommand{\tneuralPos}[6]{\node[neuralStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {#6}}
+
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+\neural{orange}{x}{(origin)};
+\neuralPos{blue}{x1}{below}{x}{(0, -.3)};
+\neuralPos{green}{x2}{below}{x1}{(0, -.3)};
+
+% 添加文本
+\tneural{orange}{x}{([shift={(1, 0)}]origin)}{$a_1^{(2)}$};
+\tneuralPos{blue}{x1}{below}{x}{(0, -.3)}{$x_1$};
+\tneuralPos{green}{x2}{below}{x1}{(0, -.3)}{$O_1$};
+\end{tikzpicture}
+\end{dispExample*}
+
+\subsection{文本框}
+
+\begin{dispExample*}{%
+		sidebyside,
+		lefthand ratio=0.7,
+		halign lower=center}
+\tikzset{%
+	textNodeStyle/.style={align=center,
+		inner sep=0pt, minimum size=2em,
+		outer sep=1pt, #1},
+	textNodeStyle/.default={},
+	boxStyle/.style={line width=1pt,%
+			rounded corners=3pt,
+		}% 还可以加颜色
+}
+
+\newcommand{\tNode}[3]{\node[textNodeStyle] (#1) at #2 {#3}}
+\newcommand{\tNodePos}[5]{\node[textNodeStyle,
+	#2=of #3, #2=0pt, shift={#4}] (#1) {#5}}
+
+% 多行文本
+\newcommand{\mtNode}[4]{\node[textNodeStyle={text width=#2}] 
+	(#1) at #3 {#4}}
+\newcommand{\mtNodePos}[6]{\node[textNodeStyle={text width=#2},
+	#3=of #4, #3=0pt, shift={#5}] (#1) {#6}}
+
+% 添加文本框
+\newcommand{\btNode}[4]{\node[textNodeStyle={text width=#2,%
+		rectangle, draw, inner sep=3pt, boxStyle}] 
+	(#1) at #3 {#4}}
+\newcommand{\btNodePos}[6]{\node[textNodeStyle={text width=#2,%
+		rectangle, draw, inner sep=3pt, boxStyle},%
+		#3=of #4, #3=0pt, shift={#5}] (#1) {#6}}
+	
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+% single line text
+\tNode{x}{(origin)}{Origin};
+\tNodePos{x1}{right}{x}{(1, 0)}{Right};
+
+% multiline text
+\mtNode{a}{2cm}{([shift={(0, -1)}]origin)}{Origin Point\\ Another line};
+\mtNodePos{a1}{2cm}{right}{a}{(.5, 0)}{Right Point\\ Another line};
+
+% boxed text node
+\btNode{b}{2cm}{([shift={(0, -2.3)}]origin)}{Boxed Point\\ Another line};
+\btNodePos{b1}{2cm}{right}{b}{(.5, 0)}{Right Point\\ Another line};
+\end{tikzpicture}
+\end{dispExample*}

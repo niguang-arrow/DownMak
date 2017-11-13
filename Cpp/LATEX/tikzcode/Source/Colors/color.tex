@@ -1,0 +1,32 @@
+\begin{dispExample*}{%
+		sidebyside,
+		lefthand ratio=0.7,
+		halign lower=center}
+\begin{tikzpicture}
+% 画深度学习图用过
+\definecolor{convBlue}{HTML}{008DF4}
+\definecolor{convDark}{HTML}{002947}
+\definecolor{convGray}{HTML}{77AAFF}
+\definecolor{convGreen}{HTML}{35CD74}
+\definecolor{convPurple}{HTML}{CE357A}
+% 画箭头用过
+\definecolor{arrBlue}{HTML}{015EDF}
+% GraphEmbed ppt 用过
+\definecolor{axisColor}{HTML}{2266BB}
+\definecolor{ballColor-Green}{HTML}{74db00}
+\definecolor{ballColor-Red}{HTML}{F6366F}
+% Python ppt 用过
+\definecolor{codeBackground}{HTML}{1E1E1E}
+
+\coordinate (origin) at (0, 0);
+\newcommand{\relativeDis}{1.2cm}
+\foreach \col[count=\num] in 
+	{convBlue, convDark, convGray, convGreen,
+	convPurple, arrBlue, axisColor,
+	ballColor-Green, ballColor-Red, codeBackground} 
+	\node[rectangle,fill=\col, 
+		text width=1cm, text height=.8cm,
+		rounded corners=3pt] at
+	([shift={(0, -\num * \relativeDis)}]origin) {};
+\end{tikzpicture}
+\end{dispExample*}

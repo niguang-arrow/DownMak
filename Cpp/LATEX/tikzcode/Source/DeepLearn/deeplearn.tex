@@ -1,0 +1,63 @@
+\subsection{单层神经网络}
+
+\begin{dispExample*}{%
+		halign lower=center}
+\tikzstyle{layer1} = [inner sep=0pt,minimum size=1em, outer sep=1pt]
+\tikzstyle{layer2} = [draw, circle, minimum size=4em, orange, 
+				outer sep=1pt, line width=1pt]
+\tikzstyle{layer3} = [minimum size=2em,outer sep=1pt]
+\begin{tikzpicture}
+% 输入节点
+\node[layer1] (x1) {$x_1$};
+\node[layer1,below=of x1, below=.5cm] (x2) {$x_2$};
+\node[layer1,below=of x2, below=.5cm] (x3) {$x_3$};
+\node[layer1,below=of x3, below=.5cm] (x4) {$+1$};
+\node[layer2, right=of x1, right=1.5cm, yshift=-1.5cm] (L1) {};
+\foreach \a in {1, 2, 3, 4}
+	\draw[->, line width=1pt] (x\a) -- (L1) node[midway, sloped, 
+		above=-.1cm, minimum size=.5em]{\tiny $W_\a$};
+% 输出节点及连线
+\node[layer3,right=of L1] (output) {\small $h_{w,b}(x)$};
+\draw[->,line width=1pt](L1) -- (output);
+\end{tikzpicture}
+\end{dispExample*}
+
+
+\subsection{多层神经网络}
+\begin{dispExample*}{%
+		halign lower=center}
+\tikzset{%
+	layerStyle/.style={draw, circle, 
+		inner sep=0pt, minimum size=2em, 
+		outer sep=1pt, line width=1pt, #1},
+	layerStyle/.default={orange}
+}
+\tikzstyle{outputSty} = [minimum size=2em,outer sep=1pt]
+\begin{tikzpicture}
+% 第一层
+\node[layerStyle=blue] (x1) {$x_1$};
+\node[layerStyle=blue,below=of x1, below=.5cm] (x2) {$x_2$};
+\node[layerStyle=blue,below=of x2, below=.5cm] (x3) {$x_3$};
+\node[layerStyle=blue,below=of x3, below=.5cm, 
+		label={below:Layer 1}] (x4) {$+1$};
+% 第二层
+\node[layerStyle=orange, right=of x1, right=1.5cm] (L1) {$a_1^{(2)}$};
+\node[layerStyle=orange, below=of L1, below=.5cm] (L2) {$a_2^{(2)}$};
+\node[layerStyle=orange, below=of L2, below=.5cm] (L3) {$a_3^{(2)}$};
+\node[layerStyle=orange,below=of L3, below=.5cm, 
+		label={below:Layer 2}] (L4) {$+1$};
+% 前两层连线
+\foreach \a in {1, 2, 3, 4}
+\foreach \b in {1, 2, 3}
+\draw[->, line width=1pt] (x\a) -- (L\b);
+
+% 第三层以及连线
+\node[layerStyle=green,right=of L1, right=1.5cm,yshift=-2cm,
+		label= {[yshift=-1.9cm]below:Layer 3}] (Lay3) {};
+\foreach \a in {1, 2, 3, 4}
+	\draw[->,line width=1pt] (L\a) -- (Lay3) node[midway, 
+		sloped, above=-.1cm, minimum size=.5em]{\tiny $W^{(2)}_{1\a}$};
+\node[outputSty,right=of Lay3] (output){\small $h_{w,b}(x)$};
+\draw[->, line width=1pt] (Lay3) -- (output);
+\end{tikzpicture}
+\end{dispExample*}

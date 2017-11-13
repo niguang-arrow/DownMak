@@ -1,0 +1,50 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{math,positioning,arrows,calc,shapes}
+\graphicspath{{figures/}}
+\pagestyle{empty}
+
+\newcommand{\figNode}[4]{\node(#1)
+	at #4 {\includegraphics[width=#3,keepaspectratio]{#2}}}
+\newcommand{\figNodePos}[6]{\node[#4=0pt,#4=of #5,shift={#6}](#1)
+	{\includegraphics[width=#3,keepaspectratio]{#2}}}
+
+\begin{document}
+%关于反向传播, 可以先研究下图:
+
+%\begin{tikzpicture}
+%\coordinate (origin) at (0, 0);
+%\figNode{f}{neural.pdf}{\textwidth}{(origin)};
+%\end{tikzpicture}
+
+由于对 $L$ 层的每个输出 $x^{(L)}_j$(也是第 $L+1$ 层的输入), loss 对其的导数可以用下式计算:
+
+$$
+\begin{aligned}
+\frac{\partial loss}{\partial x^{(L)}_j} = \sum_{k = 1}^{d_{L+1}}\delta_k^{(L+1)}w_{j, k}^{(L + 1)}
+\end{aligned}
+$$
+
+因此, 在已知第 $L+1$ 层的 delta 值 $\delta^{(L)}_k$($k=1, \ldots, d_{L+1}$, 其中 $d_{L+1}$ 表示第 $L+1$ 层中节点的个数) 时, 根据链式法则, 我们有:
+
+$$
+\begin{aligned}
+\delta^{(L)}_j &= \frac{\partial loss}{\partial z^{(L)}_j} = \frac{\partial loss}{\partial x^{(L)}_j}\frac{\partial x^{(L)}_j}{\partial z^{(L)}_j} \\
+ &= \left(\sum_{k = 1}^{d_{L+1}}\delta_k^{(L+1)}w_{j, k}^{(L + 1)}\right)\cdot f^\prime(z^{(L)}_j) 
+\end{aligned}
+$$
+
+这样也就把前一层(即第 $L$ 层) 的 delta 值 $\delta^{(L)}_j$($j=1, \ldots, d_{L}$, 其中 $d_L$ 表示第 $L$ 层的节点个数) 给求出来了.
+
+知晓每一层的 $\delta^{(L)}_j$ 之后, 为了求出 $loss$ 对权重的导数, 同样采用链式法则:
+
+$$
+\begin{aligned}
+\frac{\partial loss}{\partial w_{j, k}^{(L+1)}} &= \sum_{k = 1}^{d_{L+1}}\frac{\partial loss}{\partial z_{k}^{(L+1)}}\frac{\partial z_{k}^{(L+1)}}{\partial w_{j, k}^{(L+1)}} \\
+&= \sum_{k = 1}^{d_{L+1}}\delta_k^{(L+1)}x_j^{(L)}
+\end{aligned}
+$$
+
+\end{document}

@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning,calc}
+\usepackage[active, tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\usepackage{amsmath}
+
+
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{1pt}
+\tikzset{
+	% 箭头和线条的样式, 用于 \draw
+	arrStyle/.style = {->, >=stealth,
+	line width=\arrlinewidth,#1},
+	arrStyle/.default = {},
+	lineStyle/.style = {line width=\arrlinewidth},
+}
+
+\tikzset{%
+	neuralStyle/.style={draw, circle,
+		inner sep=0pt, minimum size=2em,
+		outer sep=1pt, line width=1pt, #1},
+	neuralStyle/.default={orange}
+}
+% 不要忘了最后的分号;
+% \neural{< 颜色 >}{< 名字 >}{< 位置 >};
+% \neuralPos{< 颜色 >}{< 名字 >}{< 相对位置 >}{< 基准名字 >}{< 相对基准的偏移 >};
+\newcommand{\neural}[3]{\node[neuralStyle=#1] (#2) at #3 {}}
+\newcommand{\neuralPos}[5]{\node[neuralStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {}}
+\newcommand{\tneural}[4]{\node[neuralStyle=#1] (#2) at #3 {#4}}
+\newcommand{\tneuralPos}[6]{\node[neuralStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {#6}}
+
+\tikzset{%
+	textNodeStyle/.style={align=center,
+		inner sep=0pt, minimum size=2em,
+		outer sep=1pt, #1},
+	textNodeStyle/.default={},
+	boxStyle/.style={line width=1pt,%
+		rounded corners=3pt,
+	}% 还可以加颜色
+}
+\newcommand{\tNode}[3]{\node[textNodeStyle] (#1) at #2 {#3}}
+\newcommand{\tNodePos}[5]{\node[textNodeStyle,
+	#2=of #3, #2=0pt, shift={#4}] (#1) {#5}}
+
+\newcommand{\sep}{1.5}
+\newcommand{\dis}{1}
+\begin{document}
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+% input
+\tneural{blue}{x1}{(origin)}{$f$};
+\tneuralPos{blue}{x2}{below}{x1}{(0, -\sep)}{$f$};
+\tneuralPos{blue}{x3}{below}{x2}{(0, -\sep)}{$f$};
+\tneuralPos{blue}{x4}{below}{x3}{(0, -\sep)}{$f$};
+
+% output
+\tneuralPos{orange}{y1}{right}{x1}{(4, -2.4*\sep)}{$f$};
+
+% 连线
+\coordinate (A) at ([shift={(-\dis, 0)}]y1.west);
+\foreach \i in {1, ..., 4} {
+	\draw[lineStyle] (x\i.east) -- ++(\dis, 0) coordinate (co\i) -- (A) node[midway, sloped,
+	above=-.05cm, minimum size=.5em]{\tiny $W^{(L + 1)}_{\i, k}$};
+	\draw[arrStyle, <-] (x\i.west) -- ++(-\dis, 0);
+	\tNodePos{t\i}{right}{x\i}{(.1, .3)}{$x^{(L)}_\i$};
+	\tNodePos{z\i}{left}{x\i}{(-.1, .3)}{$z^{(L)}_\i$};
+}
+\draw[arrStyle] (A) -- (y1) node[midway,
+above=-.05cm, minimum size=.5em]{$z^{(L + 1)}_{k}$};
+\draw[arrStyle] (y1) -- ++(1.5*\dis, 0) node[midway,
+above=-.05cm, minimum size=.5em]{$x^{(L + 1)}_{k}$};
+
+%% 两曲线
+\coordinate (B) at ([shift={(.5, .8)}]A);
+\path[arrStyle, magenta,<-] (B) edge[out=45, in=135] ++(2, 0) node[above=of A,above=0pt,shift={(1.8, 1.2)}] {$\delta^{(L+1)}_{k} = \frac{\partial loss}{\partial z^{(L + 1)}_{k}}$};
+
+\coordinate (C) at ([shift={(-.5, .8)}]x1.west);
+\path[arrStyle, magenta,<-] (C) edge[out=45, in=100] ([shift={(-.4, 0)}]B) node[inner sep=0pt, text height=-3cm,outer sep=0pt, above=of C,above=0pt,shift={(4.2, -.4)},text width=5cm] {
+	\begin{displaymath}
+	\tiny
+	\begin{aligned}
+	\delta^{(L)}_{1} &= \frac{\partial loss}{\partial z^{(L)}_{1}}
+	= \sum_{k=1}^{d_{L+1}}\frac{\partial loss}{\partial z^{(L+1)}_{k}}\frac{\partial z^{(L+1)}_{k}}{\partial x^{(L)}_{1}}\frac{\partial x^{(L)}_{1}}{\partial z^{(L)}_{1}} \\
+	&= \left(\sum_{k=1}^{d_{L+1}}\delta^{(L+1)}_{k}w^{(L + 1)}_{1, k}\right)f^\prime(z^{(L)}_{1})
+	\end{aligned}
+	\end{displaymath}
+	};
+%
+%% output2
+\tneuralPos{orange}{y2}{below}{y1}{(0, -1.3*\sep)}{$f$};
+%
+\coordinate (A1) at ([shift={(-\dis, 0)}]y2.west);
+\draw[arrStyle] (A1) -- (y2) node[midway,
+above=-.05cm, minimum size=.5em]{$z^{(L + 1)}_{k+1}$};
+\draw[arrStyle] (y2) -- ++(1.5*\dis, 0) node[midway,
+above=-.05cm, minimum size=.5em]{$x^{(L + 1)}_{k+1}$};
+\foreach \i in {1, 2, 3}
+	\draw[lineStyle,green] (co\i) -- (A1);
+%	
+\coordinate (B1) at ([shift={(.5, .8)}]A1);
+\path[arrStyle, magenta,<-] (B1) edge[out=45, in=135] ++(2, 0) node[above=of A1,above=0pt,shift={(1.8, 1)}] {$\delta^{(L+1)}_{k+1} = \frac{\partial loss}{\partial z^{(L + 1)}_{k+1}}$};
+%
+\path[arrStyle, magenta,<-] (C) edge[out=45, in=100] ([shift={(-.2, 0)}]B1) {};
+\end{tikzpicture}
+\end{document}

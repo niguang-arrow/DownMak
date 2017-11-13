@@ -1,0 +1,19 @@
+\begin{dispExample*}{%
+		sidebyside,
+		lefthand ratio=0.7,
+		halign lower=center}
+%% 不要忘记分号                
+%% \figNodePos{<节点名字>}{<图像名字>}{<图像宽度>}{<放置位置>}
+%% \figNodePos{<节点名字>}{<图像名字>}{<图像宽度>}{<相对位置>}
+%%	{<基准名字>}{<相对偏移>} 
+\newcommand{\figNode}[4]{\node(#1)
+	at #4 {\includegraphics[width=#3,keepaspectratio]{#2}}} 
+\newcommand{\figNodePos}[6]{\node[#4=0pt,#4=of #5,shift={#6}](#1)
+	{\includegraphics[width=#3,keepaspectratio]{#2}}}
+       
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+\figNode{f1}{teddy.jpg}{.8\textwidth}{(origin)};
+\figNodePos{f2}{teddy.jpg}{.8\textwidth}{below}{f1}{(0, -.3)};
+\end{tikzpicture}  	
+\end{dispExample*}

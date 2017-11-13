@@ -1,0 +1,60 @@
+\subsection{本文档中的写作}
+
+本文档用了方框来展示 \tikzlogo 代码以及相应的结果. 要达到这样的效果, 需要使用如下的代码:
+
+\begin{minted}{latex}
+% 在导言区
+\usepackage{tcolorbox}
+\tcbuselibrary{documentation,minted}
+\tcbset{listing engine=minted}
+\tcbset{%
+	docexample/.style={colframe=gray!40!white,colback=ExampleBack,
+		before skip=\medskipamount,after skip=\medskipamount,
+		fontlower=\footnotesize, 
+		documentation minted options={fontsize=\zihao{-5}},}%
+}
+\end{minted}
+
+之后写作的时候, 只需要将相应的 \tikzlogo 代码放在 \lxcode|dispExample*| 环境中, 使用带 \lxcode|*| 的环境则必须加上环境选项, 而 \lxcode|dispExample| 则不需要选项. 但我只用 \lxcode|dispExample*| 环境, 以便控制显示效果. 例子如下:\\[-.3cm]
+
+\noindent 左右排列:
+
+\begin{minted}{latex}
+\begin{dispExample*}{%
+		sidebyside,
+		lefthand ratio=0.7,
+		halign lower=right}
+	
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{6pt}
+
+\tikzset{
+	arrStyle/.style = {->, >=stealth, 
+		line width=\arrlinewidth,#1},
+	arrStyle/.default = {\arrcolor}
+}	
+
+\begin{tikzpicture}
+\newcommand{\radius}{2}
+\coordinate (origin) at (0, 0);
+\draw[arrStyle] (origin) -- ++(\radius, 0);
+\end{tikzpicture}
+\end{dispExample*}
+\end{minted}
+
+
+\noindent 上下排列:
+
+\begin{minted}{latex}
+% 在 dispExample* 环境中使用 tikz 代码即可.
+\begin{dispExample*}{%
+		halign lower=center}
+\tikzstyle{layer1} = [inner sep=0pt,minimum size=1em, outer sep=1pt]
+\begin{tikzpicture}
+% 输入节点
+\node[layer1] (x1) {$x_1$};
+\node[layer1,below=of x1, below=.5cm] (x2) {$x_2$};
+\end{tikzpicture}
+\end{dispExample*}
+\end{minted}

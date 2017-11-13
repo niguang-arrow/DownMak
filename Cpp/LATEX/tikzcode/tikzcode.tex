@@ -1,0 +1,81 @@
+\documentclass[a4paper, 12pt]{article}
+
+\title{\tikzlogo 代码查阅手册}
+\author{张梦磊}
+\date{2017 年 11 月 12 日}
+\pagenumbering{gobble} % 不显示页码
+
+
+\usepackage[left=1cm, right=1cm, top=1.5cm, bottom=1.5cm]{geometry}
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{math,positioning,arrows,calc,shapes}
+
+\graphicspath{{Source/}{Source/Figures/}}
+
+\pgfdeclarelayer{secbackground}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{secbackground,background,main,foreground}
+
+\usepackage{pgfkeys}
+\usepackage{tcolorbox}
+\tcbuselibrary{documentation,minted}
+\tcbset{listing engine=minted}
+
+\usepackage{esvect} % shape.tex 例子中画向量需要 \vv
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{fontspec}
+\setmonofont{Source Code Pro}
+
+\definecolor{papercolor}{RGB}{255, 236, 229}
+\pagecolor{papercolor}
+
+\usepackage{xspace}
+\newcommand{\tikzlogo}{Ti\textcolor{orange}{\emph{k}}Z\xspace}
+\newcommand{\pgflogo}{\textsc{PGF}\xspace}
+
+% 定义缩写, 第三个空为选项, \lxcode|...| 输入行间代码
+\newmintinline[lxcode]{latex}{}
+
+\tcbset{%
+	docexample/.style={colframe=gray!40!white,colback=ExampleBack,
+		before skip=\medskipamount,after skip=\medskipamount,
+		fontlower=\footnotesize, documentation minted options={fontsize=\zihao{-5}},}%
+}
+
+\begin{document}
+\maketitle
+\begin{minipage}{.9\textwidth}
+\centerline{前言}
+本手册准备收集自己平时写过的 \tikzlogo 代码, 主要将其中可以复用的代码提炼出来, 方便日后使用. 要正常编译所有代码, 使用:
+
+\begin{minted}{latex}
+\usepackage{tikz}
+\usetikzlibrary{math,positioning,arrows,calc,shapes}
+% 下面可以不需要, 但某些代码要
+\usepackage{esvect} % shape.tex 例子中画向量需要 \vv
+\usepackage{bm}
+\usepackage{amsmath}
+\end{minted}
+\end{minipage}
+\tableofcontents
+\section{导言区 -- Preamble}
+\input{Source/Preamble/preamble.tex}
+\input{Source/Preamble/dispExample.tex}
+\section{颜色 -- Colors}
+\input{Source/Colors/color.tex}
+\section{图形 -- Shapes}
+\input{Source/Shapes/shape.tex}
+\section{箭头 -- Arrows}
+\input{Source/Arrows/arrow.tex}
+\section{图像 -- Figures}
+\input{Source/Figures/figure.tex}
+\section{深度学习 -- DeepLearn}
+\label{sec:deeplearn}
+\input{Source/DeepLearn/deeplearn.tex}
+	
+	
+	
+\end{document}

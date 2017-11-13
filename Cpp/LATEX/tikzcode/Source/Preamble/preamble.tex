@@ -1,0 +1,159 @@
+\subsection{图像较简单的情况}
+
+\begin{minted}{latex}
+	
+\documentclass{article}
+
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning,calc}
+
+\usepackage[active, tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{6pt}
+
+\tikzset{
+	% 箭头和线条的样式, 用于 \draw
+	arrStyle/.style = {->, >=stealth, 
+		line width=\arrlinewidth,#1},
+	arrStyle/.default = {\arrcolor},
+	lineStyle/.style = {line width=\arrlinewidth, 
+		\arrcolor},
+}
+
+\begin{document}
+...
+\end{document}
+\end{minted}
+
+\subsection{画深度学习方面的图}
+
+\begin{minted}{latex}
+	
+\documentclass{article}
+
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{arrows, positioning,calc}
+
+\usepackage[active, tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+
+\pgfdeclarelayer{secbackground}
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{secbackground,background,main,foreground}
+
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{6pt}
+
+\tikzset{
+	% 箭头和线条的样式, 用于 \draw
+	arrStyle/.style = {->, >=stealth, 
+		line width=\arrlinewidth,#1},
+	arrStyle/.default = {\arrcolor},
+	lineStyle/.style = {line width=\arrlinewidth, \arrcolor},
+	nodeStyle/.style = {inner sep=0pt,
+		line width=\arrlinewidth,
+		color=\arrcolor!50!red,
+		minimum size=2cm},
+}
+
+\makeatletter
+\tikzset{%
+	layerStyle/.pic = {
+		\tikzset{
+			/layer/.cd,
+			#1,
+		}
+		\coordinate (layer@O) at (0, 0, 0);
+		\path[fill=\layer@color!75!white] (layer@O) -- 
+			++(-\layer@depth,0,0) coordinate (layer@A) --
+			++(0,-\layer@height,0) coordinate (layer@B) --
+			++(\layer@depth,0,0) coordinate (layer@C) 
+			-- cycle;
+		\coordinate (layer@Center) at ($(layer@O)!.5!(layer@B)$);
+		\node[font=\color{\layer@textcolor}
+			\bfseries\zihao{\layer@fontsize},rotate=90] 
+			at (layer@Center) {\layer@content};
+		\path[fill=\layer@color] (layer@O) -- 
+			++(0,0,-\layer@width) coordinate (layer@D) --
+			++(0,-\layer@height,0) coordinate (layer@E) -- 
+			(layer@C) -- cycle;
+		\path[fill=\layer@color!55!white] (layer@O) -- (layer@A) -- 		
+			++(0,0,-\layer@width) coordinate (layer@F)  -- 
+			(layer@D) -- cycle;
+	},
+	/layer/.cd,
+	depth/.store in=\layer@depth,
+	height/.store in=\layer@height,
+	width/.store in=\layer@width,
+	angle/.store in=\layer@angle,
+	color/.store in=\layer@color,
+	content/.store in=\layer@content,
+	textcolor/.store in=\layer@textcolor,
+	fontsize/.store in=\layer@fontsize,
+	depth=.6pt,
+	height=2.2pt,
+	width=1pt,
+	angle=60,
+	color=black!20!orange,
+	content=,
+	textcolor=black,
+	fontsize=5,
+}
+
+\tikzset{
+	contentNodeStyle/.pic = {
+		\tikzset{
+			/contentNode/.cd,
+			#1	
+		},
+		\node[shape=\content@shape, 
+		inner sep=\content@innersep, 
+		fill=\content@fill, 
+		font=\color{\content@textcolor}
+			\bfseries\zihao{\content@fontsize}] 
+		at (0 , 0)  {\content@content};
+	},
+	/contentNode/.cd,
+	fill/.store in=\content@fill,
+	textcolor/.store in=\content@textcolor,
+	content/.store in=\content@content,
+	inner sep/.store in=\content@innersep,
+	shape/.store in=\content@shape,
+	fontsize/.store in=\content@fontsize,
+	fill=blue,
+	textcolor=black,
+	content=,
+	inner sep=2pt,
+	shape=circle,
+	fontsize=5,
+}
+
+\makeatother
+
+%% 主要提供下面这 3 条命令
+\newcommand{\contentNode}[3]{
+	\node (#1) at #2 
+		{\tikz\pic at (0, 0) {contentNodeStyle={#3}};}
+}
+\newcommand{\layerNode}[3]{
+	\node (#1) at #2 
+		{\tikz\pic at (0, 0) {layerStyle={#3}};}
+}
+\newcommand{\layerNodePos}[5]{
+	\node (#1)  at ([shift={#4}]#3.#2) 
+		{\tikz\pic at (0, 0) {layerStyle={#5}};}
+}
+
+\begin{document}
+...
+\end{document}
+\end{minted}
+
+对于这种情况, 稍微复杂一些, 主要提供最后的 3 条命令, 使用方法可以参考\textbf{深度学习}这一节.
