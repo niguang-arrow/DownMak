@@ -8,6 +8,10 @@
 
 #### Prerequisites
 
+**注意**: 下面的实验我用的 caffe 版本为 `1.0.0-rc3`
+
+希望接口没变...
+
 如果要成功编译下面的例子, 需要安装必要的库, 如果能在 Ubuntu 上成功安装 Caffe, 那么下面的例子就能正常编译. 参照 [http://caffe.berkeleyvision.org/installation.html](http://caffe.berkeleyvision.org/installation.html) 将 Caffe 安装好. Caffe 本身便依赖大量的第三方库, 比如:
 
 +   Google 的全家桶: leveldb, protobuf, glog 等
@@ -62,6 +66,7 @@
     #include <string>
     #include <leveldb/db.h>
     #include <leveldb/write_batch.h>
+    ```
 
 
     #include "caffe/proto/caffe.pb.h"
@@ -73,7 +78,7 @@
     using std::string;
     using std::cout;
     using std::endl;
-
+    
     int main(int argc, char** argv) {
         if (argc < 4) {
             printf("Convert a set of images to the leveldb format used\n"
@@ -96,7 +101,7 @@
             // randomly shuffle data
             std::random_shuffle(lines.begin(), lines.end());
         }
-
+    
         leveldb::DB* db;
         leveldb::Options options;
         options.error_if_exists = true;
@@ -105,7 +110,7 @@
         cout << "Opening leveldb " << argv[3] << endl;
         leveldb::Status status = leveldb::DB::Open( // 创建 leveldb 文件, 保存到 argv[3]: leveldb/train_image_level 中
                 options, argv[3], &db);
-
+    
         string root_folder(argv[1]); // argv[1] 为图像的根目录, 即 Data/
         Datum datum;
         int count = 0;
@@ -114,7 +119,7 @@
         leveldb::WriteBatch* batch = new leveldb::WriteBatch();
         int data_size;
         bool data_size_initialized = false;
-
+    
         for (int line_id = 0; line_id < lines.size(); ++line_id) {
             if (!ReadImageToDatum(root_folder + lines[line_id].first, lines[line_id].second,
                         &datum)) {  // 将图像一张一张读入到 Datum 中
@@ -135,7 +140,7 @@
                 << "Width: " << datum.width() << "\n"
                 << "height: " << datum.height() << "\n"
                 << "label: " << datum.label() << endl;
-
+    
             datum.SerializeToString(&value);
             batch->Put(string(key_cstr), value);
             if (++count % 1000 == 0) {
@@ -148,12 +153,12 @@
         if (count % 1000 != 0) {
             db->Write(leveldb::WriteOptions(), batch);
         }
-
+    
         delete batch;
         delete db;
         return 0;
     }
-    ```
+    ​```
 
 +   下面是第二个重点, 编译这个文件, 给出 Makefile:
 
@@ -162,6 +167,7 @@
     CFLAGS = -Wall -std=c++0x -I./caffe -I. -DCPU_ONLY
     CLINK = -lprotobuf -lglog -lleveldb -lopencv_core -lopencv_highgui \
     		-lopencv_imgproc -lopencv_imgcodecs -lboost_system libcaffe.a
+    ```
 
 
     NAME = convert_image
@@ -181,8 +187,8 @@
 
     run :
     	./$(TAR) Data/ train.txt ./leveldb/train_image_leveldb
-    ```
-
+    ​```
+    
     +   `CC` 可以换成 g++
     +   注意 `CFLAGS` 中需要指定 `-I./caffe`, 否则 `caffe/` 中有些头文件没法找到其他头文件.
     +   还需要注意, 由于目前我的 Caffe 是在 CPU 下编译的, 需要使用 `-DCPU_ONLY`, 否则会因为找不到 `cublas_v2.h` 而报错(没装 cuda)
