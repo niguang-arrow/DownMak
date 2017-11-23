@@ -58,142 +58,141 @@
 
 +   下面是重点: `convert_image.cpp`:
 
-    ```cpp
-    // convert_image.cpp
-    #include <iostream>
-    #include <fstream>
-    #include <algorithm>
-    #include <string>
-    #include <leveldb/db.h>
-    #include <leveldb/write_batch.h>
-    ```
 
 
-    #include "caffe/proto/caffe.pb.h"
-    #include "caffe/util/io.hpp"
 
+```cpp
+// convert_image.cpp
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <string>
+#include <leveldb/db.h>
+#include <leveldb/write_batch.h>
+#include "caffe/proto/caffe.pb.h"
+#include "caffe/util/io.hpp"
 
-    using namespace caffe;
-    using std::pair;
-    using std::string;
-    using std::cout;
-    using std::endl;
-    
-    int main(int argc, char** argv) {
-        if (argc < 4) {
-            printf("Convert a set of images to the leveldb format used\n"
-                    "as input for Caffe.\n"
-                    "Usage:\n"
-                    "    convert_imageset ROOTFOLDER/ LISTFILE DB_NAME"
-                    " RANDOM_SHUFFLE_DATA[0 or 1]\n"
-                    "The ImageNet dataset for the training demo is at\n"
-                    "    http://www.image-net.org/download-images\n");
-            return 0;
-        }
-        std::ifstream infile(argv[2]); // argv[2] 就是 train.txt
-        std::vector<std::pair<string, int> > lines;
-        string filename;
-        int label;
-        while (infile >> filename >> label) { // 将 train.txt 中的每一行读入到 lines 中
-            lines.push_back(std::make_pair(filename, label));
-        }
-        if (argc == 5 && argv[4][0] == '1') { // 最后一个参数我们不指定
-            // randomly shuffle data
-            std::random_shuffle(lines.begin(), lines.end());
-        }
-    
-        leveldb::DB* db;
-        leveldb::Options options;
-        options.error_if_exists = true;
-        options.create_if_missing = true;
-        options.write_buffer_size = 268435456;
-        cout << "Opening leveldb " << argv[3] << endl;
-        leveldb::Status status = leveldb::DB::Open( // 创建 leveldb 文件, 保存到 argv[3]: leveldb/train_image_level 中
-                options, argv[3], &db);
-    
-        string root_folder(argv[1]); // argv[1] 为图像的根目录, 即 Data/
-        Datum datum;
-        int count = 0;
-        const int maxKeyLength = 30; // 原来的代码是 256, 由于实验只有一张图像, 所以改小了, 如果处理 imagenet, 文件数量多, 就改回来.
-        char key_cstr[maxKeyLength];
-        leveldb::WriteBatch* batch = new leveldb::WriteBatch();
-        int data_size;
-        bool data_size_initialized = false;
-    
-        for (int line_id = 0; line_id < lines.size(); ++line_id) {
-            if (!ReadImageToDatum(root_folder + lines[line_id].first, lines[line_id].second,
-                        &datum)) {  // 将图像一张一张读入到 Datum 中
-                continue;
-            };
-            if (!data_size_initialized) {
-                data_size = datum.channels() * datum.height() * datum.width();
-                data_size_initialized = true;
-            } else {
-                const string& data = datum.data();
-            }
-            // sequential
-            snprintf(key_cstr, maxKeyLength, "%08d_%s", line_id, lines[line_id].first.c_str());
-            string value;
-            // get the value
-          	// 这里是我加的, 可以看到 1.png 这张图像的某些信息
-            cout << "Data channels: " << datum.channels() << "\n"
-                << "Width: " << datum.width() << "\n"
-                << "height: " << datum.height() << "\n"
-                << "label: " << datum.label() << endl;
-    
-            datum.SerializeToString(&value);
-            batch->Put(string(key_cstr), value);
-            if (++count % 1000 == 0) {
-                db->Write(leveldb::WriteOptions(), batch);
-                delete batch;
-                batch = new leveldb::WriteBatch();
-            }
-        }
-        // write the last batch
-        if (count % 1000 != 0) {
-            db->Write(leveldb::WriteOptions(), batch);
-        }
-    
-        delete batch;
-        delete db;
+using namespace caffe;
+using std::pair;
+using std::string;
+using std::cout;
+using std::endl;
+
+int main(int argc, char** argv) {
+    if (argc < 4) {
+        printf("Convert a set of images to the leveldb format used\n"
+                "as input for Caffe.\n"
+                "Usage:\n"
+                "    convert_imageset ROOTFOLDER/ LISTFILE DB_NAME"
+                " RANDOM_SHUFFLE_DATA[0 or 1]\n"
+                "The ImageNet dataset for the training demo is at\n"
+                "    http://www.image-net.org/download-images\n");
         return 0;
     }
-    ​```
+    std::ifstream infile(argv[2]); // argv[2] 就是 train.txt
+    std::vector<std::pair<string, int> > lines;
+    string filename;
+    int label;
+    while (infile >> filename >> label) { // 将 train.txt 中的每一行读入到 lines 中
+        lines.push_back(std::make_pair(filename, label));
+    }
+    if (argc == 5 && argv[4][0] == '1') { // 最后一个参数我们不指定
+        // randomly shuffle data
+        std::random_shuffle(lines.begin(), lines.end());
+    }
+
+    leveldb::DB* db;
+    leveldb::Options options;
+    options.error_if_exists = true;
+    options.create_if_missing = true;
+    options.write_buffer_size = 268435456;
+    cout << "Opening leveldb " << argv[3] << endl;
+    leveldb::Status status = leveldb::DB::Open( // 创建 leveldb 文件, 保存到 argv[3]: leveldb/train_image_level 中
+            options, argv[3], &db);
+
+    string root_folder(argv[1]); // argv[1] 为图像的根目录, 即 Data/
+    Datum datum;
+    int count = 0;
+    const int maxKeyLength = 30; // 原来的代码是 256, 由于实验只有一张图像, 所以改小了, 如果处理 imagenet, 文件数量多, 就改回来.
+    char key_cstr[maxKeyLength];
+    leveldb::WriteBatch* batch = new leveldb::WriteBatch();
+    int data_size;
+    bool data_size_initialized = false;
+
+    for (int line_id = 0; line_id < lines.size(); ++line_id) {
+        if (!ReadImageToDatum(root_folder + lines[line_id].first, lines[line_id].second,
+                    &datum)) {  // 将图像一张一张读入到 Datum 中
+            continue;
+        };
+        if (!data_size_initialized) {
+            data_size = datum.channels() * datum.height() * datum.width();
+            data_size_initialized = true;
+        } else {
+            const string& data = datum.data();
+        }
+        // sequential
+        snprintf(key_cstr, maxKeyLength, "%08d_%s", line_id, lines[line_id].first.c_str());
+        string value;
+        // get the value
+      	// 这里是我加的, 可以看到 1.png 这张图像的某些信息
+        cout << "Data channels: " << datum.channels() << "\n"
+            << "Width: " << datum.width() << "\n"
+            << "height: " << datum.height() << "\n"
+            << "label: " << datum.label() << endl;
+
+        datum.SerializeToString(&value);
+        batch->Put(string(key_cstr), value);
+        if (++count % 1000 == 0) {
+            db->Write(leveldb::WriteOptions(), batch);
+            delete batch;
+            batch = new leveldb::WriteBatch();
+        }
+    }
+    // write the last batch
+    if (count % 1000 != 0) {
+        db->Write(leveldb::WriteOptions(), batch);
+    }
+
+    delete batch;
+    delete db;
+    return 0;
+}
+```
 
 +   下面是第二个重点, 编译这个文件, 给出 Makefile:
 
-    ```bash
-    CC = clang++
-    CFLAGS = -Wall -std=c++0x -I./caffe -I. -DCPU_ONLY
-    CLINK = -lprotobuf -lglog -lleveldb -lopencv_core -lopencv_highgui \
-    		-lopencv_imgproc -lopencv_imgcodecs -lboost_system libcaffe.a
-    ```
 
 
-    NAME = convert_image
-    SRC = $(NAME).cpp
-    TAR = $(NAME).out
+```bash
+CC = clang++
+CFLAGS = -Wall -std=c++0x -I./caffe -I. -DCPU_ONLY
+CLINK = -lprotobuf -lglog -lleveldb -lopencv_core -lopencv_highgui \
+		-lopencv_imgproc -lopencv_imgcodecs -lboost_system libcaffe.a
+		
+NAME = convert_image
+SRC = $(NAME).cpp
+TAR = $(NAME).out
 
 
-    $(TAR) : $(SRC)
-    	$(CC) $(CFLAGS) -o $@ $^ $(CLINK)
+$(TAR) : $(SRC)
+	$(CC) $(CFLAGS) -o $@ $^ $(CLINK)
+	
+	
+.PHONY : clean run
 
+clean :
+	rm -rf $(TAR)
+	
+run :
+	./$(TAR) Data/ train.txt ./leveldb/train_image_leveldb
+```
 
-    .PHONY : clean run
++   `CC` 可以换成 g++
++   注意 `CFLAGS` 中需要指定 `-I./caffe`, 否则 `caffe/` 中有些头文件没法找到其他头文件.
++   还需要注意, 由于目前我的 Caffe 是在 CPU 下编译的, 需要使用 `-DCPU_ONLY`, 否则会因为找不到 `cublas_v2.h` 而报错(没装 cuda)
++   在 `CLINK` 中, 需要指定 `protobuf`, `glog`, `leveldb`, `opencv` 等库, `boost_system`, 以及最后的 `libcaffe.a`
++   最后在 `run` 下, 指定程序的参数即可.
 
-    clean :
-    	rm -rf $(TAR)
-
-
-    run :
-    	./$(TAR) Data/ train.txt ./leveldb/train_image_leveldb
-    ​```
-    
-    +   `CC` 可以换成 g++
-    +   注意 `CFLAGS` 中需要指定 `-I./caffe`, 否则 `caffe/` 中有些头文件没法找到其他头文件.
-    +   还需要注意, 由于目前我的 Caffe 是在 CPU 下编译的, 需要使用 `-DCPU_ONLY`, 否则会因为找不到 `cublas_v2.h` 而报错(没装 cuda)
-    +   在 `CLINK` 中, 需要指定 `protobuf`, `glog`, `leveldb`, `opencv` 等库, `boost_system`, 以及最后的 `libcaffe.a`
-    +   最后在 `run` 下, 指定程序的参数即可.
 
 +   比如我成功编译并运行后得到:
 
