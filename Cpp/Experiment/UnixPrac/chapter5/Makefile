@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -ansi
 
-NAME = rename
+NAME = test_excl
 SRC = $(NAME).c
 TAR = $(NAME).out
 
