@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -ansi
 
-NAME = test_excl
+NAME = showtty
 SRC = $(NAME).c
 TAR = $(NAME).out
 
