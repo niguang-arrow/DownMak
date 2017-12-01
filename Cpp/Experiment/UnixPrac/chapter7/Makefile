@@ -1,7 +1,7 @@
 CC = clang
-CFLAGS = -Wall -ansi
+CFLAGS = -Wall -ansi -lcurses
 
-NAME = play_again4
+NAME = sigdemo3
 SRC = $(NAME).c
 TAR = $(NAME).out
 
