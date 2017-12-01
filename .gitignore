@@ -1,0 +1,8 @@
+main
+*.out
+*.log
+*.aux
+*.synctex.gz
+*.tcbtemp
+*.toc
+_minted*/*
