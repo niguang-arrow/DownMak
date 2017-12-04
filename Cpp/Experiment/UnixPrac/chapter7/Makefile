@@ -1,7 +1,7 @@
 CC = clang
-CFLAGS = -Wall -ansi -lcurses
+CFLAGS = -Wall -std=gnu99 -lcurses
 
-NAME = sigdemo3
+NAME = bounce1d
 SRC = $(NAME).c
 TAR = $(NAME).out
 
