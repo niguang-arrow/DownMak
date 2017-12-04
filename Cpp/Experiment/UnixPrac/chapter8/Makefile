@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -ansi -lcurses
 
-NAME = psh2
+NAME = getenviron
 SRC = $(NAME).c
 TAR = $(NAME).out
 
