@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -std=gnu99 -lcurses
 
-NAME = tinybc
+NAME = timeclnt
 SRC = $(NAME).c
 TAR = $(NAME).out
 
