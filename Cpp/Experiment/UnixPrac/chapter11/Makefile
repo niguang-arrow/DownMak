@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -std=gnu99 -lcurses
 
-NAME = timeclnt
+NAME = test_sanitize
 SRC = $(NAME).c
 TAR = $(NAME).out
 

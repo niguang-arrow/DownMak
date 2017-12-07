@@ -1,7 +1,7 @@
 CC = clang
-CFLAGS = -Wall -std=gnu99 -lpthread
+CFLAGS = -Wall -ansi
 
-NAME = twordcount4
+NAME = stack
 SRC = $(NAME).c
 TAR = $(NAME).out
 
