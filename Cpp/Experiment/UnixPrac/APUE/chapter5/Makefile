@@ -1,7 +1,7 @@
 CC = clang
 CFLAGS = -Wall -std=gnu99 -I../include -L../include
 
-NAME = buffer_info
+NAME = test_fmemopen
 SRC = $(NAME).c
 TAR = $(NAME).out
 
