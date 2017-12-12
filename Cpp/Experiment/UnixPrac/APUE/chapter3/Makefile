@@ -1,7 +1,7 @@
 CC = clang
-CFLAGS = -Wall -ansi -I../include -L../include
+CFLAGS = -Wall -std=gnu99 -I../include -L../include
 
-NAME = test_lseek
+NAME = getcwd
 SRC = $(NAME).c
 TAR = $(NAME).out
 
