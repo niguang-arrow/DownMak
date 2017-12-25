@@ -6,3 +6,4 @@ main
 *.tcbtemp
 *.toc
 _minted*/*
+*.o
