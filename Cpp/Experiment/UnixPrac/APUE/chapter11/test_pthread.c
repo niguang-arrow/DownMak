@@ -5,7 +5,7 @@
 
 
 void cleanup(void *s) {
-    printf("cleanup: %s\n", s);
+    printf("cleanup: %s\n", (char*)s);
 }
 
 
