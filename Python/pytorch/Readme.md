@@ -168,6 +168,64 @@ PyModule_AddObject(module, THPTensorBaseStr, (PyObject *)&THPTensorType);
 
 
 
+## 2017 年 12 月 29 日
+
++   pytorch (v0.1.1) 的卷积底层的 c 代码在 `torch/lib/THNN/generic/SpatialConvolutionMM.c` 中定义的.
+
+    位置在 https://github.com/pytorch/pytorch/blob/v0.1.1/torch/lib/THNN/generic/SpatialConvolutionMM.c
+
++   pytorch 中的 nn.Conv2d 类定义在 https://github.com/pytorch/pytorch/blob/v0.1.1/torch/nn/modules/conv.py 文件中, 该文件定义了:
+
+    ```python
+    # from .module import Module
+    def _forward(self, input):
+            return self._backend.Conv2d(self.kw, self.kh, self.dw, self.dh, self.padw, self.padh)(input, self.weight, self.bias)
+    ```
+
+    其中 `self._backend` 定义在 Module 中, 而在 Module 中(https://github.com/pytorch/pytorch/blob/v0.1.1/torch/nn/modules/module.py), 定义了如下语句:
+
+    ```python
+    # from ..backends.thnn import backend as thnn_backend
+    self._backend = thnn_backend
+    ```
+
+    也就是说 `self._backend` 在 `..backends.thnn` 中. 
+
+    在 thnn.py (https://github.com/pytorch/pytorch/blob/v0.1.1/torch/nn/backends/thnn.py) 中的代码如下:
+
+    ```python
+    from .backend import FunctionBackend
+
+    class THNNFunctionBackend(FunctionBackend):
+        pass
+
+
+    def _initialize_backend():
+        from ..functions.thnn import _generated_functions
+        from ..functions.linear import LinearFunction
+
+        backend.register_function('Linear', LinearFunction)
+        name_remap = {
+            'SpatialConvolutionMMFunction': 'Conv2dFunction',
+            'SpatialMaxPoolingFunction': 'MaxPooling2dFunction',
+            'SoftMaxFunction': 'SoftmaxFunction',
+            'LogSoftMaxFunction': 'LogSoftmaxFunction',
+            'BatchNormalizationFunction': 'BatchNormFunction',
+        }
+        for cls in _generated_functions:
+            name = cls.__name__
+            new_name = name_remap.get(name, name)
+            backend.register_function(new_name.replace('Function', ''), cls)
+
+
+    backend = THNNFunctionBackend()
+    _initialize_backend()
+    ```
+
+    ​
+
+
+
 
 
 
