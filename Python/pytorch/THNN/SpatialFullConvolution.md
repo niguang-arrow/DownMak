@@ -5,6 +5,8 @@
 今天开始看 pytorch(v0.1.1) 的源码, 首先阅读的是 SpatialFullConvolution.c 中的代码.
 
 + 注意, 在 vim 中使用 `:echo expand("%:p")` 可以得到当前文件的完整路径. [Get the name of the current file](http://vim.wikia.com/wiki/Get_the_name_of_the_current_file)
++ vim 多窗口, 要改变窗口的大小: http://blog.csdn.net/devil_2009/article/details/7006113
+  + 横向改变: `:vertical res(ize)+num`, 将窗口增大 num; 使用减号就是缩小窗口
 
 首先最好是查看一下 `/home/ieric/pytorch/torch/lib/THNN/doc/api_reference.md` 以及 `style_guidelines.md` 两个文件, 了解一下 pytorch 中的代码风格. 注意对于 modules, 参数的格式如下:
 
