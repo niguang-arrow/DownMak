@@ -1,0 +1,117 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\pagecolor{pink}
+\usetikzlibrary{arrows, positioning,calc}
+\usepackage[active, tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+%\setlength{\PreviewBorder}{1cm}
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{1pt}
+\tikzset{
+	% 箭头和线条的样式, 用于 \draw
+	arrStyle/.style = {->, >=stealth,
+	line width=\arrlinewidth,#1},
+	arrStyle/.default = {\arrcolor},
+	lineStyle/.style = {line width=\arrlinewidth,
+	\arrcolor},
+}
+
+\tikzset{%
+	kernelStyle/.style={draw, rectangle,
+	inner sep=0pt, minimum size=4em,
+	outer sep=1pt, line width=1pt, #1, fill=#1},
+	kernelStyle/.default={orange}
+} %
+
+% \kernel{< 颜色 >}{< 名字 >}{< 位置 >};
+% \kernelPos{< 颜色 >}{< 名字 >}{< 相对位置 >}{< 基准名字 >}{< 相对基准的偏移 >};
+\newcommand{\kernel}[3]{\node[kernelStyle=#1] (#2) at #3 {}}
+\newcommand{\kernelPos}[5]{\node[kernelStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {}}
+% 可以在神经元内添加文字, 前缀用 t 表示 text
+\newcommand{\tkernel}[4]{\node[kernelStyle=#1] (#2) at #3 {#4}}
+\newcommand{\tkernelPos}[6]{\node[kernelStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {#6}}
+
+\tikzset{%
+	textNodeStyle/.style={align=center,
+	inner sep=0pt, minimum size=2em,
+	text width=2.8cm,
+	outer sep=1pt, #1},
+	textNodeStyle/.default={},
+	boxStyle/.style={line width=1pt,%
+	rounded corners=3pt,
+	}% 还可以加颜色
+}
+
+\newcommand{\tNode}[3]{\node[textNodeStyle] (#1) at #2 {#3}}
+\newcommand{\tNodePos}[5]{\node[textNodeStyle,
+#2=of #3, #2=0pt, shift={#4}] (#1) {#5}}
+
+% \tarrowNode{(start pos)}{(end pos)}{relative position}{<content>};
+\newcommand{\tarrowNode}[4]{\draw[arrStyle] #1 -- #2 node[midway, #3] {#4}}
+
+\usepackage{minted}
+
+\makeatletter
+\newcommand{\codesize}{\@setfontsize\codesize{4.9}{8}}
+\newcommand{\tinycodesize}{\@setfontsize\codesize{3.7}{6.6}} 
+\makeatother 
+
+\newminted[python]{python}{fontsize=\codesize,style=monokai, escapeinside=||, baselinestretch=.7}
+\newmintinline[pyinline]{python}{}
+
+% https://tex.stackexchange.com/questions/128064/how-to-overbrace-underbrace-in-text-mode-using-tikz
+\usetikzlibrary{decorations.pathreplacing}
+
+\tikzstyle{overbrace text style}=[font=\tiny, above, pos=.5, yshift=3mm]
+\tikzstyle{overbrace style}=[decorate,decoration={brace,raise=2mm,amplitude=3pt}]
+\tikzstyle{underbrace style}=[decorate,decoration={brace,raise=2mm,amplitude=3pt,mirror},color=gray]
+\tikzstyle{underbrace text style}=[font=\tiny, below, pos=.5, yshift=-3mm]
+
+\begin{document}
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+\node[text width=4cm] at (origin) {\begin{tikzpicture}
+% 网格
+\draw[step=.2cm] (origin) grid ++(4.2cm, 4.2cm);
+% orange image
+\draw[orange,fill=orange] ([shift={(.6cm, .6cm)}]origin) rectangle ++(3cm, 3cm);
+\tNode{t1}{([shift={(2cm, 2cm)}]origin)}{\textcolor{white}{image}};
+% 指示什么是 padding
+\path[arrStyle] ([shift={(2.54cm, 3.84cm)}]origin) edge[out=100, in=180] ++(.5, .5) coordinate (A);
+\node[\arrcolor,font=\codesize] at ([shift={(2.6, .6)}]A) {网格为 padding};
+% 3 个被 dilated 的 kernel
+\draw[lineStyle] ([shift={(0, 4.2)}]origin) rectangle ++(1cm, -1cm);
+\draw[lineStyle,green] ([shift={(.4, 4.2)}]origin) rectangle ++(1cm, -1cm);
+\draw[lineStyle,purple] ([shift={(.8, 4.2)}]origin) rectangle ++(1cm, -1cm);
+% 指示 w_stride 的大小
+\draw [overbrace style] ([shift={(0, 4.1)}]origin) -- ([shift={(.4, 4.1)}]origin) node [overbrace text style,shift={(1.8cm, 0)}] {\tinycodesize$w_{stride}$};
+% 指示 w_pad 的大小
+\draw [underbrace style] ([shift={(0, 0.1)}]origin) -- ([shift={(.6, 0.1)}]origin) node [underbrace text style,shift={(1.8cm, 0)}] {pad};
+% 红点1 (h_im, w_im)
+\path[fill=red]([shift={(1.8, 3.6)}]origin) circle (.05cm) coordinate (point);
+\path[arrStyle] ([shift={(.05, -0.05)}]point) edge[out=-45, in=180] ([shift={(.8, -.5)}]point);
+\tNode{t2}{([shift={(1.2, -.5)}]point)}{\tinycodesize\textcolor{white}{$(h_{im}, w_{im})$}};
+% 红点2 (h_col, w_col)
+\path[fill=red]([shift={(.8, 4.2)}]origin) circle (.05cm) coordinate (point1);
+\path[arrStyle] ([shift={(-.05, 0.05)}]point1) edge[out=125, in=180] ([shift={(0.2, 1.5)}]point);
+\tNode{t3}{([shift={(0.6, 1.5)}]point)}{\tinycodesize\textcolor{white}{$(h_{col}, w_{col})$}};
+% 根据 w_offset 找到在 dilated kernel 上的位置, 即 w_offset * w_dilation
+\draw [overbrace style] ([shift={(0.8, 4.1)}]origin) -- ([shift={(1.6, 4.1)}]origin) node [overbrace text style,shift={(1.8cm, 0)}] {\tinycodesize $w_{offset}\times w_{dilation}$};
+% 最后的公式
+\node[textNodeStyle, font=\tinycodesize,text width=2.2cm, shift={(-.3, .1)}] (t1) at ([shift={(1.1, -.8)}]origin) {
+\begin{python}
+int w_im = w_col * stride_w - pad_w + w_offset * dilation_w;
+int h_im = h_col * stride_h - pad_h + h_offset * dilation_h;
+\end{python}
+};
+\end{tikzpicture}};
+% 特殊作用, 用于占位, 让右边的内容显示出来.
+\node[minimum size=1cm] at (2.6cm, 0) {};
+\end{tikzpicture}
+\end{document}

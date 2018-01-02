@@ -3,9 +3,10 @@
 \usepackage{tikz}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\pagecolor{pink}
 \usetikzlibrary{arrows, positioning,calc}
-%\usepackage[active, tightpage]{preview}
-%\PreviewEnvironment{tikzpicture}
+\usepackage[active, tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
 \definecolor{arrBlue}{HTML}{015EDF}
 \newcommand{\arrcolor}{arrBlue}
 \newcommand{\arrlinewidth}{1pt}
@@ -38,6 +39,7 @@
 \tikzset{%
 	textNodeStyle/.style={align=center,
 	inner sep=0pt, minimum size=2em,
+	text width=2.8cm,
 	outer sep=1pt, #1},
 	textNodeStyle/.default={},
 	boxStyle/.style={line width=1pt,%
@@ -52,6 +54,16 @@
 % \tarrowNode{(start pos)}{(end pos)}{relative position}{<content>};
 \newcommand{\tarrowNode}[4]{\draw[arrStyle] #1 -- #2 node[midway, #3] {#4}}
 
+\usepackage{minted}
+
+\makeatletter
+\newcommand{\codesize}{\@setfontsize\codesize{4.9}{8}}
+\newcommand{\tinycodesize}{\@setfontsize\codesize{6.7}{9.6}} 
+\makeatother 
+
+\newminted[python]{python}{fontsize=\codesize,style=monokai, escapeinside=||, baselinestretch=.7}
+\newmintinline[pyinline]{python}{}
+
 \begin{document}
 \begin{tikzpicture}
 \coordinate (origin) at (0, 0);
@@ -64,5 +76,33 @@
 \node[fill=red, circle, minimum size=.3em, inner sep=0pt] (point)at ([shift={(-.16, .3)}]x.south east) {};
 \draw[arrStyle] (point) edge[out=100, in=180] ([shift={(.5, 1)}]point);
 \node[\arrcolor](index) at ([shift={(1, 1)}]point) {$index$};
+\node[textNodeStyle,right=of x, shift={(-.3, .1)}] (t1) at (0, 0) {
+\begin{python}
+  index = c * (h * w) + 
+          y * w + x;
+w_offset = index % w;
+h_offset = (index / w) % h;
+c_offset = index / h / w;
+\end{python}
+};
+\end{tikzpicture}
+\setlength{\PreviewBorder}{.03cm}
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+\kernel{orange}{x}{(origin)};
+\draw[arrStyle] (x.north west) -- ([shift={(1.2, 0)}]x.north west) node[midway,font=\codesize,above=-.05cm] {$w$};
+\draw[arrStyle] ([shift={(.1, 0)}]x.north west) -- (x.north west) -- ([shift={(0, -1.2)}]x.north west) node[midway,font=\codesize,left=-.05cm] {$h$};	
+\node[fill=red, circle, minimum size=.3em, inner sep=0pt] (point)at ([shift={(-.28, .3)}]x.south east) {};
+\draw[lineStyle, densely dashed] (point) -- (point |- x.north west) node[midway,font=\codesize,right=-.05cm] {$y$};
+\draw[lineStyle, densely dashed] (point) -- (point -| x.north west) node[midway,font=\codesize,below] {$x$};
+\draw[arrStyle] (point) edge[out=-80, in=180] ([shift={(.5, -.5)}]point);
+\node[\arrcolor,font=\codesize](index) at ([shift={(.8, -.5)}]point) {$index$};
+\node[textNodeStyle, text width=2.2cm, right=of x, shift={(-.3, .1)}] (t1) at (0, 0) {
+\begin{python}
+  index = y * w + x;
+w_offset = index % w;
+h_offset = index / w;
+\end{python}
+};
 \end{tikzpicture}
 \end{document}
