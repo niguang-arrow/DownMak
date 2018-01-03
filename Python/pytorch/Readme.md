@@ -1,5 +1,29 @@
 # 学习
 
+## 2018 年 1 月 3 日
+
+文档越来越多, 应给出一个阅读路线, 怕自己给忘了...
+
+按照如下顺序阅读, 能获得最佳的食用效果, 这是我记录的顺序: (对了, 这份 readme 下面是 pytorch 官方的博客中的内容, 我弄成中文的查起来方便一点.) 另外推荐使用 typora 观看 markdown, 这样公式也能正常显示出来, 我使用的是 Engwrite 主题.
+
+```bash
+lib/THNN/SpatialFullConvolution.md # 毕竟是第一份文档, 图也是自己画的, 太用心了...
+lib/THNN/SpatialConvolutionMM.md
+lib/THNN/Abs.md
+lib/THNN/Sigmoid.md
+lib/THNN/AbsCriterion.md
+lib/THNN/MSECriterion.md
+lib/THNN/SmoothL1Criterion.md
+lib/THNN/THNN.h # 有对 THNN/ 整个目录的总结, 还有对 csrc 目录的一些看法
+
+csrc/readme.md  # 没啥内容, 只给出一个指示
+csrc/nn_THNN.md # THNN.cpp 是扩展 Python 的文件
+```
+
+
+
+
+
 ## 2017 年 12 月 28 日
 
 ### 资源
@@ -198,12 +222,13 @@ PyModule_AddObject(module, THPTensorBaseStr, (PyObject *)&THPTensorType);
 
     class THNNFunctionBackend(FunctionBackend):
         pass
+    ```
 
 
     def _initialize_backend():
         from ..functions.thnn import _generated_functions
         from ..functions.linear import LinearFunction
-
+    
         backend.register_function('Linear', LinearFunction)
         name_remap = {
             'SpatialConvolutionMMFunction': 'Conv2dFunction',
@@ -220,35 +245,35 @@ PyModule_AddObject(module, THPTensorBaseStr, (PyObject *)&THPTensorType);
 
     backend = THNNFunctionBackend()
     _initialize_backend()
-    ```
-
+    ​```
+    
     在这里需要注意到, `name_remap` 将 key 映射为 value, 那么对于 `SpatialConvolutionMMFunction`, 它对应的 `new_name` 就是 `Conv2dFunction`, 而后面的代码显示 `Function` 会被空字符串给替换, 那么最终我们就能得到 `Conv2d`. 但现在的问题是, 在 `..functions.linear` 中并没有卷积的代码, 并且在 `..functions.thnn` 中也没有卷积的代码, 那么问题就在于 `_generated_functions`, 它位于 https://github.com/pytorch/pytorch/blob/v0.1.1/torch/nn/functions/thnn.py 文件中.
-
+    
     我们先到 pytorch 的主目录下:
-
-    ```bash
+    
+    ​```bash
     cd pytorch/
-    ```
-
+    ​```
+    
     然后启动 ipython
-
-    ```bash
+    
+    ​```bash
     $ ipython
     # 在 ipython 中进入 functions 的目录
     cd /home/ieric/pytorch/torch/nn/functions
     ls
     	__init__.py  linear.py  thnn.py
-    ```
-
+    ​```
+    
     然后使用 ipython 的 magic 方法:
-
-    ```bash
+    
+    ​```bash
     %run thnn.py
-    ```
-
+    ​```
+    
     然后该文件正常运行, 我们将 `_generated_functions` 打印出来, 可以得到:
-
-    ```bash
+    
+    ​```bash
     [__main__.BatchNormalizationFunction,                                                       
      __main__.TemporalSubSamplingFunction,                                                      
      __main__.LogSoftMaxFunction,                                                               
@@ -305,8 +330,8 @@ PyModule_AddObject(module, THPTensorBaseStr, (PyObject *)&THPTensorType);
      __main__.VolumetricConvolutionFunction,
      __main__.SpatialReplicationPaddingFunction,
      __main__.SpatialMaxPoolingFunction]
-    ```
-
+    ​```
+    
     从中可以找到 `__main__.SpatialConvolutionMMFunction` 函数.
 
 
