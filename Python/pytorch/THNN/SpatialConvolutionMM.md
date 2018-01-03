@@ -297,3 +297,102 @@ void THNN_(SpatialConvolutionMM_updateGradInput)(
 
 
 
+## THNN_(SpatialConvolutionMM_accGradParameters_frame)
+
+该 static 函数用于求取参数的梯度, pytorch 中给求参数梯度取名为 `accGradParameters`. 可以看到, 参数梯度的更新就是当前层的 $\delta$ 值 `gradOutput` 和输入 `finput` (input 的 col 形式)的卷积, 注意在 `THTensor_(addmm)` 中有参数 1, 所以 `gradWeight` 是累加的.
+
+```c
+static void THNN_(SpatialConvolutionMM_accGradParameters_frame)(
+          THTensor *gradOutput,
+          THTensor *gradWeight,
+          THTensor *gradBias,
+          THTensor *finput,
+          real scale)
+{
+  long i;
+  THTensor *gradOutput2d = THTensor_(newWithStorage2d)(gradOutput->storage, gradOutput->storageOffset,
+                                                       gradOutput->size[0], -1,
+                                                       gradOutput->size[1]*gradOutput->size[2], -1);
+
+  THTensor_(transpose)(finput, finput, 0, 1);
+  THTensor_(addmm)(gradWeight, 1, gradWeight, scale, gradOutput2d, finput);
+  THTensor_(transpose)(finput, finput, 0, 1);
+
+  if (gradBias) {
+    for(i = 0; i < gradBias->size[0]; i++)
+    {
+      long k;
+      real sum = 0;
+      real *data = gradOutput2d->storage->data + gradOutput2d->storageOffset + i*gradOutput2d->stride[0];
+      for(k = 0; k < gradOutput2d->size[1]; k++)
+        sum += data[k];
+      (gradBias->storage->data + gradBias->storageOffset)[i] += scale*sum;
+    }
+  }
+
+  THTensor_(free)(gradOutput2d);
+}
+```
+
+
+
+## THNN_(SpatialConvolutionMM_accGradParameters)
+
+实际求参数梯度的 API, 调用前面的 `THNN_(SpatialConvolutionMM_accGradParameters_frame)` 函数对 batch 中的每个输入进行求值. 另外还需注意, 在更新 `gradWeight` 时并没有使用多线程, 因为要将一个 batch 中每个输入对梯度的影响进行累加. 所以 for 循环依次处理 batch 中的每个输入, 而不是并行处理.
+
+```c
+void THNN_(SpatialConvolutionMM_accGradParameters)(
+          THNNState *state,
+          THTensor *input,
+          THTensor *gradOutput,
+          THTensor *gradWeight,
+          THTensor *gradBias,
+          THTensor *finput,
+          THTensor *fgradInput,
+          int kW,
+          int kH,
+          int dW,
+          int dH,
+          int padW,
+          int padH,
+          real scale)
+{
+  int freeWeight = 0;
+  long nOutputPlane = gradWeight->size[0];
+  THArgCheck( nOutputPlane == gradOutput->size[input->nDimension == 4 ? 1 : 0], 3, "Number of output features is not equal to nOutputPlane" );
+  THArgCheck(kW > 0 && kH > 0, 8, "kernel size should be greater than zero");
+  THArgCheck(dW > 0 && dH > 0, 10, "stride should be greater than zero");
+  THArgCheck(gradWeight->nDimension == 2 || gradWeight->nDimension == 4, 4, "gradWeight tensor should be 2D or 4D");
+
+  if (gradWeight->nDimension == 4) {
+    long s1 = gradWeight->size[0];
+    long s2 = gradWeight->size[1] * gradWeight->size[2] * gradWeight->size[3];
+    gradWeight = THTensor_(newWithStorage2d)(gradWeight->storage, 0, s1, -1, s2, -1);
+    freeWeight = 1;
+  }
+
+  if(input->nDimension == 3)
+  {
+    THNN_(SpatialConvolutionMM_accGradParameters_frame)(gradOutput, gradWeight, gradBias, finput, scale);
+  }
+  else
+  {
+    long T = input->size[0];
+    long t;
+
+    for(t = 0; t < T; t++)
+    {
+      THTensor *gradOutput_t = THTensor_(newSelect)(gradOutput, 0, t);
+      THTensor *finput_t = THTensor_(newSelect)(finput, 0, t);
+
+      THNN_(SpatialConvolutionMM_accGradParameters_frame)(gradOutput_t, gradWeight, gradBias, finput_t, scale);
+
+      THTensor_(free)(gradOutput_t);
+      THTensor_(free)(finput_t);
+    }
+  }
+  if (freeWeight)
+    THTensor_(free)(gradWeight);
+}
+```
+
