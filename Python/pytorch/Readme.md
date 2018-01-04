@@ -8,16 +8,24 @@
 
 ```bash
 lib/THNN/SpatialFullConvolution.md # 毕竟是第一份文档, 图也是自己画的, 太用心了...
-lib/THNN/SpatialConvolutionMM.md
+lib/THNN/SpatialConvolutionMM.md # nn.Conv2d 底层卷积实现
 lib/THNN/Abs.md
 lib/THNN/Sigmoid.md
 lib/THNN/AbsCriterion.md
-lib/THNN/MSECriterion.md
+lib/THNN/MSECriterion.md # 注意 MSE 前面没有乘 1/2
 lib/THNN/SmoothL1Criterion.md
 lib/THNN/THNN.h # 有对 THNN/ 整个目录的总结, 还有对 csrc 目录的一些看法
 
 csrc/readme.md  # 没啥内容, 只给出一个指示
 csrc/nn_THNN.md # THNN.cpp 是扩展 Python 的文件
+
+_thnn/Readme.md # 介绍该目录下的 __init__.py 文件
+_thnn/utils.md # 介绍 parse_header 与 load_backend 函数
+_thnn/thnn.py # 对底层 lib/THNN 的封装(csrc/ 是 Python 和 C 的 "胶水")
+
+nn/Readme.md  # 简要介绍, 阅读这个目录我们就能知道顶层的 API 是怎么来的了.
+nn/functions/linear.md # 介绍了 LinearFunction 类
+nn/functions/thnn.md # 产生更多的类似 LinearFunction 的类, 定义了前向和反向传播的方法.
 ```
 
 

@@ -260,14 +260,14 @@ for function in generic_functions:
 比如, 当 backend 为 `THNNFloatBackend` 对象时, 它的 methods 字典中必然有:
 
 ```python
-{"FloatAbs_updateOutput": torch._thnn._THNN.FloatAbs_updateOutput, ...}
+{"Abs_updateOutput": torch._thnn._THNN.FloatAbs_updateOutput, ...}
 ```
 
 如果是 `THNNDoubleBackend` 对象时, 字典为:
 
 ```python
-{"DoubleAbs_updateOutput": torch._thnn._THNN.DoubleAbs_updateOutput, ...}
+{"Abs_updateOutput": torch._thnn._THNN.DoubleAbs_updateOutput, ...}
 ```
 
-
+清楚 `parse_header` 以及 `load_backend` 等函数的作用之后, 应查阅 `thnn.py` 的代码了, 下面看 `thnn.md` 文档.
 
