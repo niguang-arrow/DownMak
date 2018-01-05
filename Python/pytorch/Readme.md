@@ -26,6 +26,10 @@ _thnn/thnn.py # 对底层 lib/THNN 的封装(csrc/ 是 Python 和 C 的 "胶水"
 nn/Readme.md  # 简要介绍, 阅读这个目录我们就能知道顶层的 API 是怎么来的了.
 nn/functions/linear.md # 介绍了 LinearFunction 类
 nn/functions/thnn.md # 产生更多的类似 LinearFunction 的类, 定义了前向和反向传播的方法.
+
+nn/backends/thnn.md # 介绍了 backends, 注册 Function 类(类似 _thnn/utils.py 的注册底层方法)
+
+nn/modules/module.md # 相当于基类, 总纲; 注意, 我在该文档中挖了坑, 之后看完了 autograd 过来填上! (Flag~)
 ```
 
 
@@ -230,13 +234,11 @@ PyModule_AddObject(module, THPTensorBaseStr, (PyObject *)&THPTensorType);
 
     class THNNFunctionBackend(FunctionBackend):
         pass
-    ```
-
 
     def _initialize_backend():
         from ..functions.thnn import _generated_functions
         from ..functions.linear import LinearFunction
-    
+
         backend.register_function('Linear', LinearFunction)
         name_remap = {
             'SpatialConvolutionMMFunction': 'Conv2dFunction',
@@ -249,98 +251,96 @@ PyModule_AddObject(module, THPTensorBaseStr, (PyObject *)&THPTensorType);
             name = cls.__name__
             new_name = name_remap.get(name, name)
             backend.register_function(new_name.replace('Function', ''), cls)
-
-
+            
     backend = THNNFunctionBackend()
-    _initialize_backend()
-    ​```
-    
-    在这里需要注意到, `name_remap` 将 key 映射为 value, 那么对于 `SpatialConvolutionMMFunction`, 它对应的 `new_name` 就是 `Conv2dFunction`, 而后面的代码显示 `Function` 会被空字符串给替换, 那么最终我们就能得到 `Conv2d`. 但现在的问题是, 在 `..functions.linear` 中并没有卷积的代码, 并且在 `..functions.thnn` 中也没有卷积的代码, 那么问题就在于 `_generated_functions`, 它位于 https://github.com/pytorch/pytorch/blob/v0.1.1/torch/nn/functions/thnn.py 文件中.
-    
-    我们先到 pytorch 的主目录下:
-    
-    ​```bash
-    cd pytorch/
-    ​```
-    
-    然后启动 ipython
-    
-    ​```bash
-    $ ipython
-    # 在 ipython 中进入 functions 的目录
-    cd /home/ieric/pytorch/torch/nn/functions
-    ls
-    	__init__.py  linear.py  thnn.py
-    ​```
-    
-    然后使用 ipython 的 magic 方法:
-    
-    ​```bash
-    %run thnn.py
-    ​```
-    
-    然后该文件正常运行, 我们将 `_generated_functions` 打印出来, 可以得到:
-    
-    ​```bash
-    [__main__.BatchNormalizationFunction,                                                       
-     __main__.TemporalSubSamplingFunction,                                                      
-     __main__.LogSoftMaxFunction,                                                               
-     __main__.SpatialFullConvolutionMapFunction,                                                
-     __main__.MSECriterionFunction,                                                             
-     __main__.VolumetricReplicationPaddingFunction,                                             
-     __main__.AbsFunction,                                                                      
-     __main__.LogSigmoidFunction,                                                               
-     __main__.SpatialAdaptiveMaxPoolingFunction,                                                
-     __main__.HardTanhFunction,                                                                 
-     __main__.SpatialClassNLLCriterionFunction,                                                 
-     __main__.PReLUFunction,                                                                    
-     __main__.VolumetricMaxPoolingFunction,                                                     
-     __main__.DistKLDivCriterionFunction,                                                       
-     __main__.SqrtFunction,
-     __main__.SoftMarginCriterionFunction,
-     __main__.VolumetricMaxUnpoolingFunction,
-     __main__.TemporalConvolutionFunction,
-     __main__.SoftPlusFunction,
-     __main__.SmoothL1CriterionFunction,
-     __main__.SpatialFractionalMaxPoolingFunction,
-     __main__.SoftMaxFunction,
-     __main__.SoftShrinkFunction,
-     __main__.SpatialConvolutionMMFunction,
-     __main__.SpatialFullConvolutionFunction,
-     __main__.HardShrinkFunction,
-     __main__.MultiLabelMarginCriterionFunction,
-     __main__.SpatialUpSamplingNearestFunction,
-     __main__.TanhFunction,
-     __main__.VolumetricConvolutionMMFunction,
-     __main__.SpatialReflectionPaddingFunction,
-     __main__.SpatialConvolutionLocalFunction,
-     __main__.MarginCriterionFunction,
-     __main__.VolumetricDilatedConvolutionFunction,
-     __main__.L1CostFunction,
-     __main__.RReLUFunction,
-     __main__.VolumetricFullConvolutionFunction,
-     __main__.TemporalMaxPoolingFunction,
-     __main__.ELUFunction,
-     __main__.AbsCriterionFunction,
-     __main__.ClassNLLCriterionFunction,
-     __main__.SquareFunction,
-     __main__.SpatialMaxUnpoolingFunction,
-     __main__.SigmoidFunction,
-     __main__.SpatialConvolutionMapFunction,
-     __main__.LeakyReLUFunction,
-     __main__.SpatialDilatedConvolutionFunction,
-     __main__.VolumetricAveragePoolingFunction,
-     __main__.SpatialSubSamplingFunction,
-     __main__.MultiMarginCriterionFunction,
-     __main__.SpatialUpSamplingBilinearFunction,
-     __main__.ThresholdFunction,
-     __main__.SpatialAveragePoolingFunction,
-     __main__.VolumetricConvolutionFunction,
-     __main__.SpatialReplicationPaddingFunction,
-     __main__.SpatialMaxPoolingFunction]
-    ​```
-    
-    从中可以找到 `__main__.SpatialConvolutionMMFunction` 函数.
+    _initialize_backend()        
+    ```
+
+
+在这里需要注意到, `name_remap` 将 key 映射为 value, 那么对于 `SpatialConvolutionMMFunction`, 它对应的 `new_name` 就是 `Conv2dFunction`, 而后面的代码显示 `Function` 会被空字符串给替换, 那么最终我们就能得到 `Conv2d`. 但现在的问题是, 在 `..functions.linear` 中并没有卷积的代码, 并且在 `..functions.thnn` 中也没有卷积的代码, 那么问题就在于 `_generated_functions`, 它位于 https://github.com/pytorch/pytorch/blob/v0.1.1/torch/nn/functions/thnn.py 文件中.
+
+我们先到 pytorch 的主目录下:
+
+```bash
+cd pytorch/
+```
+然后启动 ipython
+
+```bash
+$ ipython
+# 在 ipython 中进入 functions 的目录
+cd /home/ieric/pytorch/torch/nn/functions
+ls
+	__init__.py  linear.py  thnn.py
+```
+
+然后使用 ipython 的 magic 方法:
+
+```bash
+%run thnn.py
+```
+然后该文件正常运行, 我们将 `_generated_functions` 打印出来, 可以得到:
+
+```bash
+[__main__.BatchNormalizationFunction,                                                       
+ __main__.TemporalSubSamplingFunction,                                                      
+ __main__.LogSoftMaxFunction,                                                               
+ __main__.SpatialFullConvolutionMapFunction,                                                
+ __main__.MSECriterionFunction,                                                             
+ __main__.VolumetricReplicationPaddingFunction,                                             
+ __main__.AbsFunction,                                                                      
+ __main__.LogSigmoidFunction,                                                               
+ __main__.SpatialAdaptiveMaxPoolingFunction,                                                
+ __main__.HardTanhFunction,                                                                 
+ __main__.SpatialClassNLLCriterionFunction,                                                 
+ __main__.PReLUFunction,                                                                    
+ __main__.VolumetricMaxPoolingFunction,                                                     
+ __main__.DistKLDivCriterionFunction,                                                       
+ __main__.SqrtFunction,
+ __main__.SoftMarginCriterionFunction,
+ __main__.VolumetricMaxUnpoolingFunction,
+ __main__.TemporalConvolutionFunction,
+ __main__.SoftPlusFunction,
+ __main__.SmoothL1CriterionFunction,
+ __main__.SpatialFractionalMaxPoolingFunction,
+ __main__.SoftMaxFunction,
+ __main__.SoftShrinkFunction,
+ __main__.SpatialConvolutionMMFunction,
+ __main__.SpatialFullConvolutionFunction,
+ __main__.HardShrinkFunction,
+ __main__.MultiLabelMarginCriterionFunction,
+ __main__.SpatialUpSamplingNearestFunction,
+ __main__.TanhFunction,
+ __main__.VolumetricConvolutionMMFunction,
+ __main__.SpatialReflectionPaddingFunction,
+ __main__.SpatialConvolutionLocalFunction,
+ __main__.MarginCriterionFunction,
+ __main__.VolumetricDilatedConvolutionFunction,
+ __main__.L1CostFunction,
+ __main__.RReLUFunction,
+ __main__.VolumetricFullConvolutionFunction,
+ __main__.TemporalMaxPoolingFunction,
+ __main__.ELUFunction,
+ __main__.AbsCriterionFunction,
+ __main__.ClassNLLCriterionFunction,
+ __main__.SquareFunction,
+ __main__.SpatialMaxUnpoolingFunction,
+ __main__.SigmoidFunction,
+ __main__.SpatialConvolutionMapFunction,
+ __main__.LeakyReLUFunction,
+ __main__.SpatialDilatedConvolutionFunction,
+ __main__.VolumetricAveragePoolingFunction,
+ __main__.SpatialSubSamplingFunction,
+ __main__.MultiMarginCriterionFunction,
+ __main__.SpatialUpSamplingBilinearFunction,
+ __main__.ThresholdFunction,
+ __main__.SpatialAveragePoolingFunction,
+ __main__.VolumetricConvolutionFunction,
+ __main__.SpatialReplicationPaddingFunction,
+ __main__.SpatialMaxPoolingFunction]
+```
+
+从中可以找到 `__main__.SpatialConvolutionMMFunction` 函数.
 
 
 

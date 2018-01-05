@@ -597,49 +597,124 @@ def _generate_function_classes(scope_dict):
 
 ## BatchNormalizationFunction
 
-代码如下:
+先看初始化函数:
+
+### `__init__`
+
+根据前面的经验, 一般初始化函数读入的参数类型不是 `THTensor*` 的:
 
 ```python
 class BatchNormalizationFunction(Function):
     def __init__(self, *args):
         super(BatchNormalizationFunction, self).__init__()
         self.additional_args = args
-
-    def forward(self, input, *params):
-        self.backend = type2backend[type(input)]
-        self.params = params
-        self.input = input
-        self.num_features = input.size(1)
-        # Add save_input and save_std
-        self.additional_args = self.additional_args[:2] + \
-            (input.new(self.num_features), input.new(self.num_features)) + \
-            self.additional_args[2:]
-        num_params = len(self.params)
-        if num_params < 2:
-            params = params + tuple(None for i in range(2 - num_params))
-        additional_args = params + self.additional_args
-        output = input.new().resizeAs_(input)
-        self.backend.BatchNormalization_updateOutput(self.backend.library_state,
-                input, output, *additional_args)
-        return output
-
-    def backward(self, grad_output):
-        grad_input = (self.input.new().resizeAs_(self.input).zero_()
-                if self.needs_input_grad[0] else None,)
-        grad_param = tuple(p.new().resizeAs_(p).zero_() if self.needs_input_grad[i+1]
-                else None for i, p in enumerate(self.params))
-        result_grad = grad_input + grad_param
-
-        num_params = len(self.params)
-        if num_params < 2:
-            grad_param = grad_param + tuple(None for i in range(2 - num_params))
-
-        weight_tuple = (self.params[0],) if len(self.params) > 0 else (None,)
-        # backward takes scale instead of momentum
-        additional_args = self.additional_args[:-2] + (1,) + self.additional_args[-1:]
-        args = grad_input + grad_param + weight_tuple + additional_args
-        self.backend.BatchNormalization_backward(self.backend.library_state,
-                self.input, grad_output, *args)
-        return result_grad
 ```
 
+对于 `THTensor*` 类型参数的处理一般都是在 `forward` 中给出的.
+
+
+
+### forward
+
+forward 函数计算输出, 我们结合底层 API 的声明看看, forward 函数定义如下:
+
+```python
+def forward(self, input, *params):
+    self.backend = type2backend[type(input)]
+    self.params = params
+    self.input = input
+    self.num_features = input.size(1)
+    # Add save_input and save_std
+    self.additional_args = self.additional_args[:2] + \
+    	(input.new(self.num_features), input.new(self.num_features)) + \
+    	self.additional_args[2:]
+    num_params = len(self.params)
+    if num_params < 2:
+        params = params + tuple(None for i in range(2 - num_params))
+    additional_args = params + self.additional_args
+    output = input.new().resizeAs_(input)
+    self.backend.BatchNormalization_updateOutput(self.backend.library_state,
+            input, output, *additional_args)
+    return output
+```
+
+底层的 API 为:
+
+```c
+TH_API void THNN_(BatchNormalization_updateOutput)(
+          THNNState *state,   // self.backend.library_state
+          THTensor *input,  // input
+          THTensor *output,  // output
+          THTensor *weight, // [OPTIONAL] 作者有注释为 optional, 所以 params < 2
+          THTensor *bias,  // [OPTIONAL] bias 和 weight 为 params
+          THTensor *running_mean,  // 这里是 self.additional_args[:2], 这里在 __init__ 中
+          THTensor *running_var, // 会读入这些参数.
+          THTensor *save_mean, // input.new(self.num_features); 为它们俩保留
+          THTensor *save_std,
+          bool train, // 后面是 self.additional_args[2:]
+          double momentum,
+          double eps);
+```
+
+设置好参数后, 调用底层的 `THNN_(BatchNormalization_updateOutput)` 计算出结果.
+
+下面看 backward.
+
+
+
+### backward
+
+代码如下, 同样去对比底层的 api:
+
+```python
+def backward(self, grad_output):
+    grad_input = (self.input.new().resizeAs_(self.input).zero_()
+            if self.needs_input_grad[0] else None,)
+    grad_param = tuple(p.new().resizeAs_(p).zero_() if self.needs_input_grad[i+1]
+            else None for i, p in enumerate(self.params))
+    result_grad = grad_input + grad_param
+
+    num_params = len(self.params)
+    if num_params < 2:
+        grad_param = grad_param + tuple(None for i in range(2 - num_params))
+
+    weight_tuple = (self.params[0],) if len(self.params) > 0 else (None,)
+    # backward takes scale instead of momentum
+    additional_args = self.additional_args[:-2] + (1,) + self.additional_args[-1:]
+    args = grad_input + grad_param + weight_tuple + additional_args
+    self.backend.BatchNormalization_backward(self.backend.library_state,
+            self.input, grad_output, *args)
+    return result_grad
+```
+
+底层的 api 为: 
+
++   注意最后 `(gradInput, gradWeight, gradBias)` 为输出结果.
+
+```c
+TH_API void THNN_(BatchNormalization_backward)(
+          THNNState *state, // self.backend.library_state
+          THTensor *input, // self.input
+          THTensor *gradOutput, // grad_output
+          THTensor *gradInput,  // [OPTIONAL] grad_input
+          THTensor *gradWeight, // [OPTIONAL] grad_param (包括下面的 gradBias)
+          THTensor *gradBias,   // [OPTIONAL]
+          THTensor *weight,     // [OPTIONAL] weight_tuple 中的 self.params[0], 该层的权重
+          THTensor *running_mean, // 从这里开始一直到 train 是 self.additional_args[:-2]
+          THTensor *running_var,
+          THTensor *save_mean,
+          THTensor *save_std,
+          bool train,
+          double scale, // 单独设置这个参数为 (1, ),
+          double eps); // self.additional_args[-1:]
+```
+
+
+
+## 总结 (2018 年 1 月 5 日)
+
+终于看完这个文件了, 内容比较充实, 这个文件主要提供了两个函数 `_make_function_class` 和 `_make_function_class_criterion` 可以批量的生产类, 简化了人工劳动. 看完之后, 不得不为其中的精巧赞叹. 要达到这样的效果, 必须首先对整个项目有个好的规划, 所有的 API 尽量统一风格.
+
+另外, 我发现, 有时候代码的逻辑并不复杂, 难的是整体的设计. pytorch 的这一点做的实在是精彩, 代码看起来是一种享受, 每次看都能有不同的体会. 反观自己的代码, 都不想再去看第二遍....
+
+还有, 代码中命名非常重要好, 有的时候不是代码难写, 而是名字不好取; 可以看到 pytorch 中命名的风格就非常统一, 看完一个代码之后, 变量名字的意义在其他的地方也是类似的, 减小了理解代码的工作量.
