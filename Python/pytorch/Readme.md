@@ -16,7 +16,7 @@ lib/THNN/MSECriterion.md # 注意 MSE 前面没有乘 1/2
 lib/THNN/SmoothL1Criterion.md
 lib/THNN/THNN.h # 有对 THNN/ 整个目录的总结, 还有对 csrc 目录的一些看法
 
-csrc/readme.md  # 没啥内容, 只给出一个指示
+csrc/Readme.md  # 没啥内容, 只给出一个指示
 csrc/nn_THNN.md # THNN.cpp 是扩展 Python 的文件
 
 _thnn/Readme.md # 介绍该目录下的 __init__.py 文件
@@ -27,9 +27,13 @@ nn/Readme.md  # 简要介绍, 阅读这个目录我们就能知道顶层的 API 
 nn/functions/linear.md # 介绍了 LinearFunction 类
 nn/functions/thnn.md # 产生更多的类似 LinearFunction 的类, 定义了前向和反向传播的方法.
 
+nn/backends/Readme.md # 简要介绍
 nn/backends/thnn.md # 介绍了 backends, 注册 Function 类(类似 _thnn/utils.py 的注册底层方法)
 
+nn/modules/Readme.md # 简要介绍
 nn/modules/module.md # 相当于基类, 总纲; 注意, 我在该文档中挖了坑, 之后看完了 autograd 过来填上! (Flag~)
+nn/modules/conv.md # 有点流水账的感觉...不止谈到 Conv2d, 其他的 activation, Linear 都说明了
+nn/modules/container.md # 介绍 Container 和 Sequential 
 ```
 
 
