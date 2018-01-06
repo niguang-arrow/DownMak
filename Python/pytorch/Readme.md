@@ -33,7 +33,11 @@ nn/backends/thnn.md # 介绍了 backends, 注册 Function 类(类似 _thnn/utils
 nn/modules/Readme.md # 简要介绍
 nn/modules/module.md # 相当于基类, 总纲; 注意, 我在该文档中挖了坑, 之后看完了 autograd 过来填上! (Flag~)
 nn/modules/conv.md # 有点流水账的感觉...不止谈到 Conv2d, 其他的 activation, Linear 都说明了
-nn/modules/container.md # 介绍 Container 和 Sequential 
+nn/modules/container.md # 介绍 Container 和 Sequential
+
+autograd/Readme.md
+autograd/function.md
+autograd/variable.md
 ```
 
 
