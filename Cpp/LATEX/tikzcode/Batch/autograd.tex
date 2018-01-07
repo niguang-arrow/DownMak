@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage{ctex}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\pagecolor{pink}
+\usetikzlibrary{arrows, positioning,calc}
+\usepackage[active, tightpage]{preview}
+\PreviewEnvironment{tikzpicture}
+\definecolor{arrBlue}{HTML}{015EDF}
+\newcommand{\arrcolor}{arrBlue}
+\newcommand{\arrlinewidth}{1pt}
+\tikzset{
+	% 箭头和线条的样式, 用于 \draw
+	arrStyle/.style = {->, >=stealth,
+	line width=\arrlinewidth,#1},
+	arrStyle/.default = {\arrcolor},
+	lineStyle/.style = {line width=\arrlinewidth,
+	\arrcolor},
+}
+
+\makeatletter
+\newcommand{\nodefontsize}{\@setfontsize\codesize{2.5}{6}}
+\makeatother 
+
+
+\tikzset{%
+	kernelStyle/.style={draw, circle,
+	inner sep=0pt, minimum size=1.2em,
+	outer sep=1pt, line width=1pt, #1, fill=#1,
+	align=center,text=white,font=\nodefontsize},
+	kernelStyle/.default={orange}
+} %
+
+% \kernel{< 颜色 >}{< 名字 >}{< 位置 >};
+% \kernelPos{< 颜色 >}{< 名字 >}{< 相对位置 >}{< 基准名字 >}{< 相对基准的偏移 >};
+\newcommand{\kernel}[3]{\node[kernelStyle=#1] (#2) at #3 {}}
+\newcommand{\kernelPos}[5]{\node[kernelStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {}}
+% 可以在神经元内添加文字, 前缀用 t 表示 text
+\newcommand{\tkernel}[4]{\node[kernelStyle=#1] (#2) at #3 {#4}}
+\newcommand{\tkernelPos}[6]{\node[kernelStyle=#1,
+	#3=of #4, #3=0pt, shift={#5}] (#2) {#6}}
+
+\tikzset{%
+	textNodeStyle/.style={align=center,
+	inner sep=0pt, %minimum size=2em,
+	text width=.4cm,
+	font=\nodefontsize,
+	outer sep=1pt, #1},
+	textNodeStyle/.default={},
+	boxStyle/.style={line width=1pt,%
+	rounded corners=3pt,
+	}% 还可以加颜色
+}
+
+\newcommand{\tNode}[3]{\node[textNodeStyle] (#1) at #2 {#3}}
+\newcommand{\tNodePos}[5]{\node[textNodeStyle,
+#2=of #3, #2=0pt, shift={#4}] (#1) {#5}}
+
+
+\tikzset{
+	anodeStyle/.style={
+		circle,fill=\arrcolor,inner sep=0pt,outer sep=0pt,minimum size=3pt %
+	}
+}
+\newcommand{\tarrowNode}[5]{\draw[arrStyle] #1 -- #2 node (anode) [midway, anodeStyle] {};
+\tNodePos{tt}{#3}{anode}{#4}{#5}}
+
+\usepackage{minted}
+
+\makeatletter
+\newcommand{\codesize}{\@setfontsize\codesize{4.9}{8}}
+\newcommand{\tinycodesize}{\@setfontsize\codesize{6.7}{9.6}} 
+\makeatother 
+
+\newminted[python]{python}{fontsize=\codesize,style=monokai, escapeinside=||, baselinestretch=.7}
+\newmintinline[pyinline]{python}{}
+
+\definecolor{convBlue}{HTML}{008DF4}
+\definecolor{convDark}{HTML}{002947}
+\definecolor{convGray}{HTML}{77AAFF}
+\definecolor{convGreen}{HTML}{35CD74}
+\definecolor{convPurple}{HTML}{CE357A}
+\newcommand{\dis}{.3cm}
+\begin{document}
+\begin{tikzpicture}
+\coordinate (origin) at (0, 0);
+\tkernel{orange}{index}{(origin)}{Index};
+\tkernelPos{convDark}{add}{below}{index}{(0, -2*\dis)}{Add};
+\tkernelPos{convBlue}{thre}{below}{add}{(-1, -4*\dis)}{Thresh};
+\tkernelPos{convPurple}{linear1}{below}{add}{(1, -2.5*\dis)}{Linear1};
+\tkernelPos{convPurple}{linear2}{below}{thre}{(0, -2*\dis)}{Linear2};
+\tkernelPos{convGreen}{leaf1}{below}{linear1}{(0, -2*\dis)}{Leaf11};
+\tkernelPos{convGreen}{leaf2}{below}{linear1}{(1, -2*\dis)}{Leaf12};
+\tkernelPos{convGreen}{leaf11}{below}{linear2}{(-1, -2*\dis)}{Leaf21};
+\tkernelPos{convGreen}{leaf12}{below}{linear2}{(0, -2*\dis)}{Leaf22};
+\tkernelPos{convGreen}{leaf13}{below}{linear2}{(1, -2*\dis)}{Leaf23};
+\tarrowNode{(leaf11)}{(linear2)}{left}{(0, 0)}{input};
+\tarrowNode{(leaf12)}{(linear2)}{left}{(.1, 0)}{w1};
+\tarrowNode{(leaf13)}{(linear2)}{right}{(-.1, 0)}{b1};
+\tarrowNode{(linear2)}{(thre)}{left}{(0, 0)}{};
+\draw[arrStyle] (anode) -- (linear1);
+\tarrowNode{(leaf1)}{(linear1)}{right}{(-.1, 0)}{w2};
+\tarrowNode{(leaf2)}{(linear1)}{right}{(-.1, 0)}{b2};
+\draw[lineStyle] (thre) -- ++(0, 2.2*\dis) node[anodeStyle] (a1) {};
+\draw[lineStyle] (linear1) -- ++(0, 1.6*\dis) node[anodeStyle] (a2) {};
+\draw[arrStyle] (a1) -- (add);
+\draw[arrStyle] (a2) -- (add);
+\tarrowNode{(add)}{(index)}{right}{(-.1, 0)}{};
+\draw[arrStyle] (index) -- ++(0, 3*\dis) node[midway, anodeStyle] (out) {};
+\tNodePos{output}{right}{out}{(0, 0)}{output};
+
+% text
+\tNodePos{fn}{right}{linear1}{(.3, .65)}{\color{red}fn};
+\draw[lineStyle, densely dashed, orange] (linear1) -- (fn);
+\tNodePos{prevfn}{below}{leaf1}{(-.25, -.55)}{\color{red}prev\_fn};
+\foreach \i in {linear2, leaf1, leaf2}
+ \draw[lineStyle, densely dashed, orange] (\i) -- (prevfn);
+\tNodePos{prevgrad}{right}{thre}{(.28, .1)}{\color{red}prev\_grad};
+\tNodePos{gradinput}{above}{linear1}{(-.58, .2)}{\color{red}grad\_input};
+\end{tikzpicture}
+%\setlength{\PreviewBorder}{.03cm}
+\end{document}
