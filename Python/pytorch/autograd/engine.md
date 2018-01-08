@@ -39,10 +39,9 @@ class ExecutionEngine(object):
 
 下面先大致看一下代码, 首先我概括一下下面代码在做什么. 之后给出一个具体的例子来分析, 一步一步将代码的含义弄清楚.
 
-+   **ready 用来记录能进行反向传播的节点.**
++   我们用 **ready 用来记录能进行反向传播的节点.**
 
-
-+   我们用 `ready` 来记录已经求出了自身的 $\delta$ 值所有依赖项 (dependencies). 如下图, 其中箭头中间的圆点为 variable. 图中 Leaf 的依赖项就是 Linear. 每个大圆圈表示节点, 一个节点就是一个 Function. 
+    如下图, 其中箭头中间的圆点为 variable. 图中 Leaf 的依赖项就是 Linear. 每个大圆圈表示节点, 一个节点就是一个 Function. 
 
     注意, 在 Variable 的定义中, 它有一个 `.creator` 属性, 图中, `variable.creator` 就是 Linear 这个 Function. 对于图中的 `grad`, 它就是 Linear 这个节点的 $\delta$ 值, 因为只要知道了这个值, 自然就能反向传播得到输入 Variable 的梯度, 因此, 若 `grad` 已经能确定了, 那么就说明这个节点是 ready 的.
 
