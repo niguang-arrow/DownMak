@@ -204,7 +204,7 @@ print "input.grad: ", input.grad
 
     ![](http://opoddugn5.bkt.clouddn.com/DownMak/Python/pytorch/autograd.png)
 
-    最后我们把 `dependencies` 完全打印出来.
+    最后我们把 `dependencies` 完全打印出来.zidian
 
     ```python
     {
@@ -431,7 +431,7 @@ Counter({<torch.nn.functions.thnn.ThresholdFunction object at 0x7f2eb7b0da50>: 1
 首先看代码:
 
 ```python
-				if is_ready:
+                if is_ready:
                     if prev_fn in not_ready:
                         prev_grad = not_ready[prev_fn]
                         if not prev_grad[output_nr]:

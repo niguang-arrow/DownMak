@@ -35,9 +35,10 @@ nn/modules/module.md # 相当于基类, 总纲; 注意, 我在该文档中挖了
 nn/modules/conv.md # 有点流水账的感觉...不止谈到 Conv2d, 其他的 activation, Linear 都说明了
 nn/modules/container.md # 介绍 Container 和 Sequential
 
-autograd/Readme.md
-autograd/function.md
-autograd/variable.md
+autograd/Readme.md # 简要介绍
+autograd/function.md # pytorch 的 Function 类
+autograd/variable.md # Variable 类
+autograd/engine.md # autograd 的核心, 画图也累... 1 月 8 号被其他事件耽误了, 没有及时完成
 ```
 
 
