@@ -7,6 +7,8 @@
 按照如下顺序阅读, 能获得最佳的食用效果, 这是我记录的顺序: (对了, 这份 readme 下面是 pytorch 官方的博客中的内容, 我弄成中文的查起来方便一点.) 另外推荐使用 typora 观看 markdown, 这样公式也能正常显示出来, 我使用的是 Engwrite 主题.
 
 ```bash
+Readme.md # 主目录下, 开宗明义, 就是这份文档了.
+
 lib/THNN/SpatialFullConvolution.md # 毕竟是第一份文档, 图也是自己画的, 太用心了...
 lib/THNN/SpatialConvolutionMM.md # nn.Conv2d 底层卷积实现
 lib/THNN/Abs.md
@@ -38,7 +40,15 @@ nn/modules/container.md # 介绍 Container 和 Sequential
 autograd/Readme.md # 简要介绍
 autograd/function.md # pytorch 的 Function 类
 autograd/variable.md # Variable 类
-autograd/engine.md # autograd 的核心, 画图也累... 1 月 8 号被其他事件耽误了, 没有及时完成
+autograd/engine.md # autograd 的核心, 动态图的实现. (画图也累... 1 月 8 号被其他事件耽误了, 没有及时完成)
+autograd/leaf.md # 叶子节点, 反向传播的终点
+
+autograd/functions/Readme.md # 简要介绍
+autograd/functions/basic_ops.md # 定义了大量基本操作的 Function(如 Add, Sub 之类的)
+autograd/functions/tensor.md # 稍不那么直观的操作, 比如 Index, Transpose
+autograd/functions/pointwise.md # 操作, 如 Exp, Log
+
+torch_C.md # 主目录下, torch._C 中的内容
 ```
 
 

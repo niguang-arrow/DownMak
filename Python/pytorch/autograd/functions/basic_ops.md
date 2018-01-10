@@ -67,6 +67,7 @@ class Pow(Function):
         a, b = self.input
         return grad_output.mul(b).mul_(a.pow(b-1)), grad_output.mul(a.pow(b)).mul_(a.log())
 
+# 初始化时需要引入一个常量, 反向传播直接是 grad_output    
 class AddConstant(Function):
 
     def __init__(self, constant):
@@ -79,7 +80,8 @@ class AddConstant(Function):
     def backward(self, grad_output):
         return grad_output
 
-
+# 默认是 input - constant
+# 若 sub_tensor 为 True, 那么便是 constant - input
 class SubConstant(Function):
 
     def __init__(self, constant, sub_tensor=False):
@@ -99,7 +101,7 @@ class SubConstant(Function):
         else:
             return grad_output
 
-
+# constant * grad_output
 class MulConstant(Function):
 
     def __init__(self, constant):
@@ -112,7 +114,9 @@ class MulConstant(Function):
     def backward(self, grad_output):
         return grad_output.mul(self.constant)
 
-
+# 默认是 a / constant,
+# 若 div_by_tensor 为 True
+# constant / a
 class DivConstant(Function):
 
     def __init__(self, constant, div_by_tensor=False):
@@ -134,7 +138,9 @@ class DivConstant(Function):
         else:
             return grad_output.div(self.constant)
 
-
+# 默认是 a^(constant)
+# 若 tensor_power 为 True
+# 则为 constant^a
 class PowConstant(Function):
 
     def __init__(self, constant, tensor_power=False):
@@ -157,6 +163,7 @@ class PowConstant(Function):
             a = self.input
             return grad_output.mul(self.constant).mul_(a.pow(self.constant-1))
 
+# -i        
 class Negate(Function):
 
     def forward(self, i):

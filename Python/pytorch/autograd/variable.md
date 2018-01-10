@@ -110,11 +110,15 @@ Variable 中定义了 backward 方法:
 
 
 
+下面的 *Variable 的运算* 的内容最好是看完 `functions/basic_ops.md` 以及 `functions/tensor.md` 中的内容再回来看, 理解才能更深刻一些.
+
 ## Variable 的运算
 
 在 Variable 类中, 定义了大量的运算方法(相当于 C++ 中的重载运算符).
 
 具体之后再来介绍. 到时候分析 `functions/` 文件夹下的文件, 必然涉及到这些内容.
+
+(1 月 10 日更新) 看完了 `functions/` 目录下的代码, 意识到 `variable.py` 文件中定义的这些 Variable 的方法里, 都会创建一个 Function 对象, 比如 `Add()`, `Div()`; 这样做可以让 Variable 和对应的 Function 绑定(也就是指定 Variable 的 `.creator` 属性.) 之后在反向传播中会用到.
 
 ```python
     def add(self, other):
