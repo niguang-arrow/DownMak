@@ -49,6 +49,10 @@ autograd/functions/tensor.md # 稍不那么直观的操作, 比如 Index, Transp
 autograd/functions/pointwise.md # 操作, 如 Exp, Log
 
 torch_C.md # 主目录下, torch._C 中的内容
+
+lib/TH/Readme.md
+lib/TH/generic/THVector.c
+lib/TH/generic/THTensorMath.c
 ```
 
 
