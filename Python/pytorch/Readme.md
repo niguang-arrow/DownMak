@@ -23,7 +23,7 @@ csrc/nn_THNN.md # THNN.cpp 是扩展 Python 的文件
 
 _thnn/Readme.md # 介绍该目录下的 __init__.py 文件
 _thnn/utils.md # 介绍 parse_header 与 load_backend 函数
-_thnn/thnn.py # 对底层 lib/THNN 的封装(csrc/ 是 Python 和 C 的 "胶水")
+_thnn/thnn.md # 对底层 lib/THNN 的封装(csrc/ 是 Python 和 C 的 "胶水")
 
 nn/Readme.md  # 简要介绍, 阅读这个目录我们就能知道顶层的 API 是怎么来的了.
 nn/functions/linear.md # 介绍了 LinearFunction 类
@@ -50,12 +50,17 @@ autograd/functions/pointwise.md # 操作, 如 Exp, Log
 
 torch_C.md # 主目录下, torch._C 中的内容
 
-lib/TH/Readme.md
-lib/TH/generic/THVector.c
-lib/TH/generic/THTensorMath.c
+lib/TH/Readme.md # 简要介绍
+lib/TH/generic/THVector.md # 该文件中的函数会被 THTensorMath.c 用到
+lib/TH/generic/THTensorMath.md # 稍微介绍了一点 API, 但是认识不深刻, 蜻蜓点水
+lib/TH/TH.md # 概括了 torch._C 的获得过程
+
+__init__.md # torch 包中的 __init__.py 文件的介绍, 还有说明 torch 以及 torch.Tensor 中的方法.
 ```
 
+说明, 剩下 `torch/optim/` 目录下的代码还没有看, 目前决定不看了, 优化代码可以看较新版本中的实现. 
 
+另外, pytorch 的基本原理已经清楚了, 此后应尽快追踪到最新的 API, 新版本中的接口还是有不少变化的, 但是我相信, 那些基本的原理变化不会很大. 之后的学习内容可以记录一些重要的接口变化.
 
 
 
