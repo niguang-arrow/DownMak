@@ -62,15 +62,45 @@ import subprocess
 # print repr(stdout_value)
 
 
-print 'popen3'
-proc = subprocess.Popen(
-    'cat -; echo "to stderr" 1>&2',
-    shell=True,
-    stdin=subprocess.PIPE,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.STDOUT
-)
+# print 'popen3'
+# proc = subprocess.Popen(
+    # 'cat -; echo "to stderr" 1>&2',
+    # shell=True,
+    # stdin=subprocess.PIPE,
+    # stdout=subprocess.PIPE,
+    # stderr=subprocess.PIPE
+# )
 
-stdout_value, stderr_value = proc.communicate("hello")
-print repr(stdout_value)
-print repr(stderr_value)
+# stdout_value, stderr_value = proc.communicate("hello")
+# print repr(stdout_value)
+# print repr(stderr_value)
+
+
+# print 'popen4'
+# proc = subprocess.Popen(
+    # 'cat -; echo "to stderr" 1>&2',
+    # shell=True,
+    # stdin=subprocess.PIPE,
+    # stdout=subprocess.PIPE,
+    # stderr=subprocess.STDOUT
+# )
+
+# stdout_value, stderr_value = proc.communicate("hello")
+# print repr(stdout_value)
+# print repr(stderr_value)
+
+
+# ls = subprocess.Popen(['ls'],
+        # stdout=subprocess.PIPE 
+    # )
+
+# grep  = subprocess.Popen(
+    # ['grep', 'te'],
+    # stdin=ls.stdout,
+    # stdout=subprocess.PIPE,
+# )
+
+# end_pipe = grep.stdout
+
+# for line in end_pipe:
+    # print repr(line)
