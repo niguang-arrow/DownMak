@@ -741,15 +741,29 @@
 
      虽然 `sip.so` 是在上面的目录下, 但是 `sip.h` 文件却是在 `/home/ieric/.pyenv/versions/2.7.13/include/python2.7/` 目录下. 提到这个是因为后面安装 pyqt5 需要用到.
 
-     +   然后安装 pyqt5:
+     +   然后安装 pyqt5:(补充, 在学习 PyQt5 时, 发现 QtWidgets 没有安装, 原因是没有安装 openGL, 所以先安装 `freeglut3`)
 
      ```bash
+     # 先安装 OpenGL, 防止 QtWidgets 等未被编译
+     # 参考: https://stackoverflow.com/questions/21486103/pyqt5-without-qtgui-and-qtwidgets
+     $ sudo apt-get install freeglut3-dev
      $ cd ~/Programs/PyQt5_gpl-5.8.2
      # 可以使用 python config.py --help 查看有哪些选项
      # 下面能这样写是参考 https://stackoverflow.com/questions/32080304/issues-with-building-pyqt5-on-ubuntu-14-04
      $ python configure.py --sip-incdir=/home/ieric/.pyenv/versions/2.7.13/include/python2.7/
      $ make  # 这个耗时特别久, 半个小时以上
      $ make install
+
+     ### 下面不用管.
+     # 在使用 python configure.py 时, 如果看到有输出:
+     These PyQt5 modules will be built: QtCore, QtGui, QtHelp, QtMultimedia,
+     QtMultimediaWidgets, QtNetwork, QtOpenGL, QtPrintSupport, QtQml, QtQuick,
+     QtSql, QtSvg, QtTest, QtWidgets, QtXml, QtXmlPatterns, QtDesigner, QtDBus,
+     _QOpenGLFunctions_2_0, _QOpenGLFunctions_2_1, _QOpenGLFunctions_4_1_Core,
+     QtSensors, QtSerialPort, QtX11Extras, QtBluetooth, QtPositioning,
+     QtQuickWidgets, QtWebSockets, QtWebChannel, QtWebEngineWidgets, QtLocation,
+     QtNfc, QtWebEngineCore, QtWebEngine.
+     # 那么说明没问题了.
      ```
 
      - 安装成功后, 之后就可以安装 spyder 了, 并且 `jupyter qtconsole` 之类的都可以用了.
