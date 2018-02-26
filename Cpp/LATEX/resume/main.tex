@@ -1,0 +1,128 @@
+\documentclass[paper=a4,fontsize=11pt]{temp} % KOMA-article class
+
+\newcommand{\name}{Menglei}
+\newcommand{\mail}{ml.zhang@foxmail.com}
+\newcommand{\phone}{13006377386}
+\newcommand{\github}{https://}
+\newcommand{\blog}{}
+
+\definecolor{LinkColor}{HTML}{554CF3}
+\usepackage[hidelinks]{hyperref}
+\AtBeginDocument{%
+	\hypersetup{%
+		colorlinks=true,
+		bookmarksnumbered=ture,
+		filecolor=LinkColor%	
+	}%
+}
+	
+							
+\begin{document}
+
+\begin{minipage}{.2\linewidth}
+   \includegraphics[width=1\textwidth]{photo}
+\end{minipage}      
+\begin{minipage}{0.7\linewidth}
+   \MyName{ John Doe}
+   \sepspace
+   \noindent
+   
+   \hfill john.doe@ist.utl.pt    
+   %\hfill yourwebsite.com 
+   %\hfill (+351)93123123123  
+\end{minipage}
+
+
+\NewPart{教育背景}{}
+\noindent
+
+
+\EducationEntry{硕士 / 武汉大学 }{2016/09 -- 2019/06}{%
+\begin{itemize}
+\item 专业: 信号与信息处理 \hspace*{3cm} 学院: 电子信息学院 \hspace*{3cm} 工学硕士 
+\item 研究方向: 图像去噪与超分辨率, 深度学习
+\end{itemize}%
+}
+
+\sepspace
+
+\EducationEntry{本科 / 武汉大学 }{2012/09 -- 2016/06}{%
+\begin{itemize}
+\item 专业: 通信工程 \hspace*{3.9cm} 学院: 电子信息学院 \hspace*{3cm} 工学学士 
+\end{itemize}%
+}
+
+\NewPart{项目经验}{}
+\noindent
+
+
+\projectEntry{Write Latex}{2016/09 -- 2016/09}{R\&D Engineer}{Placeholder text designed to have exactly three lines. Three lines describing what you did in this job is just about right for this template. Keep it simple and understandable. Let the details for the interview.}
+
+\sepspace
+
+\projectEntry{McDonalds}{2016/09 -- 2016/09}{Collaborator}{Placeholder text designed to have exactly three lines. Three lines describing what you did in this job is just about right for this template. Keep it simple and understandable. Let the details for the interview.}
+
+\sepspace
+
+\projectEntry{Banco Alimentar}{2016/09 -- 2016/09}{Volunteer}{Placeholder text designed to have exactly three lines. Three lines describing what you did in this job is just about right for this template. Keep it simple and understandable. Let the details for the interview.}
+
+
+\NewPart{外语与技能}{}
+\noindent
+\begin{itemize}
+\item 英语: CET4 (成绩: \textbf{607}) \hspace*{3cm} CET6 (成绩: \textbf{551})
+\item 编程语言: Python > C++, Matlab > C
+\item 深度学习框架: \textbf{PyTorch}, \textbf{Caffe}, TinyDnn
+\item 排版系统: LaTeX (作品:\color{LinkColor}
+\href{http://www.latexstudio.net/archives/4200}{2015年全国大学生数学建模LaTeX模板 cumcmthesis})
+\end{itemize}
+
+
+%
+%\NewPart{Skills \& Interests}{}
+%\hspace{3mm}
+%\begin{minipage}[t]{0.33\textwidth} 
+%
+%\begin{tabular}[t]{ l l }
+%\flag{IMG/flag/pt}  & Native Speaker \\
+%\flag{IMG/flag/fr}  & Professional user \\
+%\flag{IMG/flag/gb}  & Professional Proficiency \\
+%\flag{IMG/flag/de}  & Conversational level \\
+%\flag{IMG/flag/es}  & Conversational level \\
+%\end{tabular}
+%
+%\sepspace
+%
+%\end{minipage}
+%%
+%\begin{minipage}[t]{0.66\textwidth} 
+%
+%
+%\begin{tabular}[t]{l l}
+%\software{IMG/soft/Matlab}  	 & This software experience. fillertext fillertext fillertex\\
+%\software{IMG/soft/office} 		 & This software experience. fillertext fillertext fillertex\\
+%\software{IMG/soft/Matlab}  	 & This software experience. fillertext fillertext fillertex\\
+%\software{IMG/soft/office} 		 & This software experience. fillertext fillertext fillertex\\
+%\software{IMG/soft/Matlab}  	 & This software experience. fillertext fillertext fillertex\\
+%\end{tabular}
+%
+%
+%
+%\end{minipage}
+%
+%\begin{tabular}{l l}
+%\software{IMG/soft/Matlab}  	 & This software experience. fillertext fillertext fillertex\\
+%\software{IMG/soft/office} 		 & This software experience. fillertext fillertext fillertex\\
+%\software{IMG/soft/Matlab}  	 & This software experience. fillertext fillertext fillertex\\
+%
+%hobby1,   & Small achievments text. fillertext fillertext fillertex fillertext fillertex\\
+%hobby2,   & Small achievments text. fillertext fillertext fillertex fillertext fillertex\\
+%hobby3,   & Small achievments text. fillertext fillertext fillertex fillertext fillertex\\
+%\end{tabular}
+
+
+
+%%% References
+%%% ------------------------------------------------------------
+
+\end{document}
