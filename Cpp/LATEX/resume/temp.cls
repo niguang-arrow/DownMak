@@ -26,6 +26,16 @@
 \usepackage{float}
 \usepackage{enumitem}
 
+\definecolor{LinkColor}{HTML}{554CF3}
+\usepackage[hidelinks]{hyperref}
+\AtBeginDocument{%
+	\hypersetup{%
+		colorlinks=true,
+		bookmarksnumbered=ture,
+		filecolor=LinkColor%	
+	}%
+}
+
 
 %\frenchspacing              % Better looking spacings after periods
 \pagestyle{empty}           % No pagenumbers/headers/footers
@@ -91,10 +101,10 @@
 		\noindent%
 		\hspace*{1em}%	                    
         \begin{minipage}{0.96\linewidth}  
-    	\noindent {\color{subheadings}\bfseries\uppercase {#1}}, {\color{subheadings}\textit{#3}}  
+    	\noindent {\color{subheadings}\bfseries {#1}}, {\color{subheadings}\textit{#3}}  
         \hfill  {\color{headings}\fontsize{10pt}{12pt}#2}   
         \par   	
-        \noindent\hangindent=2em\hangafter=0 \small #4 % Description
+        \noindent\hangindent=2em\hangafter=0 \normalsize #4 % Description
 		 \normalsize\par         
         \end{minipage}         
 }
@@ -108,7 +118,7 @@
 		\par   	
 %		\noindent {\color{subheadings}\textit{#3}} \par 
 %        \noindent\hangindent=0em\hangafter=0 
-        \small #3 % Description
+        \normalsize #3 % Description
 		\normalsize \par         
         \end{minipage}        
  }
