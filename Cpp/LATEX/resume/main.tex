@@ -46,28 +46,35 @@
 \noindent
 
 
-\projectEntry{基于 DCNN 的图像去噪算法}{2016/09 -- 2016/09}{第一作者}{构建深度卷积神经网络对带噪图像进行残差学习，再从带噪图像中减去残差以获得去噪后的图像。算法使用 PyTorch 深度学习框架实现，利用残差网络、ReLU 等技术加速算法收敛并提升去噪效果，在标准测试图像上的峰值信噪比达到 state-of-the-art 的结果。关于该算法的报告可查看：\href{www}{2018 年会报告}。}
+\projectEntry{基于 DCNN 的图像去噪算法}{2016/09 -- 2016/09}{第一作者}{%
+构建深度卷积神经网络对带噪图像进行残差学习，再从带噪图像中减去残差以获得去噪后的图像。算法使用 PyTorch 深度学习框架实现，利用残差网络、ReLU 等技术加速算法收敛并提升去噪效果，在标准测试图像上的峰值信噪比达到 state-of-the-art 的结果。关于该算法的报告可查看：\href{https://github.com/zmlhome/Amaze/blob/master/Layer/zml-annual-meeting-20180125.pdf}{2018 年会报告}。
+}{network.pdf}{3.54cm}{(-1, 0)}
 
 \sepspace
 
-\projectEntry{同伦方法在图像稀疏去噪中的应用}{2016/09 -- 2016/09}{第一作者}{在稀疏表示和字典学习理论的基础上，本文算法利用同伦方法学习字典并结合稀疏去噪模型实现对图像的去噪，充分展示了同伦方法收敛速度快以及对信号的恢复准确度高等特点。 成果发表在\href{http://www.signal.org.cn/CN/volumn/current.shtml\#89}{《信号处理》2018 Vol.34(1): 89-97}。}
+\projectEntry{同伦方法在图像稀疏去噪中的应用}{2016/09 -- 2016/09}{第一作者}{在稀疏表示和字典学习理论的基础上，本文算法利用同伦方法学习字典并结合稀疏去噪模型实现对图像的去噪，充分展示了同伦方法收敛速度快以及对信号的恢复准确度高等特点。 成果发表在\href{http://www.signal.org.cn/CN/volumn/current.shtml\#89}{《信号处理》2018 Vol.34(1): 89-97}。}{denoise.pdf}{3cm}{(-1, 0)}
 
 \sepspace
 
 \projectEntry{源码阅读}{2016/09 -- 2016/09}{个人项目}{
 \textbullet\hspace*{.6em}PyTorch 源码阅读\hspace*{1cm} 笔记地址：\href{https://github.com/zmlhome/DownMak/tree/master/Python/pytorch}{https://github.com/zmlhome/DownMak/tree/master/Python/pytorch}\\
-针对 PyTorch v0.1.1 源码进行分析，主要探究卷积层、ReLU 层等反向传播的底层 C 实现，以及 PyTorch 的自动求导机制，提升对 PyTorch 框架的整体认识。\\
+\quad 针对 PyTorch v0.1.1 源码进行分析，主要探究卷积层、ReLU 层等反向传播的底层 C 实现，以及 PyTorch 的自动求导机制，提升对 PyTorch 框架的整体认识。\\
 \textbullet\hspace*{.6em}TinyDnn 源码阅读\hspace*{1cm}
 笔记地址：\href{https://www.kancloud.cn/ieric_1993/tiny_dnn}{https://www.kancloud.cn/ieric\_1993/tiny\_dnn}\\
-针对 TinyDnn v0.0.1 源码进行分析，重点理解网络的构建以及反向传播机制。
-}
+\quad 针对 TinyDnn v0.0.1 源码进行分析，重点理解网络的构建以及反向传播机制。
+}{autograd.pdf}{1.6cm}{(-.8, -.2)}
 
 \sepspace
 
-\projectEntry{\LaTeX{} 表格生成工具 iTable}{2016/09 -- 2016/09}{个人项目}{Placeholder text designed to have exactly three lines. Three lines describing what you did in this job is just about right for this template. Keep it simple and understandable. Let the details for the interview.}
+\projectEntry{\LaTeX{} 表格生成工具 iTable}{2016/09 -- 2016/09}{个人项目}{iTable 是一款 \LaTeX{} 表格代码生成工具，旨在辅助制作漂亮的 \LaTeX{} 表格；iTable 支持
+导入 csv 格式以及 mat 格式的文件，可以将 matlab 生成的数据导入到 iTable 中进行处理；该软件目前支持使用模板生成完整的 \LaTeX{} 表格, 并生成相应的 pdf 文件。}{itable.png}{2.6cm}{(-1, 0)}
 
 \NewPart{外语与技能}{}
 \noindent
+\begin{minipage}{1em}
+\rule{1em}{0pt}
+\end{minipage}
+\begin{minipage}{.9\textwidth}
 \begin{itemize}
 \item 英语：CET4 (成绩: \textbf{607}) \hspace*{3cm} CET6 (成绩： \textbf{551})
 \item 编程语言： Python > C++，Matlab > C
@@ -75,6 +82,7 @@
 \item 排版系统：LaTeX （作品：\color{LinkColor}
 \href{http://www.latexstudio.net/archives/4200}{2015年全国大学生数学建模LaTeX模板 cumcmthesis}）
 \end{itemize}
+\end{minipage}
 
 
 %

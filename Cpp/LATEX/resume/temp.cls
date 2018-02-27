@@ -25,6 +25,35 @@
 \usepackage{url}
 \usepackage{float}
 \usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{math,positioning,arrows,calc,shapes}
+%% 定义文本节点
+\tikzset{%
+	textNodeStyle/.style={align=left,
+			inner sep=0pt, minimum size=2em,
+			outer sep=1pt, #1},
+	textNodeStyle/.default={},
+	boxStyle/.style={line width=1pt,%
+			rounded corners=3pt,
+		}% 还可以加颜色
+}
+
+\graphicspath{{IMG/}}
+%% 文本节点与图像节点	
+\newcommand{\figNode}[4]{\node(#1) at #4 			
+			{\includegraphics[width=#3,keepaspectratio]{#2}}}
+\newcommand{\figNodePos}[6]{\node[#4=0pt,#4=of #5,shift={#6}](#1)
+			{\includegraphics[width=#3,keepaspectratio]{#2}}}
+			
+\newcommand{\mtNode}[7]{
+	\begin{tikzpicture}
+		\node[textNodeStyle={text width=#2}]
+			(#1) at #3 {#4};
+		\figNodePos{f1}{#5}{#6}{right}{#1}{#7};
+	\end{tikzpicture}
+}
+\newcommand{\mtNodePos}[6]{\tikz\node[textNodeStyle={text width=#2},
+	#3=of #4, #3=0pt, shift={#5}] (#1) {#6};}	
 
 \definecolor{LinkColor}{HTML}{554CF3}
 \usepackage[hidelinks]{hyperref}
@@ -97,14 +126,18 @@
 		\hspace{1.5em} #2 \par}    % Entry value	
         
         
-\newcommand{\projectEntry}[4]{%
+\newcommand{\projectEntry}[7]{%
 		\noindent%
 		\hspace*{1em}%	                    
         \begin{minipage}{0.96\linewidth}  
     	\noindent {\color{subheadings}\bfseries {#1}}, {\color{subheadings}\textit{#3}}  
         \hfill  {\color{headings}\fontsize{10pt}{12pt}#2}   
-        \par   	
-        \noindent\hangindent=2em\hangafter=0 \normalsize #4 % Description
+        \par\vspace*{.4em} 	
+        \noindent\hangindent=2em\hangafter=0 \normalsize
+        \hspace*{-1.2em}
+        \mtNode{t1}{.8\textwidth}{(0, 0)}{%
+         #4 % Description
+         }{#5}{#6}{#7}%
 		 \normalsize\par         
         \end{minipage}         
 }
