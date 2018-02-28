@@ -7,6 +7,7 @@
 \newcommand{\github}{https://github.com/zmlhome}
 \newcommand{\blog}{https://zmlhome.github.io/}
 \newcommand{\Address}{湖北省武汉市武汉大学电子信息学院}
+\newcommand{\photo}{me.jpg}
 
 \usepackage{fontspec}
 %\setmainfont{Sauce Code Powerline Black} %{SourceCodePro-Bold}
@@ -52,7 +53,8 @@
 	\tNode{name}{([shift={(2.7, \namey)}]current page.north west)}{\MyName{\name}};
 	\tNode{job}{([shift={(3.5, \joby)}]current page.north west)}{\MyJob{\job}};
 	\node(photo) at ([shift={(-2.7, \photoy)}]current page.north east)			
-	{\includegraphics[width=2.2cm,height=3.2cm]{photo}};
+	{\includegraphics[width=2.2cm,height=3.2cm]{\photo}};
+	\node[fit=(photo),draw=headings,rectangle,inner sep=-2pt,shift={(-.02, .01)}] {};
 	\node(email) at ([shift={(-7.0, \emaily)}]current page.north east) {\MyEmail{\email}};
 	\node(phone) at ([shift={(-7.9, \phoney)}]current page.north east) {\MyPhone{\phone}};
 	\node(github) at ([shift={(-6.75, \githuby)}]current page.north east) {\MyGithub{\github}};

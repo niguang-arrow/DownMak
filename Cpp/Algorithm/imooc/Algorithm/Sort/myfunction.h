@@ -51,6 +51,21 @@ void print_array(T* arr, int n) {
 }
 
 template <typename T>
+typename return_type_chooser<T>::type copy_array(T* arr, int n) {
+    T *newarr = new T[n];
+    std::copy(arr, arr + n, newarr);
+    return newarr;
+}
+
+template <typename T>
+bool test_sorted(T arr[], int n) {
+    for (int i = 0; i < n - 1; i++)
+        if (arr[i] > arr[i + 1])
+            return false;
+    return true;
+}
+
+template <typename T>
 void test_complexity(void (*sort)(T*, int)) {
     for (int i = 1; i < 10; ++i) {
         int num = 10 * std::pow(2, i);
@@ -58,7 +73,11 @@ void test_complexity(void (*sort)(T*, int)) {
         std::clock_t start = std::clock();
         sort(arr, num);
         std::clock_t end = std::clock();
-        std::cout << "time: " << (double)(end - start) / CLOCKS_PER_SEC << "s" << std::endl;
+        if (test_sorted(arr, num))
+            std::cout << "time: " << (double)(end - start) / CLOCKS_PER_SEC << "s" << std::endl;
+        else
+            std::cout << test_sorted(arr, num) << std::endl;
+            //std::cout << "Array Not Sorted" << std::endl;
         delete[] arr;
     }
 }

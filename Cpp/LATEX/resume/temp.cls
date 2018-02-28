@@ -27,7 +27,7 @@
 \usepackage{enumitem}
 \usepackage{fontawesome}
 \usepackage{tikz}
-\usetikzlibrary{math,positioning,arrows,calc,shapes}
+\usetikzlibrary{math,positioning,arrows,calc,shapes,fit}
 %% 定义文本节点
 \tikzset{%
 	textNodeStyle/.style={align=left,
