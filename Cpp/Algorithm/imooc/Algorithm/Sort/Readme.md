@@ -116,7 +116,7 @@ void insertionSort(T arr[], int n) {
 + 归并排序
 
 ```cpp
-// 自顶向下的归并排序的核心是 merge 操作
+// 自顶向下的归并排序的核心是 merge 操作(第一种写法, 下面还有第二种写法)
 template <typename T>
 void __merge(T arr[], int l, int mid, int r) {
     T newarr[r - l + 1];
@@ -142,6 +142,30 @@ void __merge(T arr[], int l, int mid, int r) {
         arr[m] = newarr[m - l];
 }
 
+
+// merge 操作的另一种写法, 似乎更为清晰一些, 第一种写法是直观的想法, 以遍历 newarr 为主;
+// 下面这种写法先遍历将要归并的两个子序列, 再使用两个 while 循环处理剩下的元素, i, j 总有
+// 一个先到边界.
+template <typename T>
+void __merge2(T arr[], int l, int mid, int r) {
+    T newarr[r - l + 1];
+
+    int i = l, j = mid + 1, k = 0;
+    while (i <= mid && j <= r) {
+        if (arr[i] < arr[j])
+            newarr[k++] = arr[i++];
+        else
+            newarr[k++] = arr[j++];
+    }
+    while (i <= mid)
+        newarr[k++] = arr[i++];
+    while (j <= r)
+        newarr[k++] = arr[j++];
+
+    for (int m = l; m <= r; ++m)
+        arr[m] = newarr[m - l];
+}
+
 template <typename T>
 void __mergeSort(T arr[], int l, int r) {
     if (l >= r)
@@ -149,7 +173,8 @@ void __mergeSort(T arr[], int l, int r) {
     int mid = l + (r - l) / 2;
     __mergeSort(arr, l, mid);
     __mergeSort(arr, mid + 1, r);
-    __merge(arr, l, mid, r);
+    //__merge(arr, l, mid, r);
+    __merge2(arr, l, mid, r);
 }
 
 template <typename T>
