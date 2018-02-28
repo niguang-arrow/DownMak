@@ -49,7 +49,49 @@ void insertionSort(T arr[], int n) {
 
 
 template <typename T>
-void mergeSort
+void __merge(T arr[], int l, int mid, int r) {
+    T newarr[r - l + 1];
+    // 使用 i 来对 arr[l...mid] 范围内的元素进行索引
+    // 使用 j 来对 arr[mid+1...r] 范围内的元素进行索引
+    // 使用 k 来对 newarr[0...r-l+1] 范围内的元素进行索引
+    int i = l, j = mid + 1, k = 0;
+    while (k <= r - l + 1) {
+        if (i > mid) {
+            newarr[k++] = arr[j++];
+        }
+        else if (j > r) {
+            newarr[k++] = arr[i++];
+        } // 只有在以上两个条件不满足的情况下，才需要对 arr 中的值进行比较
+        else if (arr[i] < arr[j]) {
+            newarr[k++] = arr[i++];
+        } else {
+            newarr[k++] = arr[j++];
+        }
+    }
+
+    for (int m = l; m <=r; ++m)
+        arr[m] = newarr[m - l];
+}
+
+
+template <typename T>
+void 
+
+template <typename T>
+void __mergeSort(T arr[], int l, int r) {
+    if (l >= r)
+        return;
+    int mid = l + (r - l) / 2;
+    __mergeSort(arr, l, mid);
+    __mergeSort(arr, mid + 1, r);
+    //__merge(arr, l, mid, r);
+    __merge2(arr, l, mid, r);
+}
+
+template <typename T>
+void mergeSort(T arr[], int n) {
+    __mergeSort(arr, 0, n - 1);
+}
 
 int main() {
     int n = 20;
@@ -57,11 +99,11 @@ int main() {
     int *arr2 = copy_array<int>(arr, n);
 
     print_array(arr, n);
-    insertionSort(arr, n);
+    mergeSort(arr, n);
     print_array(arr, n);
 
-    test_complexity<int>(selectionSort);
-    test_complexity<int>(insertionSort);
+    //test_complexity<int>(selectionSort);
+    //test_complexity<int>(insertionSort);
 
     delete[] arr;
     delete[] arr2;
