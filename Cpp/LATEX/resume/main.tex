@@ -1,7 +1,9 @@
 \documentclass[paper=a4,fontsize=11pt,svgnames]{temp} % KOMA-article class
 
 \newcommand{\name}{张梦磊}
-\newcommand{\job}{算法研发工程师}
+%\newcommand{\job}{算法研发工程师}
+%\newcommand{\job}{人工智能工程师} % for 网易
+\newcommand{\job}{算法实习生} % for 今日头条
 \newcommand{\email}{mlzhang.wd@foxmail.com}
 \newcommand{\phone}{130-0637-7386}
 \newcommand{\github}{https://github.com/zmlhome}
@@ -51,10 +53,10 @@
 
 \begin{tikzpicture}[remember picture,overlay]
 	\tNode{name}{([shift={(2.7, \namey)}]current page.north west)}{\MyName{\name}};
-	\tNode{job}{([shift={(3.5, \joby)}]current page.north west)}{\MyJob{\job}};
+	\node[textNodeStyle,anchor=west] (job) at ([shift={(1.15, \joby)}]current page.north west) {\MyJob{\job}};
 	\node(photo) at ([shift={(-2.7, \photoy)}]current page.north east)			
 	{\includegraphics[width=2.2cm,height=3.2cm]{\photo}};
-	\node[fit=(photo),draw=headings,rectangle,inner sep=-2pt,shift={(-.02, .01)}] {};
+	\node[fit=(photo),draw=headings,rectangle,inner sep=-2pt,shift={(-.005, .01)}] {};
 	\node(email) at ([shift={(-7.0, \emaily)}]current page.north east) {\MyEmail{\email}};
 	\node(phone) at ([shift={(-7.9, \phoney)}]current page.north east) {\MyPhone{\phone}};
 	\node(github) at ([shift={(-6.75, \githuby)}]current page.north east) {\MyGithub{\github}};
@@ -124,7 +126,8 @@
 	\item 英语水平：CET4 (成绩: \textbf{607}) \hspace*{1cm} CET6 (成绩： \textbf{551})
 	\item 编程语言与环境： Python > C++，Matlab > C；常在 Linux 下开发，编程环境为 vim + tmux + ctags；
 	\item 深度学习框架：了解常用深度学习框架，对 \textbf{PyTorch}，\textbf{Caffe} 以及 TinyDnn 等框架有一定的研究。
-	\item 理论知识：熟悉深度学习常用的网络结构，如 \textbf{ResNet}，\textbf{VGG}等，熟悉目标检测框架 \textbf{Faster-RCNN}；扎实的计算机基础，
+	\item 理论知识：熟悉深度学习常用的网络结构，如 \textbf{ResNet}，\textbf{VGG}等；%熟悉目标检测框架 \textbf{Faster-RCNN}；
+	扎实的计算机基础，
 	对\textbf{操作系统}（多进程，多线程）、常用\textbf{数据结构}有较深的理解。
 	\item 排版系统：熟悉 \LaTeX{} 排版系统，有较强的\textbf{文档撰写能力} （作品：简历与
 	\href{http://www.latexstudio.net/archives/4200}{2015年全国大学生数学建模LaTeX模板 cumcmthesis}）

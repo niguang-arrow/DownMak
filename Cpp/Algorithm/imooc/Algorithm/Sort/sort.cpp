@@ -20,6 +20,20 @@ void selectionSort(T arr[], int n) {
     }
 }
 
+// 用于快排的优化
+template <typename T>
+void __insertionSort(T arr[], int l, int r) {
+    // 内层循环使用 while 循环
+    for (int i = l + 1; i <= r; ++i) {
+        T num = arr[i];
+        int j = i - 1;
+        while (j >= l && num < arr[j]) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = num;
+    }
+}
 
 // 插入排序需要注意的要点是: i 从 1 开始, 使用 num 保存 arr[i] 的值
 // 另外注意 j >= 0; 由于最后会执行 --j 这个步骤, 所以最后要将 num
@@ -35,16 +49,8 @@ void insertionSort(T arr[], int n) {
         //}
         //arr[j + 1] = num;
     //}
-    // 内层循环使用 while 循环
-    for (int i = 1; i < n; ++i) {
-        T num = arr[i];
-        int j = i - 1;
-        while (j >= 0 && num < arr[j]) {
-            arr[j + 1] = arr[j];
-            --j;
-        }
-        arr[j + 1] = num;
-    }
+    // 写法二
+    __insertionSort(arr, 0, n - 1);
 }
 
 
@@ -115,21 +121,18 @@ template <typename T>
 int partition(T arr[], int l, int r) {
     std::swap(arr[l], arr[rand() % (r - l + 1) + l]);
     T v = arr[l]; // 作为基准点
-    // 二路快速排序是, 当当前访问的元素是小于基准点的, 那么继续访问
-    // 下一个元素, 否则由于它大于或等于基准点, 只需要和序列最后一个元素
-    // 进行交换即可, 此时不必移动到下一个元素
-    // 所以, 一方面要使用 i 来记录小于基准点的元素的范围, 还要使用
-    // j 来记录 >= 基准点的元素的范围
-    int i = l+1; // arr[l+1... i) 范围内的元素均小于基准点
-    int j = r; // arr(j...r] 范围的元素 >= v
-    while (i <= r && j >= l + 1 && i <= j) {
-        if (arr[i] < v) {
-            ++i;
-            continue;
-        } else {
-            std::swap(arr[i], arr[j]);
-            --j;
-            continue;
+
+    // 序列被分为: v | arr[l+1...j] < v | arr[j+1...i) > v | arr[i]
+    // 其中 v 是基准点, arr[l+1...j] 范围内的元素小于 v, 而 arr[j+1...i) 范围内
+    // 的元素大于v, i 指向当前访问的元素.
+    // 所以初始化时 j 为 l, 而 i 为 l + 1
+    int j = l;
+    for (int i = l + 1; i <= r; ++i) {
+        // 只需要考虑 arr[i] < v, 那么只要将当前元素与 arr[j+1...i) 中的第一个元素交换
+        // 即可, 然后再将j向后移; 而当 arr[i] > v 时, 只需将 i 移向下一个元素
+        if (arr[i] < v) { 
+            std::swap(arr[j + 1], arr[i]);
+            ++j;
         }
     }
     std::swap(arr[j], arr[l]);
@@ -140,7 +143,7 @@ int partition(T arr[], int l, int r) {
 template <typename T>
 void __quickSort1(T arr[], int l, int r) {
     if (r - l <= 15) {
-        insertionSort(arr, r - l + 1);
+        __insertionSort(arr, l, r);
         return;
     }
     // 首先是进行 partition 操作, 获得基准点最终在排序好序列中的位置
@@ -149,8 +152,8 @@ void __quickSort1(T arr[], int l, int r) {
     __quickSort1(arr, p + 1, r);
 }
 
-// 现在首先完成最简单的二路快排, 注意它对含有大量重复元素的序列
-// 可能会退化为 O(n^2), 这时需要三路快速排序
+// 现在首先完成最简单的快排, 注意它对含有大量重复元素的序列
+// 可能会退化为 O(n^2)
 template <typename T>
 void quickSort1(T arr[], int n) {
     srand(time(NULL));
@@ -172,7 +175,7 @@ int main() {
     //test_complexity<int>(selectionSort);
     //test_complexity<int>(insertionSort);
     //test_complexity<int>(mergeSort);
-    //test_complexity<int>(quickSort1);
+    test_complexity<int>(quickSort1);
 
     delete[] arr;
     delete[] arr2;

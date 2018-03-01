@@ -67,8 +67,8 @@ bool test_sorted(T arr[], int n) {
 
 template <typename T>
 void test_complexity(void (*sort)(T*, int)) {
-    for (int i = 1; i < 4; ++i) {
-        int num = 100 * std::pow(2, i);
+    for (int i = 1; i < 10; ++i) {
+        int num = 10 * std::pow(2, i);
         T *arr = generate_array<T>(num);
         std::clock_t start = std::clock();
         sort(arr, num);
