@@ -1,9 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "FileOps.h"
-#include "SequenceST.h"
-
+#include <queue>
 
 using namespace std;
 
@@ -29,12 +27,33 @@ public:
         root = insert(root, key, value);
     }
 
+    // 非递归的实现
+    void insert2(Key key, Value value) {
+        root = insert2(root, key, value);
+    }
+
     bool contain(Key key) {
         return contain(root, key);
     }
 
     Value* search(Key key) {
         return search(root, key);
+    }
+
+    void preOrder() {
+        preOrder(root);
+    }
+
+    void inOrder() {
+        inOrder(root);
+    }
+
+    void postOrder() {
+        postOrder(root);
+    }
+
+    void layerOrder() {
+        layerOrder(root);
     }
 
 private:
@@ -69,7 +88,7 @@ private:
         return node;
     }
 
-    // insert 的非递归写法
+    // insert 的非递归写法 TODO: 消除 Bug
     Node* insert2(Node *node, Key key, Value value) {
 
         Node *p = node;
@@ -85,7 +104,6 @@ private:
         }
 
         count++;
-        return new Node(key, value);
     }
 
     bool contain(Node *node, Key key) {
@@ -112,69 +130,53 @@ private:
         else
             return search(node->right, key);
     }
+
+    void preOrder(Node *node) {
+        if (node) {
+            cout << node->key << endl;
+            preOrder(node->left);
+            preOrder(node->right);
+        }
+    }
+
+    void inOrder(Node *node) {
+        if (node) {
+            inOrder(node->left);
+            cout << node->key << endl;
+            inOrder(node->right);
+        }
+    }
+
+    void postOrder(Node *node) {
+        if (node) {
+            postOrder(node->left);
+            postOrder(node->right);
+            cout << node->key << endl;
+        }
+    }
+
+
+    void layerOrder(Node *node) {
+        queue<Node*> q;
+        q.push(node);
+        while (!q.empty()) {
+            Node *n = q.front();
+            cout << n->key << endl;
+            q.pop();
+            if (n->left)
+                q.push(n->left);
+            if (n->right)
+                q.push(n->right);
+        }
+    }
 };
 
 
-// 测试二分搜索树与顺序查找表之间的性能
-
 int main() {
-    string filename = "bible.txt";
-    vector<string> words;
-    if (FileOps::readFile(filename, words)) {
-        cout << "There are totally " << words.size() << " words in " << filename << endl;
-        cout << endl;
 
-
-        // 测试 BST
-        time_t startTime = clock();
-
-        // 统计圣经中所有词的词频
-        // 注: 这个词频统计法相对简陋, 没有考虑很多文本处理中的特殊问题
-        // 在这里只做性能测试用
-        BSTree<string, int> bst = BSTree<string, int>();
-        for (vector<string>::iterator iter = words.begin(); iter != words.end(); ++iter) {
-            int* val = bst.search(*iter);
-            if (val)
-                (*val)++;
-            else
-                bst.insert(*iter, 1);
-        }
-        // 输出圣经中 god 这个词出现的频率
-        if (bst.contain("god"))
-            cout << "'god' : " << *bst.search("god") << endl;
-        else
-            cout << "No word 'god' in " << filename << endl;
-
-        time_t endTime = clock();
-
-        cout << "BST , time: " << double(endTime - startTime) / CLOCKS_PER_SEC << " s." << endl;
-        cout << endl;
-
-
-        // 测试顺序查找表 SST
-        startTime = clock();
-
-        // 统计圣经中所有词的词频
-        // 注: 这个词频统计法相对简陋, 没有考虑很多文本处理中的特殊问题
-        // 在这里只做性能测试用
-        SequenceST<string, int> sst = SequenceST<string, int>();
-        for (vector<string>::iterator iter = words.begin(); iter != words.end(); iter++) {
-            int *res = sst.search(*iter);
-            if (res == NULL)
-                sst.insert(*iter, 1);
-            else
-                (*res)++;
-        }
-
-        // 输出圣经中god一词出现的频率
-        if(sst.contain("god"))
-            cout << "'god' : " << *sst.search("god") << endl;
-        else
-            cout << "No word 'god' in " << filename << endl;
-
-        endTime = clock();
-
-        cout << "SST , time: " << double(endTime - startTime) / CLOCKS_PER_SEC << " s." << endl;
-    }
+    BSTree<int, int> bst = BSTree<int, int>();
+    for (int i = 0; i < 10; ++i)
+        bst.insert2(i, i);
+    bst.layerOrder();
     return 0;
 }
