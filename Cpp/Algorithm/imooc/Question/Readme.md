@@ -348,6 +348,7 @@ long fib(int n) {
 }
 
 // 通过加法和减法实现了不需要 c
+// http://blog.csdn.net/icurious/article/details/53142909
 long fib2(int n) {
     if (n <= 1)
         return 1;
@@ -365,5 +366,62 @@ int main() {
     for (int i = 0; i < 20; ++i)
         cout << fib2(i) << " ";
     cout << endl;
+}
+```
+
++ 旋转数组中的最小数字
+
+把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。
+输入一个递增排序的数组的一个旋转，输出旋转数组的最小元素。
+例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。
+
+如果直接遍历的话, 那么为 O(n), 这样没有利用旋转数组的特性: 旋转数组实际由
+两个递增子序列组成, 其中前面的子序列中值大于或等于后面子序列中的值, 并且最小值
+是两个子序列的分界点.
+
+那么就可以采取二分搜索的思路.
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// 采用遍历的思路
+int find_onebyone(const vector<int> &vec) {
+    int min = INT32_MAX;
+    if (!vec.empty()) {
+       for (int i = 1; i != vec.size(); ++i) {
+           if (min > vec[i])
+               min = vec[i];
+       }
+    }
+    return min;
+}
+
+// 采用二分的思路
+int find_part(const vector<int> &vec) {
+    int min = INT32_MAX;
+    //比如 {12, 13, 14, 0, 1, 2, 3, 4}, l 最多索引到 14 的位置, 而
+    //r 最多索引到 0 的位置, 所以在 while 循环进行到最极端的情况, 应该
+    //是 l + 1 == r
+    if (!vec.empty()) {
+        int l = 0, r = vec.size() - 1;
+        while (vec[l] > vec[r]) {
+            if (l + 1 == r)
+                return vec[r];
+            int mid = l + (r - l) / 2;
+            if (vec[mid] >= vec[l])
+                l = mid;
+            else
+                r = mid;
+        }
+    }
+    return min;
+}
+
+int main() {
+    vector<int> vec = {12, 13, 14, 0, 1, 2, 3, 4};
+    cout << find_onebyone(vec) << endl;
+    cout << find_part(vec) << endl;
 }
 ```
