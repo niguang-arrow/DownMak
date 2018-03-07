@@ -379,6 +379,9 @@ int main() {
 两个递增子序列组成, 其中前面的子序列中值大于或等于后面子序列中的值, 并且最小值
 是两个子序列的分界点.
 
+使用左右两个指针, 最终第一个指针将指向前面数组中的最后一个元素, 而第二个指针将指向
+后面子数组中的第一个元素, 也就是它们最终会指向相邻的两个元素.
+
 那么就可以采取二分搜索的思路.
 
 ```cpp
@@ -423,5 +426,246 @@ int main() {
     vector<int> vec = {12, 13, 14, 0, 1, 2, 3, 4};
     cout << find_onebyone(vec) << endl;
     cout << find_part(vec) << endl;
+}
+```
+
++ 替换字符串中的空格
+
+将字符串中的空格替换为 %20
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// length 为字符串的总容量
+void replaceBlank(char str[], int length) {
+    if (str == nullptr || length <= 0)
+        return;
+    
+    // 用于记录 str 的真实长度以及空格数目
+    int true_len = 0;
+    int num_of_space = 0;
+    
+    // 先将字符串遍历一遍求出空格数目以及统计字符串的真实长度
+    char *p = str;
+    while (*p) {
+        ++true_len;
+        if (*p == ' ')
+            ++num_of_space;
+        ++p;
+    }
+
+    // 如果空格数为 0, 那么就可以不用考虑了
+    if (num_of_space) {
+        // 否则, 就需要扩大数组的容量, 为 %20 腾出空间
+        // 设置指针 p2(也可以用索引), 经 str 中的字符从后
+        // 向前依次拷贝到 p2 所指向的位置.
+        int newlen = true_len + 2 * num_of_space;
+        char *p2 = str + newlen;
+        while (p - str >= 0) {
+            if (*p == ' ') {
+                *(p2--) = '0';
+                *(p2--) = '2';
+                *(p2--) = '%';
+                --p;
+            } else {
+                *(p2--) = *(p--);
+            }
+        }
+    }
+}
+
+int main() {
+    char str[30] = "We are happy";
+    replaceBlank(str, 30);
+    cout << str << endl;
+}
+```
+
++ LeetCode 92. Reverse Linked List II
+
+我的解法如下:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+struct ListNode {
+    int val;
+    ListNode *next;
+    ListNode(int x) : val(x), next(nullptr) {}
+};
+
+class Solution {
+public:
+    ListNode* reverseBetween(ListNode *head, int m, int n) {
+
+        if (head == nullptr)
+            return nullptr;
+
+        ListNode* dummy = new ListNode(0);
+        dummy->next = head;
+
+        ListNode *pre = dummy;
+        ListNode *cur = head;
+        int i = 1;
+        while (cur->next != nullptr && i != m) {
+            pre = pre->next;
+            cur = cur->next;
+            ++i;
+        }
+
+        ListNode *prePart = pre;
+        ListNode *nextPart = pre->next;
+
+        while (cur != nullptr && (i != n + 1)) {
+            ListNode *next = cur->next;
+            cur->next = pre;
+            pre = cur;
+            cur = next;
+            ++i;
+        }
+        nextPart->next = cur;
+        prePart->next = pre;
+        head = dummy->next;
+
+        delete dummy;
+        return head;
+    }
+};
+
+// 另外, 为了更好的对链表进行测试, 写了如下的函数:
+ListNode* createLinkedList(int arr[], int n) {
+    if (n <= 0)
+        return nullptr;
+
+    ListNode *head = new ListNode(arr[0]);
+
+    ListNode *curNode = head;
+
+    for (int i = 1; i < n; ++i) {
+        curNode->next = new ListNode(arr[i]);
+        curNode = curNode->next;
+    }
+
+    return head;
+}
+
+void printLinkedList(ListNode *head) {
+    ListNode *curNode = head;
+    while (curNode) {
+        cout << curNode->val << " -> ";
+        curNode = curNode->next;
+    }
+    cout << "NULL " << endl;
+    return;
+}
+
+void deleteLinkedList(ListNode *head) {
+    ListNode *curNode = head;
+    while (curNode) {
+        ListNode *delNode = curNode;
+        curNode = curNode->next;
+        delete delNode;
+    }
+}
+
+int main() {
+    int arr[] = {1, 2};
+    int n = sizeof(arr) / sizeof(int);
+
+    ListNode *head = createLinkedList(arr, n);
+    printLinkedList(head);
+
+    ListNode *head2 = Solution().reverseBetween(head, 1, 2);
+    printLinkedList(head2);
+
+    deleteLinkedList(head2);
+    return 0;
+}
+```
+
++ 删除链表中的节点
+
+<剑指 Offer> 中删除链表中的某节点, 他实现的时候, 函数声明为:
+
+```cpp
+void RemoveNode(ListNode** pHead, int value);
+```
+
+这里一定要注意使用的是 `ListNode**`, 即指针的指针, 因为只有这样才能对
+`head` 指针进行修改; 如果函数的返回类型为 `ListNode*` 而不是 void 的话,
+那么此时就可以在函数中对 head 进行修改, 并且将局部变量 head 返回并修改
+函数外部的 head. 下面介绍一个我写的 bug, 终于发现为何在返回类型为 void 时
+要使用指针的指针.
+
+
++ LeetCode 120 Triangle (动态规划)
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Solution {
+private:
+    // memo 用于保存中间结果, 比如第 L 层第 i 个节点的 minimum path sum F(L, i),
+    // 防止它被多次计算, memo 默认初始化为 0, 所以当 memo 中的值不为零的时候,
+    // 说明它前面已经计算过, 直接返回即可.
+    // memo 的大小和 triangle 的大小一样大, 表示每个节点的 minimum path sum.
+    vector<vector<int>> memo;
+
+    // minPathSum 计算 triangle 中第 L 层第 i 个节点的 minimum path sum
+    // 而 memo 保存该节点的 minimum path sum, 所以下面的判断中, 如果
+    // memo 中相应节点的值不为零, 那么直接返回 minimum path sum
+    int minPathSum(vector<vector<int>>& grid, int nlayer, int nth) {
+        // 一直计算到最后一层, 超出最后一层就直接返回 0
+        if (nlayer >= grid.size() || nth > nlayer)
+            return 0;
+
+        if (memo[nlayer][nth] != 0)
+            return memo[nlayer][nth];
+        
+        // 开始 from top to bottom, 对于第 i 层的所有节点, 我们要保存它们的
+        // minimum path sum, 用于 i - 1 层时候的比较, 所以要用一个 vector 来
+        // 保存这些结果, 由于第 i 层有 i + 1 个节点, 所以 res 大小为 i+1, 并初始化
+        // 为 INT32_MAX, 以便之后 min.
+        for (int i = nlayer; i < grid.size(); ++i) {
+            vector<int> res(i + 1, INT32_MAX);
+            // 对于第 i 层第 j 个节点(注意 j 的范围), 我们利用状态方程求出结果
+            // 并保存值 res[j] 中, 由于 minPathSum 求得是第 nlayer 层第 nth 个节点
+            // 的minimum path sum, 而 res 保存的是第 nlayer 层中所有节点的 mps,
+            // 因此最后返回 res[nth]. 另外注意要将状态 res[j] 保存在 memo 中, 以便
+            // 减少运算量.
+            for (int j = 0; j <= i; ++j) {
+                res[j] = grid[i][j] + min(minPathSum(grid, i + 1, j), minPathSum(grid, i + 1, j + 1));
+                memo[i][j] = res[j];
+            }
+            //// 下面的注释代码是用于调试的, 可以输出递归调用的中间结果
+            //cout << "layer " << i << ": ";
+            //for (int i = 0; i < res.size(); ++i) {
+                //cout << res[i] << " ";
+            //}
+            //cout << endl;
+            return res[nth];
+        }
+    }
+
+public:
+    int minimumTotal(vector<vector<int>> &triangle) {
+        memo.resize(triangle.size());
+        for (int i = 0; i < triangle.size(); ++i)
+            memo[i].resize(triangle[i].size());
+        int res = minPathSum(triangle, 0, 0);
+        return res;
+    }
+};
+
+
+int main() {
+    vector<vector<int>> arr = {{2}, {3, 4}, {6, 5, 7}, {4, 1, 8, 3}};
+    int res = Solution().minimumTotal(arr);
+    cout << res << endl;
+    return 0;
 }
 ```

@@ -6,7 +6,7 @@ NAME = main
 SRC = $(NAME).cpp
 TAR = $(NAME).out
 
-$(TAR) : $(SRC)
+$(TAR) : $(SRC) function.h
 	$(CC) $(CFLAGS) -o $@ $< $(CLINK)
 
 .PHONY : clean run
