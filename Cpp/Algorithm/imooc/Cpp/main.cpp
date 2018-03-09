@@ -1,13 +1,15 @@
 #include <iostream>
-
-
 using namespace std;
+void change();
 
+int global = 0;
 
 int main() {
-    volatile const int a = 10;
+
+    cout << global << endl;
     
-    int *c = (int*) &a;
-    *c = 5;
-    cout << a << endl;
+    change();
+
+    cout << global << endl;
+
 }

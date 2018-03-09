@@ -4,9 +4,162 @@
 
 [TOC]
 
+[链表](#链表)
+
 [最大堆](#最大堆)
 
 [栈](#栈)
+
+[循环队列](#循环队列)
+
+
+
+## 链表
+
+在下面链表的实现中, 要往任意位置插入节点, 需要先使用 find 找到目标位置前一个节点. 注意 head 是虚拟节点.
+
+链表的翻转主要是需要 `pre`, `cur` 以及 `post 三个指针.`
+
+```cpp
+#include <iostream>
+#include <initializer_list>
+
+using namespace std;
+
+
+template <typename T>
+class List {
+public:
+    List() : head(new Node(0)), count(0) {}
+    List(const initializer_list<T> &ls) : head(new Node(0)), count(0) {
+        for (const auto &d : ls) {
+            this->insert(d);
+        }
+    }
+    
+    ~List() { clear(); }
+    void insert(const T &d); // 从头部插入一个新的节点
+    void insert(const T &pos, const T &d); // 向指定位置插入节点
+    void erase(const T &d);   // 删除指定数据的节点
+    void update(const T &pos, const T &d); // 更新指定的数据
+    void reverse();  // 反转链表
+    void print(); // 打印链表
+    int size() const {
+        return count;
+    }
+    bool isempty() const {
+        return count == 0;
+    }
+
+private:
+    struct Node {
+        T data;
+        Node *next;
+
+        Node(const T &d) : data(d), next(nullptr) {}
+    };
+
+    Node* head;
+    int count;
+
+    // 用于删除链表
+    void clear() {
+        Node *p = head;
+        while (p) {
+            Node *q = p->next;
+            delete p;
+            p = q;
+        }
+    }
+
+    // 寻找数据为 d 的节点的上一个节点的位置
+    // 要这样想, 第一个数据节点的上一个节点是 head, 所以初始化 p 为 head
+    // 最后就能返回 p 了.
+    Node* find(const T &d) {
+        Node *p = head;
+        while (p) {
+            if (p->next->data == d)
+                break;
+            p = p->next;
+        }
+        return p;
+    }
+};
+
+template <typename T>
+void List<T>::print() {
+    Node *p = head;
+    while (p->next) {
+        cout << p->next->data << " ";
+        p = p->next;
+    }
+    cout << endl;
+}
+
+template <typename T>
+void List<T>::insert(const T &d) {
+    Node *p = new Node(d);
+    p->next = head->next;
+    head->next = p;
+    count++;
+}
+
+// 在 pos 之前的位置插入 d
+template <typename T>
+void List<T>::insert(const T &pos, const T &d) {
+    Node *pre = find(pos);
+    Node *p = new Node(d);
+    p->next = pre->next;
+    pre->next = p;
+}
+
+
+template <typename T>
+void List<T>::erase(const T &d) {
+    Node *pre = find(d);
+    Node *q = pre->next;
+    pre->next = pre->next->next;
+    delete q;
+}
+
+template <typename T>
+void List<T>::update(const T &pos, const T &d) {
+    Node *pre = find(pos);
+    pre->next->data = d;
+}
+
+
+template <typename T>
+void List<T>::reverse() {
+    if (!head->next || !head->next->next)
+        return;
+    Node *p = head->next;
+    Node *q = head->next->next;
+    Node *m = head->next->next->next;
+    p->next = nullptr;
+    while (m) {
+        q->next = p;
+        p = q;
+        q = m;
+        m = m->next;
+    }
+    q->next = p;
+    head->next = q;
+}
+
+
+int main() {
+    List<int> ls({ 2});
+    cout << ls.size() << endl;
+    ls.print();
+    ls.reverse();
+    ls.print();
+
+    return 0;
+}
+```
+
+
 
 
 
@@ -199,3 +352,104 @@ int main() {
 }
 ```
 
+
+
+## 循环队列
+
+队列是一种先进先出的结构, 如果使用数组来实现队列的话, 需要实现成循环队列, 使得元素能不断的入队和出队.
+
+下面的队列中, 使用 `head` (本来准备使用 `front` 来定义队首元素的索引, 但 stl 中队列有 front() 操作) 表示队首, 使用 `rear` 表示队尾.
+
+需要注意的是 `isEmpty`, `isFull` 以及 `size()` 的求法, 还有, 虽然初始时可以设置容量为 N, 但实际上最多可以插入 N - 1 个值. 这是因为 `isFull` 的判断条件.
+
+初始的时候, `head = rear = 0`, 但是每插入一个元素, rear 向后移动, 那么要是一直插入元素而不做任何删除元素的操作, 那么当 rear 到队尾的时候就是 N - 1 的位置. 此时 0 ~ N - 2 的位置处插入了总共 N - 1 个元素. 此时满足 isFull 的判断, 即 `(rear + 1) % N == head`. 那为什么不修改 isFull 的代码, 比如 `(rear) % N == head`, 以使得可以插入 N 个元素呢?
+
+因为此时和 isEmpty 的判读有重合, 因为 isEmpty 的代码是 `rear == head`. 
+
+还有需要想一下的是 size 的求法: `(N + rear - front) % N`, 这是循环队列的大小.
+
+代码参考:
+
+http://blog.csdn.net/myloveqingmu/article/details/57084573
+
+https://my.oschina.net/zshuangyan/blog/134336
+
+```cpp
+#include <iostream>
+#include <cassert>
+
+using namespace std;
+
+// 使用数组实现循环队列
+// 最需要注意的地方:
+// 1. 是如何判断当前队列是否为空,已满以及队列的大小
+// 2. 而是下面队列的容量虽然设置为 N, 但实际上最多存储 N - 1 个数.
+// 因为 isFull 的代码是 (rear + 1) % N == head; 那么当 head = 0,
+// rear = N - 1 时, 此时就满足了 isFull 的条件, 但是 rear 这个位置
+// 是没有插入元素的... 这说明要空出一个位置了.
+template <typename T>
+class Queue {
+private:
+    T *data;
+    int capacity;
+    int head;
+    int rear;
+
+public:
+    Queue(int cap = 10) : data(new T[cap]), capacity(cap), head(0), rear(0) {}
+    ~Queue() { if (data) delete[] data; }
+    bool isEmpty() const { return head == rear; }
+    bool isFull() const { return (((rear + 1) % capacity) == head); }
+    int size() const { return ((rear - head + capacity) % capacity); }
+
+    void push(T item) {
+        assert(!isFull());
+        data[rear] = item;
+        rear = (rear + 1) % capacity;
+    }
+
+    T pop() {
+        assert(!isEmpty());
+        T d = data[head];
+        head = (head + 1) % capacity;
+        return d;
+    }
+
+    T front() const {
+        assert(!isEmpty());
+        return data[head];
+    }
+};
+
+
+int main() {
+    Queue<int> queue = Queue<int>(10);
+    for (int i = 0; i < 10; ++i) {
+        queue.push(i);
+        if (queue.isFull()) {
+            cout << queue.size() << endl;
+            break;
+        }
+    }
+
+    while (!queue.isEmpty()) {
+        cout << queue.front() << " ";
+        queue.pop();
+    }
+    cout << endl;
+
+}
+
+// 注意输出是 0, 1, 2, 3, 4, 5, 6, 7, 8, 而不是 0 ~ 9
+```
+
+
+
+## 二分搜索树
+
+二分搜索树是一棵二叉树, 它经常被用来实现一种名为查找表的结构(字典), 和堆不同的是, 它不是一棵完全二叉树, 所以需要使用指针来实现. 除此之外, 它还有以下性质:
+
++ 它的任意节点的键值总是大于它的左孩子, 并且小于它的右孩子;
++ 以左右孩子为根节点的子树仍然是一棵二分搜索树.
+
+可见在定义中就天然的带有递归结构, 这给我们写出相应的代码提供了方便. 在完成二分搜索树基础的操作, 比如插入, 搜索, 删除等, 还需要实现二分搜索树的遍历: 深度优先(前向遍历, 中向遍历以及后向遍历)与广度优先.
