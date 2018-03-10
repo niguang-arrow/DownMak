@@ -175,6 +175,12 @@ in change() : 100
 
 #### new 和 malloc 的区别
 
+[C/C++内存管理详解](https://chenqx.github.io/2014/09/25/Cpp-Memory-Management/)
+
+`malloc`与`free`是C++/C语言的标准库函数，`new/delete`是C++的运算符。它们都可用于申请动态内存和释放内存。
+对于非内部数据类型的对象而言，光用`maloc/free`无法满足动态对象的要求。对象在创建的同时要自动执行构造函数，对象在消亡之前要自动执行析构函数。由于`malloc/free`是库函数而不是运算符，不在编译器控制权限之内，不能够把执行构造函数和析构函数的任务强加于`malloc/free`。
+因此C++语言需要一个能完成动态内存分配和初始化工作的运算符`new`，以及一个能完成清理与释放内存工作的运算符`delet`e。注意`new/delete`不是库函数。
+
 #### C++ 中堆和栈的区别
 
 [C/C++内存管理详解](https://chenqx.github.io/2014/09/25/Cpp-Memory-Management/)
