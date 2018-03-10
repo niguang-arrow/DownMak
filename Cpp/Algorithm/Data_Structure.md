@@ -14,6 +14,12 @@
 
 
 
+## 零散的要点
+
++   来自 《数据结构与算法-面向对象的 C++ 设计模式》 第 6 章栈相关的部分: 要实现一种数据结构, 首先要选择一种基本数据结构. 这种选择通常是在以数组和指针为基本存储结构之间作出的.
+
+
+
 ## 链表
 
 在下面链表的实现中, 要往任意位置插入节点, 需要先使用 find 找到目标位置前一个节点. 注意 head 是虚拟节点.
@@ -295,9 +301,7 @@ int main() {
 
 #include <iostream>
 #include <cassert>
-
 using namespace std;
-
 
 template <typename Item>
 class Stack {
@@ -308,25 +312,25 @@ private:
 public:
     // 注意, 为了让 pop 等操作中直接使用 count-- 等简洁的写法, 这里设置 count 的初值
     // 为 -1, 所以 stack 的实际大小应该是 count + 1; count 真实的意义应该是元素的索引,
-    Stack(int capa) : data(new Item[capa]), count(-1), capacity(capa) {}
+    Stack(int capa) : data(new Item[capa]), count(0), capacity(capa) {}
     ~Stack() { delete[] data; }
 
-    int size() const { return count + 1; }
-    bool isEmpty() const { return count == -1; }
+    int size() const { return count; }
+    bool isEmpty() const { return count == 0; }
 
     void push(Item item) {
-        assert( capacity >= count + 2 );
-        data[++count] = item;
+        assert( capacity >= count + 1 );
+        data[count++] = item;
     }
 
     void pop() {
-        assert(count >= 0);
+        assert(count > 0);
         count--;
     }
 
     Item top() const {
-        assert(count >= 0);
-        return data[count];
+        assert(count > 0);
+        return data[count - 1];
     }
 
     void print() const {

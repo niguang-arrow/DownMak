@@ -6,8 +6,8 @@ NAME = main
 SRC = $(NAME).cpp
 TAR = $(NAME).out
 
-$(TAR) : $(SRC) a.cpp
-	$(CC) $(CFLAGS) -o $@ $^ $(CLINK)
+$(TAR) : $(SRC)
+	$(CC) $(CFLAGS) -o $@ $< $(CLINK)
 
 .PHONY : clean run
 
