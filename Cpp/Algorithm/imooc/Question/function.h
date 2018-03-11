@@ -5,8 +5,147 @@
 #include <stack>
 #include <random>
 #include <ctime>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <initializer_list>
 using namespace std;
 
+// 二分搜索树
+template <typename T>
+struct BinaryTreeNode {
+    T val;
+    BinaryTreeNode *left;
+    BinaryTreeNode *right;
+    BinaryTreeNode(T v) : val(v), left(nullptr), right(nullptr) {}
+};
+
+template <typename T>
+class BSTree {
+private:
+    BinaryTreeNode<T> *root;
+    int count;
+
+    BinaryTreeNode<T>* insert(BinaryTreeNode<T> *node, T val) {
+        if (node == nullptr) {
+            count++;
+            return new BinaryTreeNode<T>(val);
+        }
+
+        if (val == node->val)
+            node->val = val;
+        else if (val < node->val)
+            node->left = insert(node->left, val);
+        else
+            node->right = insert(node->right, val);
+
+        return node;
+    }
+
+    void preOrder(BinaryTreeNode<T> *node) const {
+        if (node) {
+            cout << node->val << " ";
+            preOrder(node->left);
+            preOrder(node->right);
+        }
+    }
+
+    void inOrder(BinaryTreeNode<T> *node ) const {
+        if (node) {
+            inOrder(node->left);
+            cout << node->val << " ";
+            inOrder(node->right);
+        }
+    }
+
+    void postOrder(BinaryTreeNode<T> *node ) const {
+        if (node) {
+            postOrder(node->left);
+            postOrder(node->right);
+            cout << node->val << " ";
+        }
+    }
+
+    void clear(BinaryTreeNode<T> *node) {
+        if (node) {
+            clear(node->left);
+            clear(node->right);
+            delete node;
+        }
+    }
+
+    void reverse(BinaryTreeNode<T> *node) {
+        if (!node || (!node->left && !node->right))
+            return;
+        BinaryTreeNode<T> *temp = node->left;
+        node->left = node->right;
+        node->right = temp;
+        reverse(node->left);
+        reverse(node->right);
+    }
+
+public:
+    BSTree() : root(nullptr), count(0) {}
+    BSTree(initializer_list<T> ls) : root(nullptr), count(0) {
+        for (const auto &d : ls)
+            insert(d);
+    }
+    ~BSTree() {
+        clear(root);
+    }
+
+    int size() const {
+        return count;
+    }
+
+    bool empty() const {
+        return count == 0;
+    }
+    void insert(T val) {
+        root = insert(root, val);
+    }
+
+    void preOrder() const {
+        preOrder(root);
+        cout << endl;
+    }
+     
+    // 广度优先遍历
+    void BreadthFirst() {
+        queue<BinaryTreeNode<T>*> que;
+        if (root) {
+            que.push(root);
+            while (!que.empty()) {
+                BinaryTreeNode<T> *node = que.front();
+                que.pop();
+                if (node) {
+                    cout << node->val << " ";
+                    que.push(node->left);
+                    que.push(node->right);
+                }
+            }
+            cout << endl;
+        }
+    }
+
+
+    void inOrder() const {
+        inOrder(root);
+        cout << endl;
+    }
+
+    void postOrder() const {
+        postOrder(root);
+        cout << endl;
+    }
+
+    void reverse() {
+        reverse(root);
+    }
+};
+
+
+// 链表相关
 struct ListNode {
     int val;
     ListNode *next;
