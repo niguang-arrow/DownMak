@@ -23,9 +23,6 @@ struct BinaryTreeNode {
 template <typename T>
 class BSTree {
 private:
-    BinaryTreeNode<T> *root;
-    int count;
-
     BinaryTreeNode<T>* insert(BinaryTreeNode<T> *node, T val) {
         if (node == nullptr) {
             count++;
@@ -85,6 +82,9 @@ private:
     }
 
 public:
+    // 将根节点放在 public, 为了以后写代码方便
+    BinaryTreeNode<T> *root;
+    int count;
     BSTree() : root(nullptr), count(0) {}
     BSTree(initializer_list<T> ls) : root(nullptr), count(0) {
         for (const auto &d : ls)

@@ -56,6 +56,43 @@ bool isBSTree(vector<int> &post, int start, int end) {
     return isBSTree(post, start, i) && isBSTree(post, i + 1, end - 1);
 }
 
+void findPath(BinaryTreeNode<int> *node, vector<int> &path, int &sum, int target) {
+    if (node) {
+        sum += node->val;
+        if (sum == target) {
+            path.push_back(node->val);
+        } else {
+            findPath(node->left, path, sum, target);
+            findPath(node->right, path, sum, target);
+        }
+    } else {
+        sum -= path.back();
+        path.pop_back();
+    }
+}
+
+void findPathToTarget(BSTree<int> &tree, int target) {
+    if (tree.empty())
+        return;
+
+    vector<int> path;
+    BinaryTreeNode<int> *node = tree.root;
+    int sum = 0;
+    findPath(node, path, sum, target);
+
+    cout << sum << endl;
+    cout << path[0] << endl;
+    //for (const auto &d : path)
+        //cout << d << " ";
+    //cout << endl;
+} 
+
+
+struct ComplexListNode {
+    int val;
+    ComplexListNode *next;
+    ComplexListNode *pSibling;
+};
 
 int main() {
 
@@ -72,5 +109,7 @@ int main() {
     
     vector<int> post = {0, 1, 3, 2, 6, 5, 4};
     cout << isBSTree(post, 0, post.size() - 1) << endl;
+
+    findPathToTarget(tree, 7);
     return 0;
 } 

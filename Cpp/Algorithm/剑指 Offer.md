@@ -198,11 +198,66 @@ int main() {
     tree.BreadthFirst();
     return 0;
 } //Output: 4 2 5 1 3 6 0
-
 ```
 
 
 
-### 面试题 23: 二叉搜索树的后序遍历
+### 面试题 24: 二叉搜索树的后序遍历
 
 题目: 输入一个整数数组, 判断该数组是不是某二叉搜索树的后序遍历的结果. 如果是则返回 true, 否则返回 false. 假设输入的数组中任意两个数字都互不相同.
+
+思路是注意二叉搜索树本身的递归结构, 后序遍历的最后一个节点是根节点, 然后它前面的节点是它的左右子树; 接下来要在它前面的节点中将左右子树分开, 只需要找到第一个小于它的节点, 就是左右子树的分界点. 然后再对左右子树递归操作.
+
+```cpp
+bool isBSTree(vector<int> &post, int start, int end) {
+  	// 如果一个子节点都没有, 那么返回 true
+    if (start > end)
+        return true;
+  	// 最后一个节点是根节点
+    int root = post[end];
+  	// 判断根节点前面的第一个小于它的节点
+    int i = end - 1;
+    while (i >= start) {
+        if (post[i] < root)
+            break;
+        i--;
+    }
+	
+  	// 找到第一个小于根节点的左右子树的分界点后, 还需要判断分界点
+  	// 左边的节点是否都小于 root, 并且右边的节点是否都大于 root
+    for (int k = end - 1; k > i; k--) {
+        if (post[k] < root)
+            return false;
+    }
+
+    for (int k = i; k >= start; k--)
+        if (post[k] > root)
+            return false;
+	// 然后得保证左右子树同时满足条件.
+    return isBSTree(post, start, i) && isBSTree(post, i + 1, end - 1);
+}
+
+int main() {
+
+    BSTree<int> tree = {4, 5, 2, 3, 1, 0, 6};
+    tree.postOrder();
+    
+    vector<int> post = {0, 1, 3, 2, 6, 5, 4};
+    cout << isBSTree(post, 0, post.size() - 1) << endl;
+    return 0;
+} 
+```
+
+
+
+### 面试题 25: 二叉树中和为某一值的路径 
+
+题目: 输入一棵二叉树和一个整数, 打印出二叉树中节点值的和为输入整数的所有路径. 从树的根节点开始往下一直到叶节点所经过的节点形成一条路径.
+
+代码写在 main2.cpp 中, 还需要调试.
+
+
+
+### 面试题 26: 复杂链表的复制
+
+题目: 请实现函数 `ComplexListNode* Clone(ComplexListNode *pHead)`, 复制一个复杂链表. 在复杂链表中, 每个节点除了有一个 `next` 指针指向下一个节点外, 还有一个 `pSibling` 指向链表中的任意节点或者 NULL.
