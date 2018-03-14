@@ -4,11 +4,11 @@
 
 [TOC]
 
-## 283. Move Zeros
+## 数组
 
+### 283. Move Zeros
 
-
-##26. Remove Duplicates from Sorted Array
+### 26. Remove Duplicates from Sorted Array
 
 https://leetcode.com/problems/remove-duplicates-from-sorted-array/description/
 
@@ -44,9 +44,7 @@ public:
 };
 ```
 
-
-
-## 80. Remove Duplicates from Sorted Array II
+### 80. Remove Duplicates from Sorted Array II
 
 https://leetcode.com/problems/remove-duplicates-from-sorted-array-ii/description/
 
@@ -72,3 +70,126 @@ public:
     }
 };
 ```
+### 33. Search in Rotated Sorted Array
+
+https://leetcode.com/problems/search-in-rotated-sorted-array/description/
+
+将一个排序数组进行旋转, 然后在其中搜索某个数. 比如 `[0, 1, 2, 3, 4, 5]` 旋转后为 `[3, 4, 5, 0, 1, 2]`, 然后在旋转后的数组中搜索.
+
+
+
+## 二叉树
+
+### 104. Maximum Depth of Binary Tree
+
+https://leetcode.com/problems/maximum-depth-of-binary-tree/
+
+Given a binary tree, find its maximum depth.
+
+The maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.
+
+For example:
+Given binary tree `[3,9,20,null,null,15,7]`,
+
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+return its depth = 3.
+
+只要能利用二叉树天然的递归性质, 这道题便十分容易.
+
+解答:
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    int maxDepth(TreeNode* root) {
+        if (!root)
+            return 0; 
+        return max(maxDepth(root->left), maxDepth(root->right)) + 1;
+    }
+};
+
+// 还有答案一行代码解决问题;
+// return root == nullptr ? 0 : max(maxDepth(root->left), maxDepth(root->right)) + 1;
+```
+
+
+
+### 111. Minimum Depth of Binary Tree
+
+https://leetcode.com/problems/minimum-depth-of-binary-tree/description/
+
+上一题的镜像问题, 现在求最小的深度.
+
+思路是注意下面的情况, 比如:
+
+```bash
+  2
+ / \
+3  NULL
+```
+
+这个时候, 只有左子树而没有右子树的时候, 比较最小值不能是使右子树最小, 而应该返回左子树的大小, 因此有下面的判断.
+
+```cpp
+class Solution {
+public:
+    int minDepth(TreeNode *root) {
+        if(!root) return 0;
+        if(!root->left) return 1 + minDepth(root->right);
+        if(!root->right) return 1 + minDepth(root->left);
+        return 1+min(minDepth(root->left),minDepth(root->right));
+    }
+};
+```
+
+
+
+### 226. Invert Binary Tree
+
+https://leetcode.com/problems/invert-binary-tree/description/
+
+翻转一棵二叉树, 或者说求二叉树的镜像. 原来做过, 思路是将非叶子节点的左右孩子进行交换.
+
+代码如下:
+
+```cpp
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    TreeNode* invertTree(TreeNode* root) {
+        if (!root)
+            return nullptr;
+       
+        root->left = invertTree(root->left);
+        root->right = invertTree(root->right);
+        swap(root->left, root->right);
+        return root;
+
+    }
+};
+```
+

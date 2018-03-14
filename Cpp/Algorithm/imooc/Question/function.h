@@ -68,6 +68,7 @@ private:
             clear(node->left);
             clear(node->right);
             delete node;
+            count--;
         }
     }
 
