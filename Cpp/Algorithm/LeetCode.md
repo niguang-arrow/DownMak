@@ -1,0 +1,74 @@
+# LeetCode
+
+2018 年 3 月 13 日
+
+[TOC]
+
+## 283. Move Zeros
+
+
+
+##26. Remove Duplicates from Sorted Array
+
+https://leetcode.com/problems/remove-duplicates-from-sorted-array/description/
+
+将排序数组中的重复数字给去除, 并返回新数组的长度. 注意只能原地修改数组, 使用 O(1) 的额外空间.
+
+思路: 其实和 283. Move Zeros 的思路一致, 要使用两个下标, 一个下标 i 用于遍历数组, 另一个下标 k 用于记录不重复数组的范围, 比如下面的代码中, 我令 `arr[0....k]` 范围内的元素是不重复的. 这样的话, 访问到当前元素 `arr[i]` 时, 就得和 `arr[k]` 进行比较, 如果等于 `arr[k]` 的话, 说明是重复的, 因此只需遍历下一个元素; 而如果当前元素与 `arr[k]` 不相等, 那么就使 `arr[k+1] = arr[i]`, 并且 k 要移动到下一位.
+
+```cpp
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+            if (nums.empty())
+                return 0;
+
+            int k = 0;
+            // nums[0, k] 范围内的数应是没有重复的
+            for (int i = 1; i < nums.size(); ++i) {
+                if (nums[i] != nums[k]) {
+                  	// 有的答案没有下面这个 if else 条件判断, 直接使用
+                  	// nums[++k] = nums[i]; 我是说, 如果当前访问的元素
+                  	// 就是 arr[k] 的下一位, 并且和 arr[k] 不相等, 那么
+                  	// 直接将 k 移向下一位即可.
+                    if (i != (k + 1))
+                        nums[++k] = nums[i];
+                    else
+                        ++k;
+                }
+            }
+      		// nums.resize(k + 1) 实际上不需要
+            nums.resize(k + 1);
+            return k + 1;
+    }
+};
+```
+
+
+
+## 80. Remove Duplicates from Sorted Array II
+
+https://leetcode.com/problems/remove-duplicates-from-sorted-array-ii/description/
+
+承接上面的 26 题, 但是这次允许数组中重复数字最多出现两次. 比如 `nums = {1, 1, 1, 2, 2, 3}` 时, 结果为 5, `{1, 1, 2, 2, 3}`. 首
+
+首先思路是, 当访问 `nums[i]` 时, 它要和 `nums[k - 1]` 进行比较, 其中 `nums[0....k]` 保存着满足条件的元素. 这样的话, 代码能允许重复数字最多出现两次.
+
+```cpp
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+            if (nums.size() <= 2)
+                return nums.size();
+
+            int k = 1;
+            for (int i = 2; i < nums.size(); ++i) {
+                if (nums[i] != nums[k - 1]) {
+                    nums[++k] = nums[i];
+                }
+            }
+            return k + 1;
+
+    }
+};
+```

@@ -520,9 +520,170 @@ int main() {
 
 ### 面试题 30: 最小的 k 个数
 
+题目: 输入 n 个整数, 找出其中最小的 k 个数. 例如输入 4, 5, 1, 6, 2, 7, 3, 8 这 8 个数字, 这最小的 4 个数字是 1, 2, 3, 4.
+
+书上给出了两种思路, 首先是联想到上一道题中使用的 Parition 操作, 它的时间复杂度为 O(n), 只要每次把元素放在正确的位置, 即第 k 个位置, 那么该元素前面的所有元素都小于或等于该元素, 此时就找到了最小的 k 个数.
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+// 修改了上一道题的 Parition, 使参数为 vector.
+int Partition(vector<int> &numbers, int start, int end) {
+    if (numbers.empty() || start >= end || end >= numbers.size())
+        return -1;
+
+    int v = numbers[start];
+    // 其中 arr[start+1...lt] 保存小于 v 的元素
+    // arr[lt+1, gt) 保存等于 v 的元素
+    // arr[gt, end] 保存大于 v 的元素
+    // i 指向当前访问的元素
+    int lt = start, gt = end + 1, i = start + 1;
+    while (i < gt) {
+        if (numbers[i] == v) { // 当当前访问的元素等于基准, 那么就直接访问下一个元素
+            ++i;
+        } // 如果小于基准, 那么就将其插入到 arr[start+1, lt] 的后面, 因此 lt 要加1
+        else if (numbers[i] < v) {
+            swap(numbers[i], numbers[++lt]);
+            ++i;
+        }
+        else { // 如果大于基准, 便插入到 arr[gt, end] 的前面, 但是此时可以不用增加i,
+          		// 因为交换后的位于 i 处的位置的元素还没有被判断.
+            swap(numbers[i], numbers[--gt]);
+        }
+    }
+  	// 最后只要将基准和 lt处的元素交换.
+    swap(numbers[start], numbers[lt]);
+    return lt;
+}
+
+// 使用 Partition 操作求得前 k 个最小的元素, 时间复杂度为 O(n)
+void kMinNumberWithPartition(vector<int> &array, int k) {
+    if (array.empty() || array.size() < k || k <= 0)
+        return;
+
+    int start = 0;
+    int end = array.size() - 1;
+  	// 先进行一次 partition, 如果 index 不刚好等于 k 的话, 修改
+  	// start 或 end, 继续执行 partition.
+    int index = Partition(array, start, end);
+    while (index != k) {
+        if (index > k) {
+            end = index - 1;
+            index = Partition(array, start, end);
+        }
+        else {
+            start = index + 1;
+            index = Partition(array, start, end);
+        }
+    }
+
+    for (int i = 0; i < k; ++i)
+        cout << array[i] << " ";
+    cout << endl;
+}
+
+int main() {  
+    vector<int> array = {1, 2, 3, 2, 2, 2, 2, 5, 6};
+    kMinNumberWithPartition(array, 6);
+    return 0;
+}  // Output: 1, 2, 2, 2, 2, 2
+```
+
+解法二是使用一个最大堆, 当堆中的元素小于 k 个时, 只要将新的元素 push 进堆中即可. 但当堆中的元素已经有 k 的话, 对于当前访问的元素, 要和堆中的最大元素进行比较, 如果比堆中的最大元素还要小的话, 那么就需要把堆中的最大元素给 pop 出, 然后将该元素 push 进这个堆中. 这个算法的时间复杂度就是 O(nlog(k)).
+
+C++ 中要使用最大堆可以利用优先队列来实现, 定义在 `<queue>` 中.(书中使用的是红黑树实现的, multiset)
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <queue>
+using namespace std;
+
+void kMinNumber(vector<int> &array, int k) {
+    if (array.empty() || array.size() < k || k <= 0)
+        return;
+    priority_queue<int> que;
+	
+    for (int i = 0; i < array.size(); ++i) {
+        if (que.size() < k)
+            que.push(array[i]);
+        else {
+            if (array[i] < que.top()) {
+                que.pop();
+                que.push(array[i]);
+            }
+        }
+    }
+	
+  	// 由于是最大堆, 所以要反向输出.
+  	// 另外, 这里 k 不要使用 que.size() 来代替,
+  	// 在 for 循环中如果用 que.size() 来代替 k 的话, 有 bug...
+  	// 因为 que 是在不断变化的.
+    int arr[k];
+    for (int i = k - 1; i >= 0; --i) {
+        arr[i] = que.top();
+        que.pop();
+    }
+    for (int i = 0; i < k; ++i)
+        cout << arr[i] << " ";
+    cout << endl;
+}
+
+int main() {
+    
+    vector<int> array = {1, 2, 3, 2, 2, 2, 2, 5, 6};
+    kMinNumber(array, 6);
+    return 0;
+} // Output: 1, 2, 2, 2, 2, 2
+```
 
 
 
+### 面试题 31: 连续子数组的最大和
+
+题目: 输入一个整型数组, 数组里有正数也有负数. 数组中一个或连续的多个整数组成一个子数组. 求所有子数组的和的最大值. 要求时间复杂度为 O(n).
+
+例如输入 `{1, -2, 3, 10, -4, 7, 2, -5}`, 最大子数组为 `{3, 10, -4, 7, 2}`, 因此输出为 18.
+
+思路是使用动态规划的思路, 设 `f(i)` 表示以 array[i] 结尾的连续子数组的最大值, 那么还必须发现这样一个规律, 当 f(i - 1) 是负数, 而 array[i] 是正数, 那么两者相加反而比只有 array[i] 一项还小, 说明要得到 f(i), 需要比较 `max(f(i - 1) + array[i], array[i])`.
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int SubsequenceMaxSum(vector<int> &array) {
+    if (array.empty())
+        return -1;
+
+    int res = array[0];
+    int sum = res;
+    // 使用 res 保存当访问到 i 时得到的最大和, 用 sum 保存
+    // 以往的连续子数组的最大值, 最后返回 sum 即可.
+    for (int i = 1; i < array.size(); ++i) {
+        res = max(res + array[i], array[i]);
+        sum = max(sum, res);
+    }
+    return sum;
+}
+
+
+int main() {
+    vector<int> array = {1, -2, 3, 10, -4, 7, 2, -5};
+    cout << SubsequenceMaxSum(array) << endl;
+    return 0;
+}
+```
+
+
+
+### 面试题 32: 从 1 到 n 整数中 1 出现的次数(未完)
+
+
+
+### 面试题 33: 把数组排成最小的数(未完)
 
 
 

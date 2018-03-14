@@ -101,87 +101,24 @@ void findPathToTarget(BSTree<int> &tree, int target) {
 //}
 
 
-void kMinNumber(vector<int> &array, int k) {
-    if (array.empty() || array.size() < k || k <= 0)
-        return;
-    priority_queue<int> que;
-
-    for (int i = 0; i < array.size(); ++i) {
-        if (que.size() < k)
-            que.push(array[i]);
-        else {
-            if (array[i] < que.top()) {
-                que.pop();
-                que.push(array[i]);
-            }
-        }
-    }
-
-    int arr[k];
-    for (int i = k - 1; i >= 0; --i) {
-        arr[i] = que.top();
-        que.pop();
-    }
-    for (int i = 0; i < k; ++i)
-        cout << arr[i] << " ";
-    cout << endl;
-}
-
-int Partition(vector<int> &numbers, int start, int end) {
-    if (numbers.empty() || start >= end || end >= numbers.size())
+int SubsequenceMaxSum(vector<int> &array) {
+    if (array.empty())
         return -1;
 
-    int v = numbers[start];
-    // 其中 arr[start+1...lt] 保存小于 v 的元素
-    // arr[lt+1, gt) 保存等于 v 的元素
-    // arr[gt, end] 保存大于 v 的元素
-    // i 指向当前访问的元素
-    int lt = start, gt = end + 1, i = start + 1;
-    while (i < gt) {
-        if (numbers[i] == v) { // 当当前访问的元素等于基准, 那么就直接访问下一个元素
-            ++i;
-        } // 如果小于基准, 那么就将其插入到 arr[start+1, lt] 的后面, 因此 lt 要加1
-        else if (numbers[i] < v) {
-            swap(numbers[i], numbers[++lt]);
-            ++i;
-        }
-        else { // 如果大于基准, 便插入到 arr[gt, end] 的前面, 但是此时可以不用增加i,
-          		// 因为交换后的位于 i 处的位置的元素还没有被判断.
-            swap(numbers[i], numbers[--gt]);
-        }
+    int res = array[0];
+    int sum = res;
+    // 使用 res 保存当访问到 i 时得到的最大和, 用 sum 保存
+    // 以往的连续子数组的最大值, 最后返回 sum 即可.
+    for (int i = 1; i < array.size(); ++i) {
+        res = max(res + array[i], array[i]);
+        sum = max(sum, res);
     }
-  	// 最后只要将基准和 lt处的元素交换.
-    swap(numbers[start], numbers[lt]);
-    return lt;
+    return sum;
 }
 
-void kMinNumberWithPartition(vector<int> &array, int k) {
-    if (array.empty() || array.size() < k || k <= 0)
-        return;
-
-    int start = 0;
-    int end = array.size() - 1;
-    int index = Partition(array, start, end);
-    while (index != k) {
-        if (index > k) {
-            end = index - 1;
-            index = Partition(array, start, end);
-        }
-        else {
-            start = index + 1;
-            index = Partition(array, start, end);
-        }
-    }
-
-    for (int i = 0; i < k; ++i)
-        cout << array[i] << " ";
-    cout << endl;
-}
 
 int main() {
-    
-    vector<int> array = {1, 2, 3, 2, 2, 2, 2, 5, 6};
-    kMinNumber(array, 6);
-    kMinNumberWithPartition(array, 6);
+    vector<int> array = {1, -2, 3, 10, -4, 7, 2, -5};
+    cout << SubsequenceMaxSum(array) << endl;
     return 0;
-} 
+}
