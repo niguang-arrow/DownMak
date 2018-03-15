@@ -6,7 +6,72 @@
 
 ## 数组
 
+(刚刚发现 283, 27, 26, 80 这四题其实是同一类型的题, 都是将元素从数组中删除)
+
 ### 283. Move Zeros
+
+https://leetcode.com/problems/move-zeroes/
+
+将数组中的 0 都挪到数组的尾部, 并且保持原来非零元素在数组中的顺序.
+
+思路是: 要引入一个索引 k 来使得 `nums[0....k]` 范围内的元素原数组中大于零的值, `nums[k+1...n-1]` 范围内的值等于零. 对于当前访问的元素 `nums[i]` 来说, 如果它等于零, 我们只要访问下一个元素即可. 而当 `nums[i]` 不等于 0 时, 只要和 `nums[k + 1]` 交换即可.(我明白了, 到这里可以得到这样的结论, 比如我明确了 `nums[0...k]` 的意义, 那么后面的操作就是很正常了)
+
+```cpp
+class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+        if (nums.empty())
+            return;
+
+        // arr[0...k] 保存所有非零元素
+      	// 初始为 -1 说明 arr[0, k] 中无元素. 如果初始化为 0, 
+      	// 那么下面使用 nums[k++]
+        int k = -1; 
+        for (int i = 0; i < nums.size(); ++i) {
+            if (nums[i] != 0) {
+                if (i != (k + 1))
+                    swap(nums[i], nums[++k]);
+                else
+                    ++k;
+            }
+        }
+    }
+};
+```
+
+
+
+### 27. Remove Element
+
+https://leetcode.com/problems/remove-element/description/
+
+将数组中等于 val 的所有元素给删除(移到数组末尾), 并返回其他非 val 元素的长度.
+
+思路: 其实这道题就是 283. move zeros 的变形, 只不过前面是将 0 移到末尾, 这里是将 val 移到末尾.
+
+```cpp
+class Solution {
+public:
+    int removeElement(vector<int>& nums, int val) {
+        if (nums.empty())
+            return nums.size();
+
+        // arr[0...k] 保存不等于 val 的元素
+        int k = -1;
+        for (int i = 0; i < nums.size(); ++i) {
+            if (nums[i] != val) {
+                if (i != (k + 1))
+                    swap(nums[i], nums[++k]);
+                else
+                    ++k;
+            }
+        }
+        return k + 1;
+    }
+};
+```
+
+
 
 ### 26. Remove Duplicates from Sorted Array
 
@@ -70,11 +135,71 @@ public:
     }
 };
 ```
-### 33. Search in Rotated Sorted Array
+### 33. Search in Rotated Sorted Array(未完)
 
 https://leetcode.com/problems/search-in-rotated-sorted-array/description/
 
 将一个排序数组进行旋转, 然后在其中搜索某个数. 比如 `[0, 1, 2, 3, 4, 5]` 旋转后为 `[3, 4, 5, 0, 1, 2]`, 然后在旋转后的数组中搜索.
+
+
+
+### 75. Sort Colors
+
+https://leetcode.com/problems/sort-colors/description/
+
+将只 0, 1, 2 三个元素的长度为 n 的数组排序.
+
+思路: 一方面可以使用计数排序, 使用一个大小为 3 的数组来统计每个元素的个数; 另一方面使用三路快排的思路.
+
+首先, 使用计数排序:
+
+```cpp
+class Solution {
+public:
+    // 使用计数排序
+    void sortColors(vector<int>& nums) {
+        if (nums.empty())
+            return;
+
+        int count[3] = {0};
+        for (const auto &d : nums)
+            count[d]++;
+
+        int index = 0;
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < count[i]; j++) {
+                nums[index++] = i;
+            }
+        }
+    }
+};
+```
+
+下面是使用三路快排的思路:
+
+```cpp
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        if (nums.empty())
+            return;
+        
+        // nums[0... lt] 保存 0
+        // nums[lt+1....i] 保存 1
+        // nums[gt....n-1] 保存 2
+        int lt = -1, gt = nums.size();
+        int i = 0;
+        while (i < gt) {
+            if (nums[i] == 1)
+                ++i;
+            else if (nums[i] == 0)
+                swap(nums[i++], nums[++lt]);
+            else
+                swap(nums[i], nums[--gt]);
+        }
+    }
+};
+```
 
 
 
