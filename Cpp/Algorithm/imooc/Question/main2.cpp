@@ -1,124 +1,133 @@
-// 左成云: 5. 用一个栈实现另一个栈的排序
+// 左成云: 用递归和非递归实现二叉树的先序,中序,后序遍历
 #include <iostream>
 #include <vector>
 #include <stack>
 #include "function.h"
 #include <unordered_map>
 #include <queue>
+#include <cassert>
 using namespace std;
 
-bool isConnected(vector<int> &in, vector<int> &out) {
-    if (!in.size() || !out.size() || in.size() != out.size())
-        throw "invalid input";
 
-    stack<int> stk;
-    int j = 0;
-    stk.push(in[0]);
-    for (int i = 1; i < in.size(); ) {
-        if (stk.top() != out[j]) {
-            stk.push(in[i]);
-            ++i;
-        } else {
-            stk.pop();
-            j++;
-        }
-    }
-
-    while (!stk.empty()) {
-        if (stk.top() == out[j]) {
-            stk.pop();
-            ++j;
-        } else {
-            return false;
-        }
-    }
-    return true;
+void preOrder(BinaryTreeNode<int>* root) {
+    if (!root)
+        return;
+    cout << root->val << " ";
+    preOrder(root->left);
+    preOrder(root->right);
 }
 
-bool isBSTree(vector<int> &post, int start, int end) {
-    if (start > end)
-        return true;
-    int root = post[end];
-    int i = end - 1;
-    while (i >= start) {
-        if (post[i] < root)
-            break;
-        i--;
-    }
-
-    for (int k = end - 1; k > i; k--) {
-        if (post[k] < root)
-            return false;
-    }
-
-    for (int k = i; k >= start; k--)
-        if (post[k] > root)
-            return false;
-
-    return isBSTree(post, start, i) && isBSTree(post, i + 1, end - 1);
+void inOrder(BinaryTreeNode<int>* root) {
+    if (!root)
+        return;
+    inOrder(root->left);
+    cout << root->val << " ";
+    inOrder(root->right);
 }
 
-void findPath(BinaryTreeNode<int> *node, vector<int> &path, int &sum, int target) {
-    if (node) {
-        sum += node->val;
-        if (sum == target) {
-            path.push_back(node->val);
-        } else {
-            findPath(node->left, path, sum, target);
-            findPath(node->right, path, sum, target);
-        }
-    } else {
-        sum -= path.back();
-        path.pop_back();
-    }
+void postOrder(BinaryTreeNode<int>* root) {
+    if (!root)
+        return;
+    postOrder(root->left);
+    postOrder(root->right);
+    cout << root->val << " ";
 }
 
-void findPathToTarget(BSTree<int> &tree, int target) {
-    if (tree.empty())
+
+struct Command {
+    string s; // go or print
+    BinaryTreeNode<int> *node;
+
+    Command(string str, BinaryTreeNode<int> *n)
+        : s(str), node(n) {}
+};
+
+// 使用一个栈来模拟系统栈对指令的分析
+void preOrderTraversal(BinaryTreeNode<int> *root) {
+    if (!root)
         return;
 
-    vector<int> path;
-    BinaryTreeNode<int> *node = tree.root;
-    int sum = 0;
-    findPath(node, path, sum, target);
+    stack<Command> Stack;
+    Stack.push(Command("go", root));
 
-    cout << sum << endl;
-    cout << path[0] << endl;
-    //for (const auto &d : path)
-        //cout << d << " ";
-    //cout << endl;
-} 
+    while (!Stack.empty()) {
+        Command command = Stack.top();
+        Stack.pop();
 
-//BinaryTreeNode<int>* convert(BSTree<int> &tree) {
-    //BinaryTreeNode<int> *root = tree.root;
-//}
-
-//int ArrayPartition(vector<int> &array) {
-    //if (array.empty())
-        //return -1;
-    //int sz = array.size();
-    //int 
-//}
-
-
-int SubsequenceMaxSum(vector<int> &array) {
-    if (array.empty())
-        return -1;
-
-    int res = array[0];
-    int sum = res;
-    // 使用 res 保存当访问到 i 时得到的最大和, 用 sum 保存
-    // 以往的连续子数组的最大值, 最后返回 sum 即可.
-    for (int i = 1; i < array.size(); ++i) {
-        res = max(res + array[i], array[i]);
-        sum = max(sum, res);
+        if (command.s == "print")
+            cout << command.node->val << " ";
+        else {
+            assert(command.s == "go");
+            if (command.node->right)
+                Stack.push(Command("go", command.node->right));
+            if (command.node->left)
+                Stack.push(Command("go", command.node->left));
+            Stack.push(Command("print", command.node));
+        }
     }
-    return sum;
 }
 
+void inOrderTraversal(BinaryTreeNode<int> *root) {
+    if (!root)
+        return;
+
+    stack<Command> Stack;
+    Stack.push(Command("go", root));
+
+    while (!Stack.empty()) {
+        Command command = Stack.top();
+        Stack.pop();
+
+        if (command.s == "print")
+            cout << command.node->val << " ";
+        else {
+            assert(command.s == "go");
+            if (command.node->right)
+                Stack.push(Command("go", command.node->right));
+            Stack.push(Command("print", command.node));
+            if (command.node->left)
+                Stack.push(Command("go", command.node->left));
+        }
+    }
+}
+
+void postOrderTraversal(BinaryTreeNode<int> *root) {
+    if (!root)
+        return;
+
+    stack<Command> Stack;
+    Stack.push(Command("go", root));
+
+    while (!Stack.empty()) {
+        Command command = Stack.top();
+        Stack.pop();
+
+        if (command.s == "print")
+            cout << command.node->val << " ";
+        else {
+            assert(command.s == "go");
+            Stack.push(Command("print", command.node));
+            if (command.node->right)
+                Stack.push(Command("go", command.node->right));
+            if (command.node->left)
+                Stack.push(Command("go", command.node->left));
+        }
+    }
+}
 
 int main() {
-    vector<int> array = {1, -2, 3, 10, -4, 7, 2, -5};
-    cout << SubsequenceMaxSum(array) << endl;
+    BSTree<int> tree = {4, 5, 2, 1, 3, 0, 6};
+    preOrder(tree.root);
+    cout << endl;
+    preOrderTraversal(tree.root);
+    cout << endl;
+    inOrder(tree.root);
+    cout << endl;
+    inOrderTraversal(tree.root);
+    cout << endl;
+    postOrder(tree.root);
+    cout << endl;
+    postOrderTraversal(tree.root);
+    cout << endl;
     return 0;
 }
