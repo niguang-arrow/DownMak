@@ -1,4 +1,4 @@
-// 左成云: 用递归和非递归实现二叉树的先序,中序,后序遍历
+// 左成云: 生成窗口的最大值数组
 #include <iostream>
 #include <vector>
 #include <stack>
@@ -8,126 +8,40 @@
 #include <cassert>
 using namespace std;
 
+int maxElement(vector<int> &nums, int start, int width) {
+    int maximum = INT32_MIN;
+    if (nums.empty())
+        return maximum;
 
-void preOrder(BinaryTreeNode<int>* root) {
-    if (!root)
-        return;
-    cout << root->val << " ";
-    preOrder(root->left);
-    preOrder(root->right);
+    for (int i = start; i < start + width; ++i)
+        maximum = max(nums[i], maximum);
+    return maximum;
 }
 
-void inOrder(BinaryTreeNode<int>* root) {
-    if (!root)
-        return;
-    inOrder(root->left);
-    cout << root->val << " ";
-    inOrder(root->right);
-}
+vector<int> maxWindowElement(vector<int> &nums, int w) {
+    if (nums.empty())
+        return vector<int>();
 
-void postOrder(BinaryTreeNode<int>* root) {
-    if (!root)
-        return;
-    postOrder(root->left);
-    postOrder(root->right);
-    cout << root->val << " ";
-}
-
-
-struct Command {
-    string s; // go or print
-    BinaryTreeNode<int> *node;
-
-    Command(string str, BinaryTreeNode<int> *n)
-        : s(str), node(n) {}
-};
-
-// 使用一个栈来模拟系统栈对指令的分析
-void preOrderTraversal(BinaryTreeNode<int> *root) {
-    if (!root)
-        return;
-
-    stack<Command> Stack;
-    Stack.push(Command("go", root));
-
-    while (!Stack.empty()) {
-        Command command = Stack.top();
-        Stack.pop();
-
-        if (command.s == "print")
-            cout << command.node->val << " ";
-        else {
-            assert(command.s == "go");
-            if (command.node->right)
-                Stack.push(Command("go", command.node->right));
-            if (command.node->left)
-                Stack.push(Command("go", command.node->left));
-            Stack.push(Command("print", command.node));
-        }
+    int n = nums.size();
+    if (n <= w)
+        return vector<int>(maxElement(nums, 0, n));
+    vector<int> res;
+    res.push_back(maxElement(nums, 0, w));
+    for (int i = w; i < n; ++i) {
+        if (nums[i] >= res.back())
+            res.push_back(nums[i]);
+        else
+            res.push_back(maxElement(nums, i - w + 1, w));
     }
+    return res;
 }
 
-void inOrderTraversal(BinaryTreeNode<int> *root) {
-    if (!root)
-        return;
-
-    stack<Command> Stack;
-    Stack.push(Command("go", root));
-
-    while (!Stack.empty()) {
-        Command command = Stack.top();
-        Stack.pop();
-
-        if (command.s == "print")
-            cout << command.node->val << " ";
-        else {
-            assert(command.s == "go");
-            if (command.node->right)
-                Stack.push(Command("go", command.node->right));
-            Stack.push(Command("print", command.node));
-            if (command.node->left)
-                Stack.push(Command("go", command.node->left));
-        }
-    }
-}
-
-void postOrderTraversal(BinaryTreeNode<int> *root) {
-    if (!root)
-        return;
-
-    stack<Command> Stack;
-    Stack.push(Command("go", root));
-
-    while (!Stack.empty()) {
-        Command command = Stack.top();
-        Stack.pop();
-
-        if (command.s == "print")
-            cout << command.node->val << " ";
-        else {
-            assert(command.s == "go");
-            Stack.push(Command("print", command.node));
-            if (command.node->right)
-                Stack.push(Command("go", command.node->right));
-            if (command.node->left)
-                Stack.push(Command("go", command.node->left));
-        }
-    }
-}
 
 int main() {
-    BSTree<int> tree = {4, 5, 2, 1, 3, 0, 6};
-    preOrder(tree.root);
+    vector<int> array = {4, 3, 5, 4, 3, 3, 6, 7};
+    auto res = maxWindowElement(array, 3);
+    for (auto &a : res)
+        cout << a << " ";
     cout << endl;
-    preOrderTraversal(tree.root);
-    cout << endl;
-    inOrder(tree.root);
-    cout << endl;
-    inOrderTraversal(tree.root);
-    cout << endl;
-    postOrder(tree.root);
-    cout << endl;
-    postOrderTraversal(tree.root);
-    cout << endl;
-    return 0;
+
 }
