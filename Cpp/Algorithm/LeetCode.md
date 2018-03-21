@@ -399,7 +399,158 @@ public:
 
 
 
+### 11. Container With Most Water
+
+https://leetcode.com/problems/container-with-most-water/description/
+
+使容器盛上最多的水. 给定 n 个非负的整数 $a_1, a_2, ..., a_n$, 每一个表示位于 $(i, a_i)$ 处的点. 以 $(i, 0)$ 和 $(i, a_i)$ 为端点可以作 n 条垂直的直线. 其中, 每两条直线和 x 轴可以组成一个容器, 现在要找到两条直线, 它们和 x 轴形成的容器容量最大.
+
+思路: 这个问题我第一次提交写错了, 给出我在给出的数组为 `height = {2,3,10,5,7,8,9}` 时报错, 正确的结果是 36, 可以看出是当 `i = 2, j = 6, height[i] = 10, height[j] = 9` 时得到最大值. 这道题应该采用双指针对撞的技术来减少考虑的情况. 但问题的关键是以什么标准来让两个指针进行移动. 通过仔细观察 height 可以发现, 当 `i = 0, j = n - 1` 时, 假设最大值 `res` 就是当前的容量, 那么之后 i he j 要怎样移动呢? 注意到 2 要比 9 小, 移动是必然要做的, 不管是 i 向右移动, 还是 j 向左移动, x 轴的大小总是要减小 1 的, 但是由于 2 比 9 小, 那么应该将 i 向右移动, 因为下一个 `height[i + 1]` 可能会使得容量最大, 因为如果 `height[i + 1]` 足够高, 而 9 也是一个比较大的值, 那么就有可能获得更大的容量. 
+
+通过以上的分析, 就知道了 i 和 j 的移动规律, 也就是如果 `height[i] < height[j]`, 那么就将 i 向右移动, 反之, 则将 j 向左移动.
+
+```cpp
+class Solution {
+private:
+  	// 用于计算面积
+    int Area(int i, int j, int ai, int aj) {
+        return (j - i) * min(ai, aj);
+    }
+public:
+    int maxArea(vector<int>& height) {
+        if (height.empty())
+            return 0;
+		// res 保存最大值
+        int i = 0, j = height.size() - 1;
+        int res = Area(i, j, height[i], height[j]);
+      	// 关于循环结束的条件, 是 i 和 j 至少有一个距离
+      	// 在 if 后面的语句中, 即使 ++i == j, 也没有关系
+      	// 这个时候的 Area 就是 0, 依然能得到正确的最大容量.
+        while (i < j) {
+            if (height[i] < height[j]) {
+                ++i;
+                res = max(res, Area(i, j, height[i], height[j]));
+            }
+            else {
+                --j;
+                res = max(res, Area(i, j, height[i], height[j]));
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 387. First Unique Character in a String
+
+https://leetcode.com/problems/first-unique-character-in-a-string/description/
+
+给定一个字符串, 查找第一个在字符串中没有重复的字符, 并返回它的索引; 如果不存在就返回 -1. 比如:
+
+**Examples:**
+
+```bash
+s = "leetcode"
+return 0.
+
+s = "loveleetcode",
+return 2.
+```
+
+**Note:** You may assume the string contain only lowercase letters.
+
+
+
+思路: 由于可以认为字符串中只含有小写字母, 那么可以使用大小为 `vector<int>(26, 0)` 的数组保存字符的索引(如果不是小写字母, 那么就使用 `vector<int>(256, 0)`). 为什么保存索引能成功呢? 因为索引都是正数, 如果遇到重复的字符, 我就把索引设置为负数, 那么之后只要遍历一遍数组, 专门处理值大于 0 的值, 就可以找到最小的索引. 这里需要注意的是索引 0, 如果数组初始化为 -1, 可以避免这个尴尬. 当然也可以初始化为 0.
+
+```cpp
+// 这是我第二次提交的代码
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        if (s.empty())
+            return -1;
+
+        vector<int> records(26, 0);
+
+        for (int i = 0; i < s.size(); ++i) {
+            int index = s[i] - 'a';
+            if (records[index] == 0)
+                records[index] = i + 1; // 保存索引+1, 以免和 0 误会
+            else if (records[index] > 0)
+                records[index] = -1; // 如果有重复, 就设置为 -1.
+        }
+        int first = INT32_MAX;
+        for (const auto &index : records) {
+            if (index > 0)
+                first = min(first, index);
+        }
+
+        if (first == INT32_MAX)
+            return -1;
+        return first - 1; // 最后要减 1
+    }
+};
+
+
+// 下面是我第一次提交的代码, 比上面竟然还快...
+// 但我觉得有个地方有问题, 注释中给出
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        if (s.empty())
+            return -1;
+
+        vector<int> records(26, -1);
+
+        for (int i = 0; i < s.size(); ++i) {
+            int index = s[i] - 'a';
+            if (records[index] == -1)
+                records[index] = i; // 保存索引
+            else if (records[index] >= 0)
+              	// 这里不断的减小可能会出问题, 如果 s.size() 太大的话.
+                records[index] -= s.size();
+        }
+        int first = INT32_MAX;
+        for (const auto &index : records) {
+            if (index >= 0)
+                first = min(first, index);
+        }
+
+        if (first == INT32_MAX)
+            return -1;
+        return first;
+    }
+};
+
+// 看 leetcode 上有更简洁的做法
+// 只要查找第一个出现次数为 1 的元素的索引即可.
+class Solution {
+public:
+    int firstUniqChar(string s) {
+        int ascii[256] = {0};
+        
+        for (char c : s) ascii[c - '0']++;
+        for (int i = 0; i < s.size(); i++) {
+            if (ascii[s[i] - '0'] == 1) return i;
+        }
+        
+        return -1;
+    }
+};
+```
+
+
+
+
+
+## 字符串
+
 ### 125. Valid Palindrome
+
+https://leetcode.com/problems/valid-palindrome/description/
 
 判断一个字符串是不是回文串. 只考虑其中的 alphanumeric characters 以及忽略大小写.
 
@@ -440,44 +591,845 @@ public:
 
 
 
-### 11. Container With Most Water
+### 3. Longest Substring Without Repeating Characters
 
-https://leetcode.com/problems/container-with-most-water/description/
+https://leetcode.com/problems/longest-substring-without-repeating-characters/description/
 
-使容器盛上最多的水. 给定 n 个非负的整数 $a_1, a_2, ..., a_n$, 每一个表示位于 $(i, a_i)$ 处的点. 以 $(i, 0)$ 和 $(i, a_i)$ 为端点可以作 n 条垂直的直线. 其中, 每两条直线和 x 轴可以组成一个容器, 现在要找到两条直线, 它们和 x 轴形成的容器容量最大.
+求给定字符串中最长的没有重复字符的子串的长度. 比如:
 
-思路: 这个问题我第一次提交写错了, 给出我在给出的数组为 `height = {2,3,10,5,7,8,9}` 时报错, 正确的结果是 36, 可以看出是当 `i = 2, j = 6, height[i] = 10, height[j] = 9` 时得到最大值. 这道题应该采用双指针对撞的技术来减少考虑的情况. 但问题的关键是以什么标准来让两个指针进行移动. 通过仔细观察 height 可以发现, 当 `i = 0, j = n - 1` 时, 假设最大值 `res` 就是当前的容量, 那么之后 i he j 要怎样移动呢? 注意到 2 要比 9 小, 移动是必然要做的, 不管是 i 向右移动, 还是 j 向左移动, x 轴的大小总是要减小 1 的, 但是由于 2 比 9 小, 那么应该将 i 向右移动, 因为下一个 `height[i + 1]` 可能会使得容量最大, 因为如果 `height[i + 1]` 足够高, 而 9 也是一个比较大的值, 那么就有可能获得更大的容量. 
+Given `"abcabcbb"`, the answer is `"abc"`, which the length is 3.
 
-通过以上的分析, 就知道了 i 和 j 的移动规律, 也就是如果 `height[i] < height[j]`, 那么就将 i 向右移动, 反之, 则将 j 向左移动.
+Given `"bbbbb"`, the answer is `"b"`, with the length of 1.
+
+Given `"pwwkew"`, the answer is `"wke"`, with the length of 3. Note that the answer must be a **substring**, `"pwke"` is a *subsequence* and not a substring.
+
+思路: 使用滑动窗口, `s[i...j]` 为滑动窗口, 其中 `s[i...j]` 中没有重复字符, 那么长度为 `j - i + 1`. 然后考察下一个元素 `s[j + 1]`, 如果它和 `s[i...j]` 中的字符没有重复, 那么 `++j`,
+
+此时得到新的滑动窗口. 但是如果 `s[j+1]` 和 `s[i...j]` 中的某字符相同(假设索引为 k), 那么就需要移动 i, 使得 i 到达 `k + 1` 的位置. 但是 i 不必一次性就跳到 k + 1 的位置, 而是可以一步一步地向右移动, 因为只要 i 没有到 k + 1 的位置, 那么 `s[j+1]` 始终会和 `s[k]` 重复, 但是此时的长度和一开始的长度相比总是小的.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+      	//用 freq 来保存滑动窗口中出现的字符, 以便能以 O(1) 的复杂度
+      	// 判断 s[r+1] 是否和滑动窗口中的某个字符重复, 当然也可以使用
+      	// unordered_map
+        int freq[256] = {0};
+        int l = 0, r = -1; // 滑动窗口 s[l...r]
+        int res = 0;
+        
+      	// 只有滑动窗口的左边界没有到数组的末尾循环就可以继续.
+        while (l < s.size()) {
+            // 如果当前访问的元素 s[r+1] 和滑动窗口中的字符没有重合
+          	// 那么 ++r 并更新 res.
+            if (r + 1 < s.size() && freq[s[r + 1]] == 0)
+                freq[s[++r]] ++;
+          	// 如果 s[r+1] 重合了, 那么就需要将 l 向右移动, 并且不停更新
+          	// res 的值.
+            else
+                freq[s[l++]] --;
+            
+            res = max(res, r - l + 1);
+        }
+        
+        return res;
+    }
+};
+```
+
+
+
+### 242. Valid Anagram
+
+https://leetcode.com/problems/valid-anagram/description/
+
+判断两个字符串是否互为 Anagram. Anagram 的定义为: a word, phrase, or name formed by rearranging the letters of another, such as *cinema*, formed from *iceman*.
+
+也就是说, 字符串 a 是字符串 b 中的字符重新排列组合而成的. 注意题目提示可以认为字符串里面只有小写字母.
+
+For example,
+*s* = "anagram", *t* = "nagaram", return true.
+*s* = "rat", *t* = "car", return false.
+
+
+
+思路: 首先观察到每个字符串中可以包含相同的字符. 可以使用一个 map(或者 `unorderde_map`), 保存 s 中每个字符出现的次数, 之后要判断 t 中的字符都必须出现在 map 中而且出现的次数和 s 中对应字符的出现次数相同. 另外一种实现思路类似, 但是使用一个数组来对字符进行统计.
+
+```cpp
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        unordered_map<char, int> freq;
+        for (const auto &c : s)
+            freq[c] ++;
+
+        for (const auto &c : t) {
+            if (freq.find(c) != freq.end()) {
+                freq[c] --;
+                if (freq[c] == 0)
+                    freq.erase(c);
+            }
+            else
+                return false;
+        }
+      	// 由于前面 freq 可以 erase 元素, 如果 s 和 t
+      	// 是 Anagram 的话, 那么最后 freq 必须为 empty.
+        if (freq.empty())
+            return true;
+        return false;
+    }
+};
+
+// 方法二: 速度更快
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+    int alp[26]={};
+    for (int i = 0; i < s.length(); i++) 
+        alp[s[i] - 'a']++;
+    for (int i = 0; i < t.length(); i++)
+        alp[t[i] - 'a']--;
+    for (int i=0;i<26;i++)
+        if (alp[i] != 0) 
+            return false;
+        return true;
+   }
+};
+```
+
+
+
+### 438. Find All Anagrams in a String
+
+https://leetcode.com/problems/find-all-anagrams-in-a-string/description/
+
+Given a string **s** and a **non-empty** string **p**, find all the start indices of **p**'s anagrams in **s**.
+
+Strings consists of lowercase English letters only and the length of both strings **s** and **p** will not be larger than 20,100.
+
+The order of output does not matter.
+
+**Example 1:**
+
+```
+Input:
+s: "cbaebabacd" p: "abc"
+
+Output:
+[0, 6]
+
+Explanation:
+The substring with start index = 0 is "cba", which is an anagram of "abc".
+The substring with start index = 6 is "bac", which is an anagram of "abc".
+
+```
+
+**Example 2:**
+
+```
+Input:
+s: "abab" p: "ab"
+
+Output:
+[0, 1, 2]
+
+Explanation:
+The substring with start index = 0 is "ab", which is an anagram of "ab".
+The substring with start index = 1 is "ba", which is an anagram of "ab".
+The substring with start index = 2 is "ab", which is an anagram of "ab".
+```
+
+
+
+思路: 首先给出我的思路, 然后再贴出 leetcode 上精彩的回答. 这道题使用滑动窗口求解, 首先要保证 s  的大小要或等于 p 的大小. 然后设置 `s[l....r]` 为滑动窗口以及两个查找表, 一个 `pfreq` 用于统计 p 中的字符出现的频次, 另一个 `window` 用于统计滑动窗口中出现字符的频次. 如果此时 `s[l....r]` 就是 p 的 anagram, 那就将索引 l 加入到 `vector<int> res` 中. 否则, 判断 `s[r+1]` 是否出现在 freq 中, 如果是的话, 那么还要判断该字符在 window 中的频次是不是小于它在 `freq` 中的频次, 如果两个条件都满足, 那么就可以 `window[++r] ++`, 即 r 向右移动一位, 并且增加该字符在 window 中的频次; 倘若该字符在 window 中的频次已经等于 freq 中的频次了, 说明如果把这个字符加入到 window 中相同字符的个数就多了, 就不符合 Anagram 的定义了, 因此此时就需要移动 l, 而且还必须是一直移动到当前 window 中和 s[r+1] 相同的第一个字符的后面, 这需要借助 while 循环和 `window[l++] --` 的配合.
+
+以上是 s[r+1] 出现在 freq 中的情况, 那么如果它没有出现在 freq 中呢, 这个时候, 由于 window 的大小是要比 `p.size()` 小的, 那么就必须跳过这个字符, 去寻找下一个窗口, 这个时候, `l` 要发生大的跳动, `l = ++r + 1`, 注意, l 和 r 都要发生变化, (初始的时候 l = 0, r = -1), l 需要跳到 ++r 的后面一个字符处. 并且由于开始创建新的滑动窗口, 所以 window 中的统计要清除掉.
+
+```cpp
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        vector<int> res;
+        if (s.empty() || p.empty() || (s.size() < p.size()))
+            return res;
+
+        unordered_map<char, int> pfreq; // 统计p中字符的频次
+        for (const auto &c : p)
+            pfreq[c] ++;
+
+        // 窗口 s[l...r]
+        int l = 0, r = -1; 
+        unordered_map<char, int> window; // 窗口中字符的频次
+      	// 注意两个问题, 由于 r 初始为 -1, 所以最后只能到 s.size() - 2 的位置
+      	// 才能保证访问 r + 1 不越界. 另外这里要注意强制类型转换, 因为 r=-1 为负数,
+      	// 而 s.size() 结果是 unsigned long.
+        while (r < (int)(s.size() - 1)) {
+            auto piter = pfreq.find(s[r + 1]);
+            if (piter != pfreq.end()) {
+                if (window[s[r+1]] < piter->second)
+                    window[s[++r]] ++;
+                else
+                    window[s[l++]] --;
+            }
+            else {
+                l = ++r + 1;
+                window.clear();
+                //window = unordered_map<char, int>();
+            }
+
+            if (r - l + 1 == p.size()) {
+                res.push_back(l);
+            }
+        }
+
+        return res;
+    }
+};
+```
+
+leetcode 上的精彩解答, 不用解释, 直接看代码就明白了:
+
+[C++ O(n) sliding window concise solution with explanation](https://leetcode.com/problems/find-all-anagrams-in-a-string/discuss/92027/C++-O(n)-sliding-window-concise-solution-with-explanation)
+
+我觉得关键在于 vector 是可以直接进行比较的....
+
+```cpp
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        vector<int> pv(26,0), sv(26,0), res;
+        if(s.size() < p.size())
+           return res;
+        // fill pv, vector of counters for pattern string and sv, vector of counters for the sliding window
+        for(int i = 0; i < p.size(); ++i)
+        {
+            ++pv[p[i]-'a'];
+            ++sv[s[i]-'a'];
+        }
+        if(pv == sv)
+           res.push_back(0);
+
+        //here window is moving from left to right across the string. 
+        //window size is p.size(), so s.size()-p.size() moves are made 
+        for(int i = p.size(); i < s.size(); ++i) 
+        {
+             // window extends one step to the right. counter for s[i] is incremented 
+            ++sv[s[i]-'a'];
+            
+            // since we added one element to the right, 
+            // one element to the left should be forgotten. 
+            //counter for s[i-p.size()] is decremented
+            --sv[s[i-p.size()]-'a']; 
+
+            // if after move to the right the anagram can be composed, 
+            // add new position of window's left point to the result 
+            if(pv == sv)  
+               res.push_back(i-p.size()+1);
+        }
+        return res;
+    }
+};
+
+// 256 character version:
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        vector<int> pv(256,0), sv(256,0), res;
+        if(s.size() < p.size())
+           return res;
+        for(int i = 0; i < p.size(); ++i)
+        {
+            ++pv[p[i]];
+            ++sv[s[i]];
+        }
+        if(pv == sv)
+           res.push_back(0);
+        for(int i = p.size(); i < s.size(); ++i)
+        {
+            ++sv[s[i]];
+            --sv[s[i-p.size()]];
+            if(pv == sv)
+               res.push_back(i-p.size()+1);
+        }
+        return res;
+    }
+};
+```
+
+另外, 关于滑动窗口的题, 这里有一个总结:
+
+[Sliding Window algorithm template to solve all the Leetcode substring search problem.](https://leetcode.com/problems/find-all-anagrams-in-a-string/discuss/92007/Sliding-Window-algorithm-template-to-solve-all-the-Leetcode-substring-search-problem.)
+
+下面这个代码比我快一些: (没仔细看, 思路应该和我一样.)
+
+```cpp
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        //下面这种利用滑动窗口Sliding Window的方法也比较巧妙，首先统计字符串p的字符个数，然后用两个变量left和right表示滑动窗口的左右边界，用变量cnt表示字符串p中需要匹配的字符个数，然后开始循环，如果右边界的字符已经在哈希表中了，说明该字符在p中有出现，则cnt自减1，然后哈希表中该字符个数自减1，右边界自加1，如果此时cnt减为0了，说明p中的字符都匹配上了，那么将此时左边界加入结果res中。如果此时right和left的差为p的长度，说明此时应该去掉最左边的一个字符，我们看如果该字符在哈希表中的个数大于等于0，说明该字符是p中的字符，为啥呢，因为上面我们有让每个字符自减1，如果不是p中的字符，那么在哈希表中个数应该为0，自减1后就为-1，所以这样就知道该字符是否属于p，如果我们去掉了属于p的一个字符，cnt自增1，参见代码如下：
+        
+        //Time Complexity will be O(n) because the "start" and "end" points will only move from left to right once.
+        vector<int> res;
+        if (s.size() == 0 || p.size() == 0) return res;
+        
+        unordered_map<char,int> hash;
+        for (char c : p) {
+            hash[c]++;
+        }
+      
+        int left = 0, right = 0, count = p.length();
+        while (right < s.length()) {
+            
+            if (hash[s[right++]]-- >= 1) count--; // 说明right这个点在p里
+            
+            if (count == 0) res.push_back(left);
+
+            if (right - left == p.length() && hash[s[left++]]++ >= 0) count++; // left 到 right 的size已经是p的size了，所以left一定要往右移了
+        }
+        return res;
+
+    }
+};
+```
+
+
+
+
+
+
+
+## 查找表
+
+### 349. Intersection of Two Arrays
+
+https://leetcode.com/problems/intersection-of-two-arrays/description/
+
+求两个数组的交集, 注意结果中的每个元素都是唯一的, 并且不用考虑元素的顺序.
+
+比如给定: *nums1* = `[1, 2, 2, 1]`, *nums2* = `[2, 2]`, return `[2]`.
+
+思路: 使用 set, 将两个数组中的元素拷贝进 set 中, 那么 set1 和 set2 中的元素都是唯一的, 从而求两个 set 的交集.
+
+```cpp
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        set<int> isection1(nums1.begin(), nums1.end());
+        set<int> isection2(nums2.begin(), nums2.end());
+
+        vector<int> res;
+        for (const auto &d : isection1) {
+            if (isection2.find(d) != isection2.end())
+                res.push_back(d);
+        }
+        return res;
+    }
+};
+
+// 第二种方法只用一个 set, 但是每次在 set 中查找完 nums2 中的元素后,
+// 应将 set 中的对应元素删除.
+class Solution {
+public:
+    vector<int> intersection(vector<int>& nums1, vector<int>& nums2) {
+        unordered_set<int> isection(nums1.begin(), nums1.end());
+
+        vector<int> res;
+        for (const auto &d : nums2) {
+            if (isection.find(d) != isection.end()) {
+                res.push_back(d);
+                isection.erase(d);
+            }
+        }
+
+        return res;
+    }
+};
+```
+
+
+
+### 350. Intersection of Two Arrays II
+
+https://leetcode.com/problems/intersection-of-two-arrays-ii/description/
+
+求两个数组的交集, 但是要尽可能保留重合的元素, 不考虑结果中元素的顺序.
+
+**Example:**
+Given *nums1* = `[1, 2, 2, 1]`, *nums2* = `[2, 2]`, return `[2, 2]`.
+
+思路: 这个时候就需要使用 map 而不是 set 了, 使用 map 来统计每个元素的个数. 当然还有方法就是先对数组进行排序, 然后再依次比较两个数组中当前访问元素的大小是否相等.
+
+```cpp
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+      	// 统计 nums1 中的每个元素的个数
+        unordered_map<int, int> freq;
+        for (const auto &d : nums1)
+            freq[d] ++;
+
+        vector<int> res;
+      	// 对于 nums2 中的元素, 如果在 freq 中, 那么就要加入到 res 中,
+      	// 但是由于这里没有用 erase 删除已经访问过的元素, 所以还加上了 
+      	// freq[d] != 0 的判断
+        for (const auto &d : nums2) {
+            if (freq.find(d) != freq.end() && freq[d] != 0) {
+                res.push_back(d);
+                freq[d] --;
+            }
+        }
+        return res;
+    }
+};
+
+
+// 如果给两个数组排序, 那么可以使用如下方法求.
+class Solution {
+public:
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        vector<int> res;
+        std::sort(nums1.begin(), nums1.end());
+        std::sort(nums2.begin(), nums2.end());
+        int i = 0, j = 0;
+        while (i < nums1.size() && j < nums2.size()) {
+            if (nums1[i] == nums2[j]) {
+                res.push_back(nums1[i]);
+                i++;
+                j++;
+            } else if (nums1[i] < nums2[j]) {
+                i++;
+            } else {
+                j++;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 202. Happy Number
+
+https://leetcode.com/problems/happy-number/description/
+
+判断一个正整数是否为一个 Happy Number. Happy Number 的定义是: A happy number is a number defined by the following process: Starting with any positive integer, replace the number by the sum of the squares of its digits, and repeat the process until the number equals 1 (where it will stay), or it loops endlessly in a cycle which does not include 1. Those numbers for which this process ends in 1 are happy numbers.
+
+比如: 19 是一个 Happy Number:
+
+$1^2 + 9^2 = 82$
+
+$8^2 + 2^2 = 68$
+
+$6^2 + 8^2 = 100$
+
+$1^2 + 0^2 + 0^2 = 1$
+
+思路: 根据 Happy Number 的定义可以知道, 按照这个计算步骤处理某个数, 最后要么得到 1, 要么会无限循环, 无限循环造成的原因是, 比如第一次运算结果为 a1, 第二次运算结果为 a2,... an, 那么此时可以得到一个数组 `[a1, a2, ..., an]`, 那么当第 n + 1 次运算的结果等于这个数组中的某一个的时候, 就会出现无限循环的结果. 为了处理这种情况, 我下面使用了一个 `unordered_set` 来保存每一次运算的结果, 当算出新的结果时, 要判断新结果是否出现在历史结果中, 如果出现了, 说明会出现无限循环的情况, 函数就要返回.
 
 ```cpp
 class Solution {
 private:
-  	// 用于计算面积
-    int Area(int i, int j, int ai, int aj) {
-        return (j - i) * min(ai, aj);
+  	// Sum 用于求平方和.
+    int Sum(int n) {
+        int sum = 0;
+        while(n)
+        {
+            int a = n % 10;
+            n /= 10;
+            sum += a * a;
+        }
+        return sum;
+    }
+	// 判断是否会发生无限递归的情况, 如果会发生, 那么返回 true.
+  	// 如果某次结果为 1, 那么说明不会发生无限递归的情况, 返回 false.
+  	// 否则, 每次将结果计算出来之后, 要到 origin 中查找是否出现在历史结果中,
+  	// 如果没有出现并且结果不是 1, 那么就将其加入到 origin 之中. 然后判断
+  	// 新结果 sum 是否会造成无限递归或者等于 1.
+    bool isRecursive(int n, unordered_set<int> &origin) {
+        int sum = Sum(n);
+        //cout << sum << endl;
+
+        if (sum == 1)
+            return false;
+        if (origin.find(sum) != origin.end())
+            return true;
+
+        origin.insert(sum);
+        return isRecursive(sum, origin);
     }
 public:
-    int maxArea(vector<int>& height) {
-        if (height.empty())
-            return 0;
-		// res 保存最大值
-        int i = 0, j = height.size() - 1;
-        int res = Area(i, j, height[i], height[j]);
-      	// 关于循环结束的条件, 是 i 和 j 至少有一个距离
-      	// 在 if 后面的语句中, 即使 ++i == j, 也没有关系
-      	// 这个时候的 Area 就是 0, 依然能得到正确的最大容量.
-        while (i < j) {
-            if (height[i] < height[j]) {
-                ++i;
-                res = max(res, Area(i, j, height[i], height[j]));
+    bool isHappy(int n) {
+        if (n <= 0)
+            return false;
+        unordered_set<int> origin;
+        return !isRecursive(n, origin);
+    }
+};
+```
+
+
+
+### 290. Word Pattern
+
+https://leetcode.com/problems/word-pattern/description/
+
+给定一个 pattern 和一个字符串 str, 判断 str 是否符合 pattern. 假设 pattern 中只有小写字母, str 只包含由空格分隔的小写字母. 比如:
+
+**Examples:**
+
+1. pattern = `"abba"`, str = `"dog cat cat dog"` should return true.
+2. pattern = `"abba"`, str = `"dog cat cat fish"` should return false.
+3. pattern = `"aaaa"`, str = `"dog cat cat dog"` should return false.
+4. pattern = `"abba"`, str = `"dog dog dog dog"` should return false.
+
+
+
+思路: 由于 str 是由空格分隔的字符串, 那么可以使用 `<sstream>` 中的 `stringstream` 进行处理. 另外关于字符串分割技术可以参看 [字符串分割技术](https://segmentfault.com/a/1190000002483483). 之后具体的逻辑是: 需要一张查找表 `unordered_map<char, string>` 用于记录 pattern 中每个字符和 str 中每个小字符串之间的联系, 它们之间是一一对应的, 如果遍历到 `(pattern[i], str[i])` (注意 `str[i]` 不是表示一个字符, 而是空格分开的小字符串), 判断 `pattern[i]` 是否在查找表中, 如果没有的话, 那么就可以将这个 pair 插入进去. 但插入的时候还要考虑这样一种情况: `pattern = "abba", str = "dog dog dog dog"`, 当访问到 `(b, dog)` 时, 由于查找表中当前有 `(a, dog)`, 虽然 b 和 a 不相等, 但是不能将 `(b, dog)` 插入到查找表中, 为了处理这种情况, 引入 `unordered_set<string>` 来存放已经访问过的小字符串, 只有 dog 不在这个 set 中, 那么才可以将 b 插入到查找表中.
+
+如果 `pattern[i]` 在查找表中, 那么就需要判断 `str[i]` 是否和原来的相等.
+
+最后, 我在代码中使用 `streams.eof()` 才返回 true, 是要保证 pattern 的大小和 str 中小字符串的个数相等.
+
+注: 这是我写的第一道速度能 beats 100% 的提交的习题.
+
+```cpp
+class Solution {
+public:
+    bool wordPattern(string pattern, string str) {
+        if (pattern.empty() || str.empty())
+            return false;
+        
+        // bijection 是映射的意思, 用于存放 pattern 和 str 的关系
+      	// strset 用于记录已经处理过的 string 了.
+        unordered_map<char, string> bijection;
+        unordered_set<string> strset;
+        string s;
+        stringstream streams(str);
+        for (int i = 0; i < pattern.size(); ++i) {
+          	// 要保证 str 中小字符串的个数不能小于 pattern
+            if (streams.eof())
+                return false;
+            streams >> s;
+            auto iter = bijection.find(pattern[i]);
+            if (iter == bijection.end()) { // 没有找到, 那就插入(当然还需要判断一下)
+                if (strset.find(s) == strset.end()) {
+                    bijection.insert(make_pair(pattern[i], s));
+                    strset.insert(s);
+                }
+                else
+                    return false;
             }
             else {
-                --j;
-                res = max(res, Area(i, j, height[i], height[j]));
+                if (s != iter->second)
+                    return false;
+            }
+        }
+		// 保证 str 中小字符串的个数等于 pattern 的大小.
+        if (streams.eof())
+            return true;
+        return false;
+    }
+};
+
+```
+
+
+
+### 205. Isomorphic strings
+
+https://leetcode.com/problems/isomorphic-strings/description/
+
+给定字符串 s 和 t, 判断它们是不是 isomorphic 的.
+
+Two strings are isomorphic if the characters in **s** can be replaced to get **t**.
+
+All occurrences of a character must be replaced with another character while preserving the order of characters. No two characters may map to the same character but a character may map to itself.
+
+For example,
+Given `"egg"`, `"add"`, return true.
+
+Given `"foo"`, `"bar"`, return false.
+
+Given `"paper"`, `"title"`, return true.
+
+**Note:**
+You may assume both **s** and **t** have the same length.
+
+解法一: 我的想法和上一题 290. Word Pattern 相同. 不过这道题要考虑的情况稍微简单一些. 但注意仍然要设置 `unordered_set` 判断要插入的 `t[i]` 是否曾经出现过, 毕竟插入到 `bijection` 中的元素都是原来没有出现过的.
+
+```cpp
+class Solution {
+public:
+    bool isIsomorphic(string s, string t) {
+        if (s.empty() && t.empty())
+            return true;
+
+        unordered_map<char, char> bijection;
+        unordered_set<char> records;
+        for (int i = 0; i < s.size(); ++i) {
+            auto iter = bijection.find(s[i]);
+            if (iter == bijection.end()) {
+                if (records.find(t[i]) == records.end()) {
+                    bijection.insert(make_pair(s[i], t[i]));
+                    records.insert(t[i]);
+                }
+                else
+                    return false;
+            }
+            else {
+                if (t[i] != iter->second)
+                    return false;
+            }
+        }
+        return true;
+    }
+};
+```
+
+
+
+解法二: 更快一些, 每个字符可以用作下标, 保证对应字符的值都是 i, 如果对应字符的值不相等, 说明就不是 isomorphic 的了.
+
+```cpp
+class Solution {
+public:
+    bool isIsomorphic(string s, string t) {
+        int len = s.length();
+        int m1[256], m2[256];
+        for (int i = 0; i < 256; i++) {
+            m1[i] = m2[i] = -1;
+        }
+        
+        for (int i = 0; i < len; i++) {
+            if (m1[s[i]] != m2[t[i]]) return false;
+            m1[s[i]] = m2[t[i]] = i;
+        }
+        return true;
+    }
+};
+```
+
+
+
+### 451. Sort Characters By Frequency
+
+https://leetcode.com/problems/sort-characters-by-frequency/description/
+
+给定一个字符串, 将其中的字符按照出现次数递减的方式输出, 次数相同的不需要在意顺序. 另外是大小写敏感. 比如:
+
+**Example 1:**
+
+```bash
+Input:
+"tree"
+
+Output:
+"eert"
+
+Explanation:
+'e' appears twice while 'r' and 't' both appear once.
+So 'e' must appear before both 'r' and 't'. Therefore "eetr" is also a valid answer.
+```
+
+**Example 2:**
+
+```bash
+Input:
+"cccaaa"
+
+Output:
+"cccaaa"
+
+Explanation:
+Both 'c' and 'a' appear three times, so "aaaccc" is also a valid answer.
+Note that "cacaca" is incorrect, as the same characters must be together.
+```
+
+**Example 3:**
+
+```bash
+Input:
+"Aabb"
+
+Output:
+"bbAa"
+
+Explanation:
+"bbaA" is also a valid answer, but "Aabb" is incorrect.
+Note that 'A' and 'a' are treated as two different characters.
+```
+
+
+
+思路: 需要用到查找表, 记录每个字符出现的频次. 另外一个需要注意的点是: string 类提供的 [append](http://www.cplusplus.com/reference/string/string/append/) 方法, 它有多个重载, 其中 `str.append(n, c)` 可以将 n 个 c 连接到 str 的后面. 那从查找表中获得每个字符的频次之后, 为了给频次排序, 可以再引入一个 vector, 大小为 `s.size() + 1`, 这是因为, 如果 s 中字符都相同, 那么频次就是 `s.size()`, 那么可以放在 vector 中的索引为 `s.size()` 处. 最后反向遍历 vector, 就能获得题中的要求.
+
+这题一开始写不出来... 参考了 [C++ O(n) solution without sort()](https://leetcode.com/problems/sort-characters-by-frequency/discuss/93404/C++-O(n)-solution-without-sort())
+
+```cpp
+class Solution {
+public:
+    string frequencySort(string s) {
+        if (s.empty())
+            return s;
+
+        unordered_map<char, int> freq;
+        for (const auto &c : s)
+            freq[c] ++;
+
+        vector<string> records(s.size() + 1, "");
+        for (auto iter = freq.begin(); iter != freq.end(); ++iter) {
+            char c = iter->first;
+            int n = iter->second;
+            records[n].append(n, c);
+        }
+
+        string res;
+        for (int i = s.size(); i >= 0; --i) {
+            if (!records[i].empty())
+                res += records[i];
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 347. Top K Frequent Elements
+
+https://leetcode.com/problems/top-k-frequent-elements/description/
+
+给定一个非空的整型数组, 返回前 k 个出现频率最高的元素. 比如:
+
+For example,
+Given `[1,1,1,2,2,3]` and k = 2, return `[1,2]`.
+
+另外, 可以假设 `1 <= k <= nums.size()`, 另外算法的时间复杂度必须比 `O(nlogn)` 好.
+
+
+
+思路: 实现肯定要统计每个元素在数组中出现的频次. 但复杂的地方在于如何根据频次排序, 从而找到前 k 个出现最频繁的. 可以参考上一题 451. Sort Characters By Frequency 中的做法, 使用一个大小为 `vector<string>(nums.size() + 1)` 大小的 vector 来保存元素, 而坐标表示索引. 可是, 与 451 题不同的是, 频次相同的字符串可以使用 append 累加起来, 而本题频次相同的整型数如何保存起来呢? 当然可以使用 `vector<vector<int>> count`. 之后只要从后向前遍历 count, 当然对于 `count[i]` 还要计算其大小, 使得不超过 k.
+
+```cpp
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        vector<int> res;
+        if (nums.empty())
+            return res;
+        
+        unordered_map<int, int> freq;
+        for (const auto &n : nums)
+            freq[n] ++;
+
+        vector<vector<int>> count(nums.size() + 1, vector<int>());
+        for (auto &iter : freq) {
+            count[iter.second].push_back(iter.first);
+        }
+
+        int total = 0;
+        for (int i = nums.size(); i >= 0; --i) {
+            if (!count[i].empty()) {
+                total += count[i].size();
+                if (total <= k)
+                    res.insert(res.end(), count[i].begin(), count[i].end());
+                else { // 如果此时 total 超过了 k, 说明 count[i] 中的数据很多, 
+                  // 只需要一部分, 这个数值就是 k - (total - count[i].size())
+                  // 遍历完之后 res 中的数量就是 k 了, 此时必须 break
+                    for (int j = 0; j < k - (total - count[i].size()); ++j) {
+                        res.push_back(count[i][j]);
+                    }
+                    break;
+                }
             }
         }
         return res;
+    }
+};
+
+// 上面代码提交后发现速度有点慢, 我找了一个比我快的方法:
+// 其实思路和我一样, 只是最后用了两层循环来做... 好吧, 其实我也
+// 用了两层循环.
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        unordered_map<int,int>mp;
+        vector<int>res;
+        vector<vector<int> >v(nums.size()+1);
+        for(auto x:nums)   mp[x]++;
+        for(auto it:mp){
+            v[it.second].push_back(it.first);
+        }
+        int tm = 0;
+        for(int i=v.size()-1;i>0;i--){
+            for(int j=0;j<v[i].size();j++){
+                res.push_back(v[i][j]);
+                if(++tm==k) return res;
+            }
+        }
+    }
+};
+
+// 下面是使用优先队列的方法,
+// 想不到优先队列还可以处理 pair, 果然厉害, 其实我就是想这样搞的...
+// 这样的代码才简洁.
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+         unordered_map<int, int> m;
+        priority_queue<pair<int, int>> q;
+        vector<int> res;
+        for (auto a : nums) ++m[a];
+        for (auto it : m) q.push({it.second, it.first});
+        for (int i = 0; i < k; ++i) {
+            res.push_back(q.top().second); q.pop();
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 217. Contains Duplicate
+
+https://leetcode.com/problems/contains-duplicate/description/
+
+判断整型数组中是否包含重复元素.
+
+解法一: 使用查找表
+
+```cpp
+class Solution {
+public:
+    bool containsDuplicate(vector<int>& nums) {
+        if (nums.empty())
+            return false;
+
+        unordered_set<int> records;
+        for (const auto &n : nums) {
+            if (records.find(n) != records.end())
+                return true;
+            else
+                records.insert(n);
+        }
+        return false;
+    }
+};
+```
+
+解法二: 先排序, 后判断.
+
+```cpp
+class Solution {
+public:
+    bool containsDuplicate(vector<int>& nums) {
+      sort(nums.begin(), nums.end());
+    for (int i=0; i<int(nums.size())-1; i++) {
+        if (nums[i]==nums[i+1])
+            return true;
+    }
+    return false;
     }
 };
 ```
@@ -1301,6 +2253,119 @@ public:
 ### 108. Convert Sorted Array to Binary Search Tree(待完成)
 
 ### 230. Kth Smallest Element in a BST(待完成)
+
+
+
+### 129. Sum Root to Leaf Numbers
+
+https://leetcode.com/problems/sum-root-to-leaf-numbers/description/
+
+给定一个二叉树, 它的每个节点的值只在 0 ~ 9 之间, 每个 root-to-leaf path 可以表示一个数字, 比如 `1->2->3` 表示数字 123. 现在要求所有 root-to-leaf 数字的和. 比如:
+
+```bash
+    1
+   / \
+  2   3
+```
+
+The root-to-leaf path `1->2` represents the number `12`.
+The root-to-leaf path `1->3` represents the number `13`.
+
+Return the sum = 12 + 13 = `25`.
+
+下面给出 3 种思路: 我的思路耗时较大, 使用字符串来处理, 在求出和的同时, 还将所有的 path 给保存了下来. 另外两种思路使用一个 sum 变量保存所有的 path 之和, 从根节点开始, 每次向下移动都要乘上 10.
+
+解法一: 我的方法, 时间消耗比较大
+
+```cpp
+// 我的思路是将这些路径全部保存了下来, 但这做了额外的工作, 所以消耗比较大, 应该
+// 去想直接能得到所有 root-to-leaf numbers 的和的方法.
+// 在 RootToLeafNums 中没有考虑 root->val 为 0 的情况是因为, 使用
+// stoi 方法可以将 "0032" 转换为 32.
+class Solution {
+private:
+    vector<string> RootToLeafNums(TreeNode *root) {
+        if (!root)
+            return vector<string>();
+
+        if (!root->left && !root->right)
+            return vector<string>{to_string(root->val)};
+
+        auto vec1 = RootToLeafNums(root->left);
+        auto vec2 = RootToLeafNums(root->right);
+        vec1.insert(vec1.end(), vec2.begin(), vec2.end());
+
+        for (auto &d : vec1)
+            d = to_string(root->val) + d;
+
+        return vec1;
+    }
+public:
+    int sumNumbers(TreeNode* root) {
+        if (!root)
+            return 0;
+
+        int sum = 0;
+        auto strVec = RootToLeafNums(root);
+
+        for (auto &d : strVec)
+            sum += stoi(d);
+        return sum;
+    }
+};
+```
+
+解法二: 参看 leetcode 的解答, 感觉比较符合我的最可能想到的思路:
+
+```cpp
+class Solution {
+public:
+    int sumNumbers(TreeNode* root) {
+        return helper(root, 0);  
+    }
+    
+    int helper(TreeNode* node, int sum){
+        if(!node) return 0;
+        
+        sum = sum * 10 + node->val;
+        if(!node->left && !node->right) 
+            return sum;
+        
+        return helper(node->left, sum) + helper(node->right, sum);
+    }
+};
+```
+
+解法三: 速度更快, 注意树中节点的值会被修改:
+
+```cpp
+class Solution {
+public:
+    int sum = 0;
+    void inorder(TreeNode* root)
+    {
+        if (!root->left && !root->right)sum += root->val;
+        if (root->left)
+        {
+            root->left->val += root->val * 10;
+            inorder(root->left);
+        }
+        if (root->right)
+        {
+            root->right->val += root->val * 10;
+            inorder(root->right);
+        }
+    }
+    int sumNumbers(TreeNode* root)
+    {
+        if (!root)return 0;
+        inorder(root);
+        return sum;
+    }
+};
+```
+
+
 
 
 
