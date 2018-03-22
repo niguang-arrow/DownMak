@@ -1438,6 +1438,95 @@ public:
 
 
 
+### 219. Contains Duplicate II
+
+https://leetcode.com/problems/contains-duplicate-ii/description/
+
+给定整型数组和整数 k, 找出数组中是否存在两个索引 i 和 j, 使得 `nums[i] == nums[j]` 并且 i 和 j 的绝对值之差不超过 k.(可以等于 k).
+
+
+
+思路: 使用滑动窗口和查找表. 首先给出一个非常简单的思路, 然后再放出我的思路, 最后再给出一个简单的思路.
+
+解法一: 使用滑动窗口和查找表, 需要注意这个滑动窗口的大小是固定的, 那么只要判断查找表的大小是不是 k + 1, 才向右移动窗口(为何是 k + 1 呢? 比如 l = 0, r = k, 符合条件, 但此时 nums[l...r] 中有 k + 1 个元素.), 这里所谓向右移动窗口, 就是要将查找表中最左侧的值给删除. **注意这里最左侧的值为 nums[i - k].**
+
+```cpp
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+        unordered_set<int> record;
+        
+        for (int i = 0; i < nums.size(); ++i) {
+            if (record.find(nums[i]) != record.end())
+                return true;
+            
+            record.insert(nums[i]);
+            
+            if (record.size() == (k + 1))
+                record.erase(nums[i - k]); // 将窗口最左侧的值给删去
+        }
+        return false;
+    }
+};
+```
+
+下面介绍我的想法, 更为暴力麻烦 : ). 也是使用滑动窗口和查找表, 设置 `nums[l...r)` 为滑动窗口, 对于将要访问的 `nums[r]`, 如果在查找表中找到了它并且它和 l 的索引小于或等于 k, 那么就返回 true. 否则就将该元素插入到表中, 并删除最左边的元素; 如果没有找到, 那么不断插入即可, 当插入到 r 和 l 的距离大于 k 时, 便将最左边元素删除. 我的思路就是太麻烦, 没上面解法简洁.
+
+```cpp
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+        if (nums.empty())
+            return false;
+
+        // 使用滑动窗口和查找表
+        // nums[l....r) 为滑动窗口
+        int l = 0, r = 1;
+        unordered_set<int> records;
+        records.insert(nums[0]);
+        while (r < nums.size()) {
+            if (records.find(nums[r]) != records.end()) {
+                if (r - l <= k)
+                    return true;
+                else {
+                    records.insert(nums[r++]);
+                    records.erase(nums[l++]);
+                }
+            }
+            else {
+                records.insert(nums[r++]);
+                if (r - l > k) {
+                    records.erase(nums[l++]);
+                }
+            }
+        }
+        return false;
+    }
+};
+```
+
+最后是 leetcode 上某个解答: 使用 map 来存储索引.
+
+```cpp
+class Solution {
+public:
+    bool containsNearbyDuplicate(vector<int>& nums, int k) 
+    {
+        unordered_map<int, int> m;
+        for(int i = 0; i < nums.size(); ++i)
+        {
+            if(m.find(nums[i]) != m.end() &&  i - m[nums[i]] <= k) return true;
+            else m[nums[i]] = i;
+        }
+        return false;
+    }
+};
+```
+
+
+
+
+
 ## 二叉树
 
 ### 104. Maximum Depth of Binary Tree

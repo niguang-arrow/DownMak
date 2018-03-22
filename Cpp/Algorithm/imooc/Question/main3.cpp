@@ -44,26 +44,48 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
 };
 
-class Solution {
-public:
-    bool containsNearbyDuplicate(vector<int>& nums, int k) {
-        if (nums.empty())
-            return false;
+ struct Point {
+     int x;
+     int y;
+     Point() : x(0), y(0) {}
+     Point(int a, int b) : x(a), y(b) {}
+ };
 
-        // 使用滑动窗口和查找表
-        // nums[l....r) 为滑动窗口
-        int l = 0, r = 1;
-        unordered_set<int> records;
-        records.insert(nums[0]);
-        while (r < nums.size()) {
-            if (records.find(nums[r]) != records.end()) {
-                if (r - l <= k)
-                    return true;
-                else {
-                    records.
-                }
-            }
+class Solution {
+private:
+    bool OnALine(const Point &p, const Point &q) {
+        return !((p.x * q.y) - (p.y * q.x));
+    }
+    struct PointHash
+    {
+        size_t operator()(const Point& rhs) const{
+            return hash<int>()(rhs.x * rhs.x + rhs.y * rhs.y);
         }
+    };
+    struct PointCmp
+    {
+        bool operator()(const Point& lhs, const Point& rhs) const{
+            return lhs.x == rhs.x && lhs.y == rhs.y;
+        }
+    };
+public:
+    int maxPoints(vector<Point>& points) {
+        if (points.empty())
+            return 0;
+
+        unordered_map<Point, int, PointHash, PointCmp> pfreq;
+        for (const auto &p : points) {
+            for (auto iter = pfreq.begin(); iter != pfreq.end(); ++iter) {
+                if (OnALine(iter->first, p))
+                    iter->second ++;
+            }
+            pfreq.insert(make_pair(p, 1));
+        }
+
+        int res = 0;
+        for (const auto &member : pfreq)
+            res = max(res, member.second);
+        return res;
     }
 };
 
@@ -85,11 +107,13 @@ int main() {
     //string st1 = "anagram", st2 = "nagaram";
     //int digit = 19;
 
-    string str = "abab", p = "ab";
-    auto res = Solution().findAnagrams(str, p);
-    //cout << res << endl;
-    for (auto &d : res)
-        cout << d << " ";
-    cout << endl;
+    Point p1(0, 0), p2(1, 1), p3(2, 2), p4(1, 0);
+    vector<Point> nums = {p1, p2, p3, p4};
+    auto res = Solution().maxPoints(nums);
+    cout << res << endl;
+    //for (auto &d : res)
+        //cout << d << " ";
+    //cout << endl;
     //cout << std::boolalpha << res << endl;
+
 }
