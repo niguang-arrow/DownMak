@@ -1525,6 +1525,197 @@ public:
 
 
 
+### 3. Longest Substring Without Repeating Characters
+
+https://leetcode.com/problems/longest-substring-without-repeating-characters/description/
+
+给定一个字符串, 找出其中最长的不包含重复字符的子串. 注意 substring 和 subsequence 的区别. substring 需要是连续的.
+
+
+
+思路: 使用滑动窗口和查找表. 查找表保存滑动窗口中的字符, 当访问一个新的字符, 判断它是否在查找表中, 如果在的话, 那么就移动窗口的左边界, 这个时候, 窗口的宽度是在不断缩小的; 如果不在查找表中, 那么就将该元素插入到查找表中.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        if (s.empty())
+            return 0;
+
+        // s[l...r) 是滑动窗口
+        int l = 0, r = 0;
+        int res = 0;
+        unordered_set<int> record;
+        while (r < s.size()) {
+            if (record.find(s[r]) != record.end())
+                record.erase(s[l++]);
+            else
+                record.insert(s[r++]);
+            res = max(res, r - l);
+        }
+
+        return res;
+    }
+};
+```
+
+再给一个 leetcode 上比我的快一些的方法:
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int maxlen = 0, left = 1;
+        int sz = s.length();
+        int prev[256] = { 0 };
+
+        for (int i = 1; i <= sz; i++) {
+            if (prev[s[i-1]] >= left) {
+                left = prev[s[i-1]] + 1;
+            }
+            prev[s[i-1]] = i;
+            maxlen = max(maxlen, i - left + 1);
+        }
+        return maxlen;
+    }
+};
+```
+
+
+
+
+
+## 链表
+
+### 2. Add Two Numbers
+
+https://leetcode.com/problems/add-two-numbers/description/
+
+给定两个非空的链表, 它们的每个节点中只包含一个 0 ~ 9 之间的数字, 两个表的逆序表示两个整数, 现在要将这两个整数相加, 并将和保存在新链表中. 比如:
+
+```bash
+Input: (2 -> 4 -> 3) + (5 -> 6 -> 4)
+Output: 7 -> 0 -> 8
+Explanation: 342 + 465 = 807.
+```
+
+
+
+思路: 这道题不是很复杂, 原因是每个节点只保存了一个数字, 所以主要考虑进位的问题, 当求和时, 下一个节点的值应该是 `sum % 10`, 进位 `carry_over` 是 `sum / 10`. 另外, 关于链表的问题, 最好设置一个虚拟头结点, 这样可以省很多麻烦. 还需要注意一点是: `list1: {5}, list2: {5}`, 结果为 `result: {0, 1}` 表示 10, 这启示我们, 即使两个链表遍历完了, 还需要考虑 `carry_over` 是否大于 0. 另外, 当两个链表的长度不相等时, 也是要考虑的情况.
+
+```cpp
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        int carry_over = 0;
+
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+		
+      	// 如果最后 carry_over 不为 0, 那么仍要继续求值.
+        while (l1 || l2 || carry_over) {
+          	// 如果某链表访问完了, 那么就不要将其求和, part 设置为 0.
+            int part1 = l1 ? l1->val : 0;
+            int part2 = l2 ? l2->val : 0;
+
+            int sum = carry_over + part1 + part2;
+          	// 设立 dummy, 这里就很方便了.
+            ptr->next = new ListNode(sum % 10);
+            ptr = ptr->next;
+            carry_over = sum / 10;
+
+            l1 = l1 ? l1->next : nullptr;
+            l2 = l2 ? l2->next : nullptr;
+        }
+
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
+    }
+};
+```
+
+再给出 leetcode 上的解答, 这里的 `flag` 就是 `carry_over`.
+
+```cpp
+class Solution {
+public:
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        ListNode* dummy = new ListNode(0);
+        auto ptr = dummy;
+        int flag = 0;
+        while(l1 || l2 || flag)
+        {
+            int sum = flag;
+            if(l1)
+            {
+                sum += l1->val;
+                l1 = l1->next;
+            }
+            if(l2)
+            {
+                sum += l2->val;
+                l2 = l2->next;
+            }
+            ptr->next = new ListNode(sum % 10);
+            ptr = ptr->next;
+            flag = sum / 10;
+        }
+        return dummy->next;
+    }
+};
+```
+
+
+
+### 21. Merge Two Sorted Lists
+
+https://leetcode.com/problems/merge-two-sorted-lists/description/
+
+将两个有序链表合并成一个有序链表.
+
+题目中其实要求说新的链表需要是两个输入链表的节点组成的, 但我看答案中有些代码是直接 new, 感觉这样不对. 因此下面我是直接使用节点的地址.
+
+思路: 和归并排序的思路类似, 另外不得不说, 对于链表的题目, 最好是使用一个 dummy 头结点, 可以省掉很多麻烦, 参考上一题 2. Add Two Number 中使用 dummy 头结点后, 再使用 `ptr = dummy` 来遍历新的链表. 和归并排序不同的是, 如果其中一个输入链表遍历完了, 那么对于剩下的那个链表, 就不必再遍历了, 只需要设置 `ptr->next = l1 ? l1 : l2`, 将节点连接起来即可.
+
+```cpp
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+
+        while (l1 && l2) {
+            if (l1->val < l2->val) {
+                ptr->next = l1;
+                l1 = l1->next;
+            }
+            else {
+                ptr->next = l2;
+                l2 = l2->next;
+            }
+            ptr = ptr->next;
+        }
+
+        ptr->next = l1 ? l1 : l2;
+
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
+    }
+};
+```
+
+
+
 
 
 ## 二叉树
