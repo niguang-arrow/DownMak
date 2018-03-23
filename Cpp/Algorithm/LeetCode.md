@@ -1583,6 +1583,179 @@ public:
 
 
 
+## 二分搜索
+
+### 34. Search for a Range
+
+https://leetcode.com/problems/search-for-a-range/description/
+
+给定一个按从小到大排序的整型数组, 找到 target 的开始以及结束的索引. 如果 target 没有在数组中找到, 返回 `[-1, -1]`. 另外要求代码的时间复杂度为 O(logn). 比如:
+
+For example,
+Given `[5, 7, 7, 8, 8, 10]` and target value 8,
+return `[3, 4]`.
+
+思路: 由于数组是排好序的, 那么应该使用二分查找法来查找 target, 但题目中要求获得包含 target 的区间, 那么当 target 在数组中有多个时, 我们就需要找到 target 的 `lower_bound` 以及 `upper_bound`. (给出解法之后, 下面再说明一下这两个 bound)
+
+```cpp
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {
+        if (nums.empty())
+            return vector<int>{-1, -1};
+        
+        vector<int> res;
+      	// 求 target 的 lower_bound
+        int l = 0, r = nums.size() - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] < target)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+
+        if (l >= 0 && l < nums.size() && nums[l] == target)
+            res.push_back(l);
+        else
+            res.push_back(-1);
+
+		
+      	// 求 target 的 upper_bound
+        l = 0;
+        r = nums.size() - 1;
+
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] <= target)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+
+        if (l - 1 >= 0 && l - 1 < nums.size() && nums[l - 1] == target)
+            res.push_back(l - 1);
+        else
+            res.push_back(-1);
+
+        return res;
+    }
+};
+```
+
+再重复一下 `lower_bound` 以及 `upper_bound`, 首先是 `lower_bound` 要查找第一个大于或等于 target 的值的索引, 也就是从左向右直到找到满足要求的值:
+
+看到下面代码中 `nums[mid] < target`, 只要 while 在循环, 说明两点, 一是区间 `nums[l...r]` 中还有某一个值(l == r)或某一些值(l < r) 没有考察, 二是 `nums[l...mid]` 中的值总是小于 target 的, 那么第一个大于或等于 target 的值只可能在 `nums[mid+1, ... r]` 中, 因此, `l = mid + 1` 这句话说明 `l` 可能是第一个大于或等于 target 的值, 因此只要最后 l 在 `[0, .... size - 1]` 之间, 那么就说明找到了.
+
+```cpp
+int lowerbound(vector<int> &nums, int target) {
+    int l = 0, r = nums.size() - 1;
+
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+
+        if (nums[mid] < target)
+            l = mid + 1;
+        else
+            r = mid - 1;
+    }
+    
+    if (l >= 0 && l <= nums.size() - 1)
+        return l;
+    return -1;
+}
+```
+
+对于 `upper_bound` 也是同理:
+
+upperbound 查找第一个大于 target 的值, 也就是从右向左看最后一个大于 target 的值, 那么令 `nums[mid] <= target` (和上面 lowerbound 的代码相比, 只是多加了一个等号), 则 `nums[l...mid]` 中的值总是小于或等于 target 的, 只有 `nums[mid+1, ... r]` 中的值才可能大于 target, 因此, 最后返回 l.
+
+```cpp
+int upperbound(vector<int> &nums, int target) {
+    int l = 0, r = nums.size() - 1;
+
+    while (l <= r) {
+        int mid = l + (r - l) / 2;
+
+        if (nums[mid] <= target)
+            l = mid + 1;
+        else
+            r = mid - 1;
+    }
+    
+    if (l >= 0 && l <= nums.size() - 1)
+        return l;
+    return -1;
+}
+```
+
+
+
+### 35. Search Insert Position
+
+https://leetcode.com/problems/search-insert-position/description/
+
+给定一个已排序的数组以及target, 如果找到了 target, 那么返回 index; 否则, 返回如果将这个 target 插入到数组中使得数组仍然有序的位置.(可以假设这个数组中没有重复元素) 比如:
+
+**Example 1:**
+
+```bash
+Input: [1,3,5,6], 5
+Output: 2
+```
+
+**Example 2:**
+
+```bash
+Input: [1,3,5,6], 2
+Output: 1
+```
+
+**Example 3:**
+
+```bash
+Input: [1,3,5,6], 7
+Output: 4
+```
+
+**Example 1:**
+
+```bash
+Input: [1,3,5,6], 0
+Output: 0
+```
+
+思路: 这道题提示说这个数组中没有重复元素, 那么可能会想到遍历这个数组的想法. 但实际上, 使用二分搜索会更快, 只要我们找到了 target 在数组中的 `lower_bound` 即可. 另外, 注意当 `nums[mid] == target` 时, 直接返回 mid; 而当数组中没有 target 时, 那么只要将 target 插入到 `lower_bound` 所在的索引即可.
+
+```cpp
+class Solution {
+public:
+  	// 当把代码写完之后, 发现其实注释的代码实际上是不需要的, 首先数组为空, 下面的代码
+  	// 也能正常处理; 而最后, 即使 l >= nums.size(), 说明数组中的元素全部小于 
+ 	// target, 那么就应该将 target 插入到数组的末尾.
+    int searchInsert(vector<int>& nums, int target) {
+        //if (nums.empty())
+            //return 0;
+
+        int l = 0, r = nums.size() - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == target)
+                return mid;
+            else if (nums[mid] < target)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+
+        //if (l >= 0 && l < nums.size() && nums[l] == target)
+        return l;
+    }
+};
+```
+
+
+
 
 
 ## 链表

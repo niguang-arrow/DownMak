@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <cassert>
 
 
 using namespace std;
@@ -109,45 +110,23 @@ struct TreeNode {
 
 class Solution {
 public:
-    vector<int> searchRange(vector<int>& nums, int target) {
-        vector<int> res;
-        if (nums.empty())
-            return res;
+    int searchInsert(vector<int>& nums, int target) {
+        //if (nums.empty())
+            //return 0;
 
         int l = 0, r = nums.size() - 1;
         while (l <= r) {
             int mid = l + (r - l) / 2;
-            if (nums[mid] >= target)
-                r = mid - 1;
-            else
-                l = mid + 1;
-        }
-        cout << r << endl;
-
-        if (r < 0)
-            res.push_back(-1);
-        else
-            res.push_back(r + 1);
-
-
-        l = 0;
-        r = nums.size() - 1;
-
-        while (l <= r) {
-            int mid = l + (r - l) / 2;
-            if (nums[mid] <= target)
+            if (nums[mid] == target)
+                return mid;
+            if (nums[mid] < target)
                 l = mid + 1;
             else
                 r = mid - 1;
         }
 
-        if (l >= nums.size())
-            res.push_back(-1);
-        else
-            res.push_back(l - 1);
-
-
-        return res;
+        //if (l >= 0 && l < nums.size() && nums[l] == target)
+        return l;
     }
 };
 
@@ -174,15 +153,17 @@ int main() {
     //auto res = Solution().maxPoints(nums);
     //cout << res << endl;
 
-    vector<int> nums = {5, 7, 7, 8, 8};
-    auto res = Solution().searchRange(nums, 8);
+    int arr[] = {1, 2, 3, 4, 5, 6};
+    vector<int> nums(arr, arr + sizeof(arr) / sizeof(int));
+    auto res = Solution().searchInsert(nums, 0);
+    cout << res << endl;
 
 
     //cout << res << endl;
 
-    for (auto &d : res)
-        cout << d << " ";
-    cout << endl;
+    //for (auto &d : res)
+        //cout << d << " ";
+    //cout << endl;
     //cout << std::boolalpha << res << endl;
 
 }
