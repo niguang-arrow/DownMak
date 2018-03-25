@@ -15,29 +15,6 @@
 
 using namespace std;
 
-//class Solution {
-//private:
-    //bool contain(BinaryTreeNode<int> *root, int target) {
-        //if (!root)
-            //return false;
-
-        //if (root->val == target)
-            //return true;
-        //else if (root->val < target)
-            //return contain(root->right, target);
-        //else
-            //return contain(root->left, target);
-    //}
-//public:
-    //bool findTarget(BinaryTreeNode<int> *root, int k) {
-        //if (!root)
-            //return false;
-
-
-    //}
-//};
-//
-
 struct TreeNode {
     int val;
     TreeNode *left;
@@ -52,82 +29,37 @@ struct TreeNode {
      Point(int a, int b) : x(a), y(b) {}
  };
 
-//class Solution {
-//private:
-    //bool OnALine(const Point &p, const Point &q) {
-        //return !((p.x * q.y) - (p.y * q.x));
-    //}
-    //struct PointHash
-    //{
-        //size_t operator()(const Point& rhs) const{
-            //return hash<int>()(rhs.x * rhs.x + rhs.y * rhs.y);
-        //}
-    //};
-    //struct PointCmp
-    //{
-        //bool operator()(const Point& lhs, const Point& rhs) const{
-            //return lhs.x == rhs.x && lhs.y == rhs.y;
-        //}
-    //};
-//public:
-    //int maxPoints(vector<Point>& points) {
-        //if (points.empty())
-            //return 0;
-
-        //unordered_map<Point, int, PointHash, PointCmp> pfreq;
-        //for (const auto &p : points) {
-            //for (auto iter = pfreq.begin(); iter != pfreq.end(); ++iter) {
-                //if (OnALine(iter->first, p))
-                    //iter->second ++;
-            //}
-            //pfreq.insert(make_pair(p, 1));
-        //}
-
-        //int res = 0;
-        //for (const auto &member : pfreq)
-            //res = max(res, member.second);
-        //return res;
-    //}
-//};
-
-//class Solution {
-//public:
-    //bool isPalindrome(int x) {
-        //if (x < 0)
-            //return false;
-
-        //unsigned int l = 0x80000000;
-        //unsigned int r = 0x1;
-        //while (l != r) {
-            //if (((l & x)) != (r & x))
-                //return false;
-            //l >>= 1;
-            //r <<= 1;
-        //}
-        //return true;
-    //}
-//};
-
 class Solution {
 public:
-    int searchInsert(vector<int>& nums, int target) {
-        //if (nums.empty())
-            //return 0;
-
-        int l = 0, r = nums.size() - 1;
-        while (l <= r) {
-            int mid = l + (r - l) / 2;
-            if (nums[mid] == target)
-                return mid;
-            if (nums[mid] < target)
-                l = mid + 1;
+    int findPairs(vector<int>& nums, int k) {
+        unordered_map<int, int> record;
+        for (auto &d : nums) {
+            auto iter = record.find(d);
+            if (iter != record.end())
+                iter->second ++;
             else
-                r = mid - 1;
+                record.insert(make_pair(d, 1));
         }
 
-        //if (l >= 0 && l < nums.size() && nums[l] == target)
-        return l;
+        int count = 0;
+        if (k == 0) {
+            for (auto &elem : record) {
+                if (elem.second > 1)
+                    count ++;
+            }
+        }
+        else {
+            for (auto &elem : record) {
+                auto iter = record.find(elem.first + k);
+                if (iter != record.end()) {
+                    count ++;
+                }
+            }
+        }
+
+        return count;
     }
+
 };
 
 int main() {
@@ -145,21 +77,11 @@ int main() {
     //root->right = new TreeNode(1);
 
 
-    //string st1 = "anagram", st2 = "nagaram";
-    //int digit = 19;
 
-    //Point p1(0, 0), p2(1, 1), p3(2, 2), p4(1, 0);
-    //vector<Point> nums = {p1, p2, p3, p4};
-    //auto res = Solution().maxPoints(nums);
-    //cout << res << endl;
-
-    int arr[] = {1, 2, 3, 4, 5, 6};
-    vector<int> nums(arr, arr + sizeof(arr) / sizeof(int));
-    auto res = Solution().searchInsert(nums, 0);
+    vector<int> nums = {1, 3, 4, 5, 1};
+    auto res = Solution().findPairs(nums, 2);
+    
     cout << res << endl;
-
-
-    //cout << res << endl;
 
     //for (auto &d : res)
         //cout << d << " ";

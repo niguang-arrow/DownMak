@@ -1583,6 +1583,267 @@ public:
 
 
 
+### 15. 3Sum (未完)
+
+https://leetcode.com/problems/3sum/description/
+
+
+
+### 763. Partition Labels
+
+https://leetcode.com/problems/partition-labels/description/
+
+给定一个由小写字符组成的字符串, 我们希望尽可能将字符串分成多块, 使得每个字符最多出现在一个块中, 然后返回这些字符块的大小. 比如:
+
+**Example 1:**
+
+```bash
+Input: S = "ababcbacadefegdehijhklij"
+Output: [9,7,8]
+Explanation:
+The partition is "ababcbaca", "defegde", "hijhklij".
+This is a partition so that each letter appears in at most one part.
+A partition like "ababcbacadefegde", "hijhklij" is incorrect, because it splits S into less parts.
+```
+
+**Note:**
+
+1. `S` will have length in range `[1, 500]`.
+2. `S` will consist of lowercase letters (`'a'` to `'z'`) only.
+
+思路: 首先要分析如何进行分块. 仔细观察可以发现, 就拿 `S = "ababcbacadefegdehijhklij"` 来说, 当访问 `S[0] = 'a'` 时, 要找到一种分法, 使得 a 只出现在一个字符块中, 那么我们要到 S 中找到最右边的 a, 即 `S[8]`, 那么 a 只出现在字符块 `ababcbaca` 中, 不会出现在 `S[9,....]` 中. 但注意, 这只是其中一个需要满足的条件, 另一个条件是, 还需要判断 `ababcbaca` 中除了第一个 a 以外, 剩余的字符最远的索引是多少, 比如目前由于 `S[1...8]` 中, 每一个字符, 比如 b 和 c, 它们最远的索引都小于 8, 那么说明它们一定会出现在 `S[0,...8]` 中.
+
+根据以上的分析, 我们发现可以这样做: 首先当访问到 `S[start]` 时, 判断 `S[start]` 最远的索引是 end, 那么 `S[start,..., end]` 就是我们要考察的字符块, 这是初始的状态. 然后一次判断 `S[start+1...end - 1]` 中的元素, 看看它们的最远的索引是什么, 如果所有这些元素的最远索引都小于 end, 那么 `S[start,..., end]` 就是我们需要的; 但若存在某个索引(newend)大于当前的 end, 那么就需要将字符块的区间扩大, 即令 `end = newend`, 然后再判断 `S[++start,...newend]` 中的元素的最大索引是不是大于 newend. 不断重复这个过程.
+
+```cpp
+class Solution {
+public:
+    vector<int> partitionLabels(string S) {
+      	// cmap 保存字符, 以及该字符的索引,
+      	// 注意, 由于是从左向右遍历, 所以 vector<int> 中的值是从小到大的, 
+      	// 那么使用 .back() 就可以获得最远的索引. 使用 front() 计算开始的
+      	// 索引用于计算长度.
+        unordered_map<char, vector<int>> cmap;
+        for (int i = 0; i < S.size(); ++i) {
+            auto iter = cmap.find(S[i]);
+            if (iter != cmap.end())
+                iter->second.push_back(i);
+            else
+                cmap.insert(make_pair(S[i], vector<int>{i}));
+        }
+
+        int start = 0;
+        vector<int> res;
+        while (start != S.size()) {
+          	// 考虑区间 S[start,..., end]
+            auto iter = cmap.find(S[start]);
+            int end = iter->second.back();
+          	// 判断 S[start+1,...end - 1] 返回内
+          	// 元素的最远索引, 并和 end 比较.
+            while (start < end) {
+                auto next = cmap.find(S[++start]);
+                int newend = next->second.back();
+                if (newend > end)
+                    end = newend;
+            }
+            int len = end - iter->second.front() + 1;
+            res.push_back(len);
+            ++start;
+        }
+
+        return res;
+    }
+};
+```
+
+leetcode 上对于 end 的处理还可以像下面这样:
+
+```cpp
+class Solution {
+public:
+    vector<int> partitionLabels(string S) {
+        vector<pair<int, int> > info(26, make_pair(-1, -1));
+        vector<int> res;
+        string seq = "";
+        int size = S.size();
+        for (int i = 0; i < size; i++) {
+            if (info[S[i] - 'a'].first == -1) {
+                info[S[i] - 'a'].first = info[S[i] - 'a'].second = i;
+                seq += S[i];
+            } else {
+                info[S[i] - 'a'].second = i;
+            }
+        }
+        int begin = info[seq[0] - 'a'].first;
+        int end = info[seq[0] - 'a'].second;
+        for (int i = 1; i < seq.size(); i++) {
+            int left = info[seq[i] - 'a'].first;
+            int right = info[seq[i] - 'a'].second;
+            if (left < end) {
+                end = end > right? end : right;
+            } else {
+                res.push_back(end - begin + 1);
+                begin = left;
+                end = right;
+            }
+        }
+        res.push_back(end - begin + 1);
+        return res;
+    }
+};
+```
+
+根据上面的代码对我开始写的程序进行适当的修改如下, 但不知为何, 速度反而慢了:
+
+```cpp
+class Solution {
+public:
+    vector<int> partitionLabels(string S) {
+        if (S.empty())
+            return vector<int>();
+        unordered_map<char, vector<int>> cmap;
+        for (int i = 0; i < S.size(); ++i) {
+            auto iter = cmap.find(S[i]);
+            if (iter != cmap.end())
+                iter->second.push_back(i);
+            else
+                cmap.insert(make_pair(S[i], vector<int>{i}));
+        }
+
+        vector<int> res;
+
+        auto iter = cmap.find(S[0]);
+        int begin = iter->second.front();
+        int end = iter->second.back();
+        for (int i = 1; i < S.size(); ++i) {
+            auto it = cmap.find(S[i]);
+            int left = it->second.front();
+            int right = it->second.back();
+            if (left < end) {
+                end = end > right ? end : right;
+            }
+            else {
+                int len = end - begin + 1;
+                res.push_back(len);
+                begin = left;
+                end = right;
+            }
+        }
+        int len = end - begin + 1;
+        res.push_back(len);
+        return res;
+    }
+};
+```
+
+
+
+### 532. K-diff Pairs in an Array
+
+https://leetcode.com/problems/k-diff-pairs-in-an-array/description/
+
+给定整型数组 array 以及一个整数 k, 需要找到数组中唯一的 k-diff pairs 有多少个. k-diff pairs 定义为对于数组中的任意两个数 `(i, j)`, 它们的差的绝对值为 k.
+
+**Example 1:**
+
+```bash
+Input: [3, 1, 4, 1, 5], k = 2
+Output: 2
+Explanation: There are two 2-diff pairs in the array, (1, 3) and (3, 5).
+Although we have two 1s in the input, we should only return the number of unique pairs.
+```
+
+**Example 2:**
+
+```bash
+Input:[1, 2, 3, 4, 5], k = 1
+Output: 4
+Explanation: There are four 1-diff pairs in the array, (1, 2), (2, 3), (3, 4) and (4, 5).
+```
+
+**Example 3:**
+
+```bash
+Input: [1, 3, 1, 5, 4], k = 0
+Output: 1
+Explanation: There is one 0-diff pair in the array, (1, 1).
+```
+
+**Note:**
+
+1. The pairs (i, j) and (j, i) count as the same pair.
+2. The length of the array won't exceed 10,000.
+3. All the integers in the given input belong to the range: [-1e7, 1e7].
+
+思路: 其实这道题并不复杂, 但是需要注意一下陷阱: 首先当 k 是 0 的时候, 对于数组 `{1, 3, 5}` 来说, k-diff pairs 的个数实际上是 0; 但是对于 `{1, 3, 5, 1}` 来说, 个数是 1. 这提示我们需要使用 map 来统计数组中每个元素的个数, 当 k = 0 时, 只有个数超过 1 的元素, 才会对 k-diff pairs 的个数做出贡献. 另外还需要注意, 当 k < 0 时, 结果总是返回 0 的, 因为题目中要求 k >= 0.
+
+```cpp
+class Solution {
+public:
+    int findPairs(vector<int>& nums, int k) {
+        unordered_map<int, int> record;
+        for (auto &d : nums) {
+            auto iter = record.find(d);
+            if (iter != record.end())
+                iter->second ++;
+            else
+                record.insert(make_pair(d, 1));
+        }
+
+        int count = 0;
+        if (k == 0) {
+            for (auto &elem : record) {
+                if (elem.second > 1)
+                    count ++;
+            }
+        }
+        else if (k > 0) {
+            for (auto &elem : record) {
+                auto iter = record.find(elem.first + k);
+                if (iter != record.end()) {
+                    count ++;
+                }
+            }
+        }
+        return count;
+    }
+
+};
+```
+
+下面的代码和我逻辑上一样, 看起来稍微精简一些.
+
+```cpp
+class Solution {
+public:
+    int findPairs(vector<int>& nums, int k) {
+        if (nums.size() <= 1 || k < 0) {
+            return 0;
+        }
+        
+        unordered_map<int, int> mp;
+        for (int num : nums) ++mp[num]; 
+                
+        int res = 0;
+        for (auto m: mp) {
+            if (k == 0 && m.second > 1) {
+                ++res;
+            }
+            if (k > 0 && mp.count(m.first + k)) {
+                ++res;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+
+
+
+
 ## 二分搜索
 
 ### 34. Search for a Range
@@ -1886,6 +2147,158 @@ public:
     }
 };
 ```
+
+
+
+### 23. Merge k Sorted Lists
+
+https://leetcode.com/problems/merge-k-sorted-lists/description/
+
+类似于上一题, 但此处是将 k 个已排序的链表归并起来.
+
+思路: 首先我想到的是使用优先队列, 将每个链表中的头结点插入到队列中, 弹出最小的那个 `minNode`, 如果 minNode 的 next 节点不为空, 那么将该节点 push 到队列中继续进行处理. 第二种思路就是复用上面的 21. Merge 2 sorted lists 中的代码, 将链表两两合并, 但时间复杂度稍高.
+
+```cpp
+class Solution {
+private:
+  	// 优先队列默认弹出最大值, 使用的默认比较函数是: 
+  	// std::less<typename Container::value_type>
+  	// 因此, 这里改成如果 p1 比 p2 要大的话, 那么就后弹出.
+    struct cmp {
+        bool operator()(ListNode *p1, ListNode *p2) {
+            return (p1->val) > (p2->val);
+        }
+    };
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        if (lists.empty())
+            return nullptr;
+
+        priority_queue<ListNode*, vector<ListNode*>, cmp> Queue;
+      	// 注意, lists 中可以有些 node 是空的, 不需要考虑这些空节点
+        for (auto &ptr : lists)
+            if (ptr)
+                Queue.push(ptr);
+
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+
+        while (!Queue.empty()) {
+            auto minNode = Queue.top();
+            Queue.pop();
+
+            ptr->next = minNode;
+            if (minNode->next)
+                Queue.push(minNode->next);
+            ptr = ptr->next;
+        }
+
+        ListNode *head = dummy->next;
+        delete dummy;
+        return head;
+    }
+};
+```
+
+第二种思路, 基于 merge 2 sorted lists:
+
+```cpp
+class Solution {
+private:
+    ListNode* mergeTwoLists(ListNode *p, ListNode *q) {
+
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+
+        while (p && q) {
+            if (p->val < q->val) {
+                ptr->next = p;
+                p = p->next;
+            }
+            else {
+                ptr->next = q;
+                q = q->next;
+            }
+            ptr = ptr->next;
+        }
+
+        ptr->next = p ? p : q;
+
+        ListNode *head = dummy->next;
+        delete dummy;
+        return head;
+    }
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        if (lists.empty())
+            return nullptr;
+        // 复用 mergeTwoLists
+        ListNode *p = lists[0];
+        for (int i = 1; i < lists.size(); ++i)
+            p = mergeTwoLists(p, lists[i]);
+
+        return p;
+    }
+};
+```
+
+
+
+
+
+### 147. Insertion Sort List
+
+https://leetcode.com/problems/insertion-sort-list/description/
+
+对链表使用插入排序.
+
+思路: 首先要明确插入排序的定义. 比如数组中, 对于当前访问的元素 `arr[i]`, 它要和它前面的已排好序的元素 `arr[0...i - 1]` 进行比较, 并插入合适的位置. 现在考虑链表, 第一: 设置虚拟头结点 dummy 减少插入元素的麻烦; 第二, 如何定义已排好序的元素的, 下面我使用 `[dummy->next,..., end]` 来表示排好序的元素的范围, 使用 `list[end->next]` 表示当前访问的元素, 然后将该元素和前面的元素依次(使用 start 来遍历已排好序的元素)比较, 插入到合适的位置, 并将链表中节点间的顺序设置好; 但是如果当前访问的元素比前面所有的元素都大(也就是 `start` 已经访问到 `end` 了, 在链表中实际表现为 `start->next == end->next`), 那么只要将该元素纳入到已排序的链表中, 即 `end = node`.
+
+```cpp
+class Solution {
+public:
+    ListNode* insertionSortList(ListNode* head) {
+        if (!head)
+            return nullptr;
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+
+        ListNode *end = head;
+        while (end->next) {
+          	// 使用 start 来遍历 [dummy->next,... end]
+          	// node 表示当前访问的未排序的元素.
+            ListNode *start = dummy;
+            ListNode *node = end->next;
+            while (start->next != end->next) {
+                if (node->val < start->next->val) {
+                    end->next = node->next;
+                    node->next = start->next;
+                    start->next = node;
+                    break;
+                }
+                else {
+                    start = start->next;
+                }
+            }
+            
+            if (start->next == end->next)
+                end = node;
+        }
+
+        head = dummy->next;
+        delete dummy;
+        return head;
+    }
+};
+```
+
+
+
+### 86. Partition List(未完)
+
+https://leetcode.com/problems/partition-list/description/
+
+
 
 
 
