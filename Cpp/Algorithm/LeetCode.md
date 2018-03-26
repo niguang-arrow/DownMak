@@ -548,6 +548,72 @@ public:
 
 ## 字符串
 
+### 67. Add Binary
+
+https://leetcode.com/problems/add-binary/description/
+
+Given two binary strings, return their sum (also a binary string).
+
+For example,
+a = `"11"`
+b = `"1"`
+Return `"100"`.
+
+思路: 这道题和链表 2. Add Two Numbers 和相似, 所以我采用的代码编写方式和那道题相同. 这里要注意是从后向前加, 当 `carry_over` 进位符不为零时, 循环仍要继续. 比如 `a = "1", b="1"`, 它们相加后的结果为 `10`. 另外, 将数字字符转换为整数使用 `'9' - '0' = 9` 这样的方式. 
+
+```cpp
+class Solution {
+public:
+    string addBinary(string a, string b) {
+        int apt = a.size() - 1, bpt = b.size() - 1;
+        int carry_over = 0;
+        string res = "";
+        while (apt >= 0 || bpt >= 0 || carry_over) {
+            int part1 = apt >= 0 ? a[apt] - '0' : 0;
+            int part2 = bpt >= 0 ? b[bpt] - '0' : 0;
+
+            int sum = part1 + part2 + carry_over;
+            carry_over = sum / 2;
+            res = to_string(sum % 2) + res;
+
+            apt --;
+            bpt --;
+        }
+        return res;
+    }
+};
+```
+
+下面一种实现比我的稍快一些, 我是将 res 从后向前加, 而这里是先得出逆序的结果, 再调用 reverse 方法翻转结果.
+
+```cpp
+class Solution {
+public:
+    string addBinary(string a, string b) {
+        int i = a.length() - 1;
+        int j = b.length() - 1;
+        string res;
+        int carry = 0;
+        while(i >= 0 || j >= 0 || carry > 0) {
+            if(i >= 0) {
+                carry += a[i] - '0';
+                i -= 1;
+            } 
+            if(j >= 0) {
+                carry += b[j] - '0';
+                j -= 1;
+            }
+            res += (carry % 2) + '0';
+            carry /= 2;
+        }
+        reverse(res.begin(), res.end());
+        return res;
+    }
+};
+```
+
+
+
 ### 125. Valid Palindrome
 
 https://leetcode.com/problems/valid-palindrome/description/
@@ -2294,13 +2360,326 @@ public:
 
 
 
-### 86. Partition List(未完)
+### 86. Partition List
 
 https://leetcode.com/problems/partition-list/description/
 
+给定一个链表和一个值 x, 将这个链表分成两个部分, 其中所有小于 x 的节点都放在所有大于或等于 x 的节点的前面. 另外, 在这两个部分中, 还要保留节点的相对位置. 比如:
+
+Given `1->4->3->2->5->2` and *x* = 3,
+return `1->2->2->4->3->5`.
+
+思路: 使用 `ptr` 来遍历原链表, 比较每个节点和 x 的值的相对大小. 然后设置两个虚拟节点 less 和 greater, 用于连接小于 x 的所有节点以及大于或等于 x 的所有节点, 最后只要将 `greater->next` 接到 less 的末尾即可.
+
+注意下面代码中 `gptr->next` 最后一定要设置为空, 否则会形成一个带环的链表...
+
+```cpp
+class Solution {
+public:
+    ListNode* partition(ListNode* head, int x) {
+        ListNode *less = new ListNode(0);
+        ListNode *greater = new ListNode(0);
+
+        auto ptr = head;
+        auto lptr = less;
+        auto gptr = greater;
+
+        while (ptr) {
+            if (ptr->val < x) {
+                lptr->next = ptr;
+                lptr = lptr->next;
+            }
+            else {
+                gptr->next = ptr;
+                gptr = gptr->next;
+            }
+            ptr = ptr->next;
+        }
+
+        // 下面这行设置 gptr->next 为空的代码必须存在,
+        // 否则会无限输出. 可以在此之前打印 gptr->next->val
+        // 便可以知道缘由.
+        gptr->next = nullptr;
+        lptr->next = greater->next;
+        ListNode *res = less->next;
+        delete less;
+        delete greater;
+        return res;
+    }
+};
+```
 
 
 
+### 19. Remove Nth Node From End of List
+
+https://leetcode.com/problems/remove-nth-node-from-end-of-list/description/
+
+给定一个链表, 将倒数第 n 个节点给删除. 比如:
+
+```bash
+Given linked list: 1->2->3->4->5, and n = 2.
+
+After removing the second node from the end, the linked list becomes 1->2->3->5.
+```
+
+**Note:**
+Given *n* will always be valid.
+Try to do this in one pass.
+
+思路: 这道题麻烦在不知道倒数第 n 个节点怎么找, 这个时候需要使用两个指针, `p1` 和 `p2`, 让它们俩之间有 n 个节点(这样的话, 加上它们两个节点就有 n + 2 个节点). 此时, 当 p2 指向链表的尾部 nullptr 时, p1 就刚好指向要删除节点的前一个节点.
+
+```bash
+				   p1               p2      -- end 结束的状态
+dummy -> 1 -> 2 -> 3 -> 4 -> 5 -> nullptr
+ p1                p2                       -- start 一开始的状态
+```
+
+但注意只有当 p2 移动到距离 p1 有 3 个节点的间隔时, p1 才会开始向右移动, 否则它一直指向 dummy.
+
+这就是为什么我在下面的代码中令 `count > n + 1` (上面是 n = 2 时的情况).
+
+```cpp
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        if (!head)
+            return nullptr;
+
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+        int count = 0;
+        auto p1 = dummy, p2 = dummy;
+
+        while (p2) {
+            p2 = p2->next;
+            count ++;
+
+            // 这里只有当 count > n + 1 才移动, 是因为这样做的话,
+            // p1 能移动到要删除节点的前一个节点, 如果是 count > n,
+            // 那么 p1 会移到要删除的节点.
+            if (count > n + 1)
+                p1 = p1->next;
+        }
+
+        ListNode *delNode = p1->next;
+        p1->next = delNode->next;
+        delete delNode;
+
+        head = dummy->next;
+        delete dummy;
+        return head;
+    }
+};
+```
+
+感觉下面的思路可能更好理解: 见 leetcode-cpp.pdf 2.2.7
+
+思路: 设两个指针 p; q，让 q 先走 n 步，然后 p 和 q 一起走，直到 q 走到尾节点，删除 p->next 即可。
+
+```cpp
+// LeetCode, Remove Nth Node From End of List
+// 时间复杂度 O(n)，空间复杂度 O(1)
+class Solution {
+public:
+    ListNode *removeNthFromEnd(ListNode *head, int n) {
+        ListNode dummy{-1};
+        dummy.next = head;
+        ListNode *p = &dummy, *q = &dummy;
+        for (int i = 0; i < n; i++) // q 先走 n 步
+            q = q->next;
+        while(q->next) { // 一起走
+            p = p->next;
+            q = q->next;
+        }
+        ListNode *tmp = p->next;
+        p->next = p->next->next;
+        delete tmp;
+        return dummy.next;
+    }
+};
+```
+
+
+
+### 83. Remove Duplicates from Sorted List
+
+https://leetcode.com/problems/remove-duplicates-from-sorted-list/description/
+
+给定一个排序好的链表, 将其中的重复元素给删除, 使得相同元素只出现一次. 比如:
+
+Given `1->1->2`, return `1->2`.
+Given `1->1->2->3->3`, return `1->2->3`.
+
+思路: 这道题比较简单, 但是我想复杂了... 先给出 leetcode 的上一个简洁的求解:
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        ListNode* temp_node = head;
+        while (temp_node != NULL && temp_node->next != NULL) {
+            if (temp_node->next->val == temp_node->val) {
+                temp_node->next = temp_node->next->next;
+            }else {
+                    temp_node = temp_node->next;
+            }
+        }
+        return head;        
+    }
+};
+```
+
+然后说明我的想法, 使用 bound 节点来表示它前面的节点都是没有重复的, ptr 表示当前要考察的节点.
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (!head)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+
+        ListNode *bound = head, *ptr = head->next;
+
+        while (ptr) {
+            if (ptr->val != bound->val) {
+                bound->next = ptr;
+                bound = bound->next;
+            }
+            ptr = ptr->next;
+        }
+		// 注意最后要将 bound->next 设置为 nullptr.
+        bound->next = nullptr;
+
+        return dummy->next;
+    }
+};
+
+```
+
+
+
+### 82. Remove Duplicates from Sorted List II 
+
+https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+
+给定一个排好序的链表, 将所有有重复元素的节点都删除, 只保留只有单独一个元素的节点. 比如:
+
+Given `1->2->3->3->4->4->5`, return `1->2->5`.
+Given `1->1->1->2->3`, return `2->3`.
+
+思路: 首先, 通过画图可以明确这样一点, 需要使用 3 个指针来遍历这个链表, 我这里每次考虑的是 `ptr->next` 这个节点, 所以需要判断这个节点是否满足:
+
+```cpp
+// 即 ptr->next 的值是否与它前一个元素不相等, 并且和它后一个元素也不相等.
+// third 为 ptr->next->next.
+ptr->next->val != ptr->val && third->val != ptr->next->val
+```
+
+但是这里还需要考虑如 `{1}`, `{1, 1}` 以及 `{1, 2}` 这样的只有少于两个元素的两种情况. 另外由于要访问 `third`, 所以还需要判断 `third` 是否为空, 如果是的话, 那么说明此时 `ptr` 指向的是倒数第二个节点. 另外注意最后 `ele->next` 要设置为空.
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (!head)
+            return nullptr;
+
+        ListNode *dummy = new ListNode(0);
+        auto ele = dummy;
+        auto ptr = head;
+
+        if (!head->next || (head->next && (head->val != head->next->val))) {
+            ele->next = head;
+            ele = ele->next;
+        }
+
+        while (ptr->next) {
+            auto third = ptr->next->next;
+            if (!third) {
+                if (ptr->next->val == ptr->val)
+                    break;
+                else {
+                    ele->next = ptr->next;
+                    ele = ele->next;
+                }
+            }
+            else {
+                if (ptr->next->val != ptr->val && third->val != ptr->next->val) {
+                    ele->next = ptr->next;
+                    ele = ele->next;
+                }
+            }
+            ptr = ptr->next;
+        }
+
+        ele->next = nullptr; 
+        return dummy->next;
+    }
+};
+```
+
+leetcode 上还有一种思路是考虑当前访问的节点是否满足条件, 那么它就要和 `prev` 以及它下一个节点比较: 这里注意 : `dummy.val = head->val == 1 ? -1 : 1;` 当 cur 为 head 时, 由于需要 prev, 所以令 dummy 的值和 head 的值不同.
+
+```cpp
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (!head) return nullptr;
+        ListNode dummy(-1);
+        dummy.val = head->val == 1 ? -1 : 1;
+        ListNode *prev = &dummy, *curr = head, *first = &dummy;
+        prev->next = curr;
+        while (curr && curr->next) {
+            if (prev->val != curr->val && curr->val != curr->next->val) {
+                first->next = curr;
+                first = first->next;
+            }
+            prev = curr;
+            curr = curr->next;
+        }
+        if (curr->val != prev->val)
+            first->next = curr;
+        else first->next = nullptr;
+        return dummy.next;
+    }
+};
+```
+
+最后给出一种精彩的使用递归进行求解的方法: 见 leetcode-cpp.pdf 2.2.5 节
+
+```cpp
+// LeetCode, Remove Duplicates from Sorted List II
+// 递归版，时间复杂度 O(n)，空间复杂度 O(1)
+class Solution {
+public:
+    ListNode *deleteDuplicates(ListNode *head) {
+        if (!head || !head->next) return head;
+        ListNode *p = head->next;
+        if (head->val == p->val) {
+            while (p && head->val == p->val) {
+                ListNode *tmp = p;
+                p = p->next;
+                delete tmp;
+            }
+            delete head;
+            return deleteDuplicates(p);
+        } else {
+            head->next = deleteDuplicates(head->next);
+            return head;
+        }
+    }
+};
+```
+
+
+
+### 61. Rotate List(未完, 题意都理解错了)
+
+https://leetcode.com/problems/rotate-list/description/
 
 
 

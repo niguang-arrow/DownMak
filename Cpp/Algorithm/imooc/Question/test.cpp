@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <cassert>
 
 using namespace std;
 
@@ -68,6 +69,53 @@ public:
         }
     }
 };
+
+// 并查集的第一种实现, union (注意union是关键字)操作的时间复杂度
+// 为 O(n). 而 find 操作为 O(1), 因此这种实现方法为 Quick Find.
+namespace UnionFind1 {
+    class UnionFind {
+        private:
+            int *id;
+            int count;
+
+        public:
+            UnionFind(int n) : count(n) {
+                id = new int[n];
+                for (int i = 0; i < n; ++i)
+                    id[i] = i;
+            }
+
+            ~UnionFind() { delete[] id; }
+
+            // 查找元素为 p 的 id 号
+            int find(int p) {
+                assert(p >= 0 && p < count);
+                return id[p];
+            }
+
+            // 元素 p 和 q 是否连接在一起
+            bool isConnected(int p, int q) {
+                return find(p) == find(q);
+            }
+            
+            // 将两个元素并在一起
+            void unionElement(int p, int q) {
+                int pId = find(p);
+                int qId = find(q);
+
+                if (pId == qId)
+                    return;
+                
+                // 使得和 p 同一个组的元素并到 q 元素所在的组中
+                for (int i = 0; i < count; ++i)
+                    if (id[i] == pId)
+                        id[i] = qId;
+            }
+    };
+}
+
+// 每一个元素都有一个指向父节点的指针, 而根节点的指针指向自身.
+// Quick Union
 
 int main() {
     
