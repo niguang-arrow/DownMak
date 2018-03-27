@@ -32,41 +32,18 @@ struct TreeNode {
 
 class Solution {
 public:
-    vector<vector<int>> fourSum(vector<int>& nums, int target) {
-        if (nums.size() < 4)
-            return {};
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if (!head)
+            return nullptr;
 
-        std::sort(nums.begin(), nums.end());
-        vector<vector<int>> res;
-        vector<int> path;
-        for (int i = 0; i < nums.size() - 3; ++i) {
-            if (i == 0 || (i > 0 && nums[i] != nums[i - 1])) {
-                for (int j = i + 1; j < nums.size() - 2; ++j) {
-                    if (j == i + 1 || (j > i + 1 && nums[j] != nums[j - 1])) {
-                        int lo = j + 1, hi = nums.size() - 1;
-                        while (lo < hi) {
-                            int sum = nums[i] + nums[j] + nums[lo] + nums[hi];
-                            cout << sum << endl;
-                            if (sum == target) {
-                                path = {nums[i], nums[j], nums[lo], nums[hi]};
-                                res.push_back(path);
-                                while (lo < hi && nums[lo] == nums[lo + 1]) lo ++;
-                                while (lo < hi && nums[hi] == nums[hi - 1]) hi --;
-                                lo ++;
-                                hi --;
-                            }
-                            else if (sum < target)
-                                lo ++;
-                            else
-                                hi --;
-                        }
-                    }
-                }
-            }
+        auto ptr = head;
+        for (int i = 0; i < k; ++i) {
+            if (!ptr)
+            ptr = ptr->next;
         }
-        return res;
     }
 };
+
 int main() {
     TreeNode *root = new TreeNode(1);
     root->left = new TreeNode(2);
@@ -83,17 +60,18 @@ int main() {
 
 
     //int arr[] = {1, 2, 2, 2, 2, 3, 3, 4, 5};
-    int arr[] = {1, 0, -1, 0, 2};
-    //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
-    vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
-    auto res = Solution().fourSum(nums, 0);
+    int arr[] = {1, 0, -1, 0, 2, -2};
+    //int arr[] = {1};
+    auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
+    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
+    auto res = Solution().swapPairs(ls);
     //cout << res << endl;
-    for (auto &d : res) {
-        for (auto & data : d)
-            cout << data << " ";
-        cout << endl;
-    }
-    //printLinkedList(res);
+    //for (auto &d : res) {
+        //for (auto & data : d)
+            //cout << data << " ";
+        //cout << endl;
+    //}
+    printLinkedList(res);
     //cout << res << endl;
 
     //for (auto &d : res)

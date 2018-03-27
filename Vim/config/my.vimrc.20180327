@@ -18,7 +18,7 @@ Plugin 'vim-scripts/indentpython.vim' " autoindent
 " YouCompleteMe 没有装成, 不支持 Anaconda 的 Python.
 Plugin 'Valloric/YouCompleteMe'       " auto completion
 "Plugin 'davidhalter/jedi-vim'	      " 选用 jedi-vim 自动补全
-Plugin 'scrooloose/syntastic'         " check syntatic problem
+"Plugin 'scrooloose/syntastic'         " check syntatic problem
 Plugin 'tell-k/vim-autopep8'          " 按照 pep8 标准格式化代码
 Plugin 'Yggdroot/indentLine'          " 缩进指示线
 Plugin 'scrooloose/nerdtree'          " 添加树形目录，方便查看和切换文件
@@ -402,7 +402,25 @@ let g:SignatureMap = {
         \ }
 
 """"rainbow_parentheses 配置， 为括号添加颜色
-let g:rbpt_colorpairs = [ ['brown', 'RoyalBlue3'], ['Darkblue', 'SeaGreen3'], ['darkgray', 'DarkOrchid3'], ['darkgreen', 'firebrick3'],['darkcyan', 'RoyalBlue3'],['darkred', 'SeaGreen3'],['darkmagenta', 'DarkOrchid3'],['brown', 'firebrick3'],['gray', 'RoyalBlue3'],['black',       'SeaGreen3'],['darkmagenta', 'DarkOrchid3'],['Darkblue',  'firebrick3'],['darkgreen', 'RoyalBlue3'],['darkcyan', 'SeaGreen3'],['darkred', 'DarkOrchid3'],['red', 'firebrick3']]
+let g:rbpt_colorpairs = [
+    \ ['black',       'SeaGreen3'],
+    \ ['brown',       'RoyalBlue3'],
+    \ ['Darkblue',    'SeaGreen3'],
+    \ ['darkgray',    'DarkOrchid3'],
+    \ ['darkgreen',   'firebrick3'],
+    \ ['darkcyan',    'RoyalBlue3'],
+    \ ['darkred',     'SeaGreen3'],
+    \ ['darkmagenta', 'DarkOrchid3'],
+    \ ['brown',       'firebrick3'],
+    \ ['gray',        'RoyalBlue3'],
+    \ ['darkmagenta', 'DarkOrchid3'],
+    \ ['Darkblue',    'firebrick3'],
+    \ ['darkgreen',   'RoyalBlue3'],
+    \ ['darkcyan',    'SeaGreen3'],
+    \ ['darkred',     'DarkOrchid3'],
+    \ ['red',         'firebrick3'],
+    \ ]
+
 let g:rbpt_max = 16
 au VimEnter * RainbowParenthesesToggle
 au Syntax * RainbowParenthesesLoadRound

@@ -587,6 +587,266 @@ int threeSumClosest(vector<int> &num, int target) {
 
 
 
+### 18. 4Sum
+
+https://leetcode.com/problems/4sum/description/
+
+给定一个整数数组和给定的 target, 是否存在 a, b, c, d 4个整数使得它们的和满足 a+b+c+d = target? 返回所有不重复的 (a, b, c, d) 四元组.
+
+```bash
+For example, given array S = [1, 0, -1, 0, -2, 2], and target = 0.
+
+A solution set is:
+[
+  [-1,  0, 0, 1],
+  [-2, -1, 1, 2],
+  [-2,  0, 0, 2]
+]
+```
+
+
+
+思路: 首先固定 a, 然后再使用 3Sum 的方法求解.
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) {
+        if (nums.size() < 4)
+            return {};
+
+        std::sort(nums.begin(), nums.end());
+        vector<vector<int>> res;
+        vector<int> path;
+        for (int i = 0; i < nums.size() - 3; ++i) {
+          for (int j = i + 1; j < nums.size() - 2; ++j) {
+            int lo = j + 1, hi = nums.size() - 1;
+            while (lo < hi) {
+              int sum = nums[i] + nums[j] + nums[lo] + nums[hi];
+              if (sum == target) {
+                path = {nums[i], nums[j], nums[lo], nums[hi]};
+                res.push_back(path);
+                while (lo < hi && nums[lo] == nums[lo + 1]) lo ++;
+                while (lo < hi && nums[hi] == nums[hi - 1]) hi --;
+                lo ++;
+                hi --;
+              }
+              else if (sum < target)
+                lo ++;
+              else
+                hi --;
+            }
+            while (j + 1 < nums.size() - 2 && nums[j + 1] == nums[j]) ++j;
+          }
+          while (i + 1 < nums.size() - 3 && nums[i + 1] == nums[i]) ++i;
+        }
+        return res;
+    }
+};
+```
+
+不知道为什么, 下面 leetcode 上的解答和我的逻辑类似, 但是运算速度比我的快:
+
+[4Sum C++ solution with explanation and comparison with 3Sum problem. Easy to understand.](https://leetcode.com/problems/4sum/discuss/8714/4Sum-C++-solution-with-explanation-and-comparison-with-3Sum-problem.-Easy-to-understand.)
+
+```cpp
+class Solution {
+public:
+    vector<vector<int> > fourSum(vector<int> &num, int target) {
+    
+        vector<vector<int> > res;
+    
+        if (num.empty())
+            return res;
+    
+        std::sort(num.begin(),num.end());
+    
+        for (int i = 0; i < num.size(); i++) {
+        
+            int target_3 = target - num[i];
+        
+            for (int j = i + 1; j < num.size(); j++) {
+            
+                int target_2 = target_3 - num[j];
+            
+                int front = j + 1;
+                int back = num.size() - 1;
+            
+                while(front < back) {
+                
+                    int two_sum = num[front] + num[back];
+                
+                    if (two_sum < target_2) front++;
+                
+                    else if (two_sum > target_2) back--;
+                
+                    else {
+                    
+                        vector<int> quadruplet(4, 0);
+                        quadruplet[0] = num[i];
+                        quadruplet[1] = num[j];
+                        quadruplet[2] = num[front];
+                        quadruplet[3] = num[back];
+                        res.push_back(quadruplet);
+                    
+                        // Processing the duplicates of number 3
+                        while (front < back && num[front] == quadruplet[2]) ++front;
+                    
+                        // Processing the duplicates of number 4
+                        while (front < back && num[back] == quadruplet[3]) --back;
+                
+                    }
+                }
+                
+                // Processing the duplicates of number 2
+                while(j + 1 < num.size() && num[j + 1] == num[j]) ++j;
+            }
+        
+            // Processing the duplicates of number 1
+            while (i + 1 < num.size() && num[i + 1] == num[i]) ++i;
+        
+        }
+    
+        return res;
+    
+    }
+};
+```
+
+这道题在 leetcode-cpp.pdf 上还有两种使用 hash 表进行求解的方法, 展示如下, 但都不是很快.
+
+这是使用 `unordered_map` 的:
+
+```cpp
+// LeetCode, 4Sum
+// 用一个 hashmap 先缓存两个数的和
+// 时间复杂度，平均 O(n^2)，最坏 O(n^4)，空间复杂度 O(n^2)
+class Solution {
+public:
+   vector<vector<int> > fourSum(vector<int> &num, int target) {
+       vector<vector<int>> result;
+       if (num.size() < 4) return result;
+       sort(num.begin(), num.end());
+       unordered_map<int, vector<pair<int, int> > > cache;
+       for (size_t a = 0; a < num.size(); ++a) {
+           for (size_t b = a + 1; b < num.size(); ++b) {
+               cache[num[a] + num[b]].push_back(pair<int, int>(a, b));
+           }
+       }
+       for (int c = 0; c < num.size(); ++c) {
+           for (size_t d = c + 1; d < num.size(); ++d) {
+               const int key = target - num[c] - num[d];
+               if (cache.find(key) == cache.end()) continue;
+               const auto& vec = cache[key];
+               for (size_t k = 0; k < vec.size(); ++k) {
+                   if (c <= vec[k].second)
+                       continue; // 有重叠
+                   result.push_back( { num[vec[k].first],
+                           num[vec[k].second], num[c], num[d] });
+               }
+           }
+       }
+       sort(result.begin(), result.end());
+       result.erase(unique(result.begin(), result.end()), result.end());
+       return result;
+   }
+};
+```
+
+下面是使用 multimap 的:
+
+```cpp
+// LeetCode, 4Sum
+// 用一个 hashmap 先缓存两个数的和
+// 时间复杂度 O(n^2)，空间复杂度 O(n^2)
+// @author 龚陆安 (http://weibo.com/luangong)
+class Solution {
+public:
+   vector<vector<int>> fourSum(vector<int>& num, int target) {
+       vector<vector<int>> result;
+       if (num.size() < 4) return result;
+       sort(num.begin(), num.end());
+       unordered_multimap<int, pair<int, int>> cache;
+       for (int i = 0; i + 1 < num.size(); ++i)
+           for (int j = i + 1; j < num.size(); ++j)
+               cache.insert(make_pair(num[i] + num[j], make_pair(i, j)));
+       for (auto i = cache.begin(); i != cache.end(); ++i) {
+           int x = target - i->first;
+           auto range = cache.equal_range(x);
+           for (auto j = range.first; j != range.second; ++j) {
+               auto a = i->second.first;
+               auto b = i->second.second;
+               auto c = j->second.first;
+               auto d = j->second.second;
+               if (a != c && a != d && b != c && b != d) {
+                   vector<int> vec = { num[a], num[b], num[c], num[d] };
+                   sort(vec.begin(), vec.end());
+                   result.push_back(vec);
+               }
+           }
+       }
+       sort(result.begin(), result.end());
+       result.erase(unique(result.begin(), result.end()), result.end());
+       return result;
+   }
+};
+```
+
+
+
+
+
+### 454. 4Sum II
+
+https://leetcode.com/problems/4sum-ii/description/
+
+给定 4 个整型数组, 计算有多少个 `(i, j, k, l)` 四元组使得 `A[i] + B[j] + C[k] + D[l]` 的结果为 0.
+
+(为了让问题简单一些, 假设所有的数组中元素数量为 0 <= N <= 500, 并且和的结果不超过 `2^31 - 1`), 比如:
+
+```bash
+Input:
+A = [ 1, 2]
+B = [-2,-1]
+C = [-1, 2]
+D = [ 0, 2]
+
+Output:
+2
+
+Explanation:
+The two tuples are:
+1. (0, 0, 0, 1) -> A[0] + B[0] + C[0] + D[1] = 1 + (-2) + (-1) + 2 = 0
+2. (1, 1, 0, 0) -> A[1] + B[1] + C[0] + D[0] = 2 + (-1) + (-1) + 0 = 0
+```
+
+
+
+思路: 使用一个查找表, 记录 `A[i] + B[j]` 的和, 然后分析 C 和 D 中元素的和, 判断查找表中是否存在 `0 - C[k] - D[l]`.
+
+```cpp
+class Solution {
+public:
+    int fourSumCount(vector<int>& A, vector<int>& B, vector<int>& C, vector<int>& D) {
+        // 使用 record 记录 A[i] + B[j] 的和有多少个
+        unordered_map<int, int> record;
+        for (int i = 0; i < A.size(); ++i)
+            for (int j = 0; j < B.size(); ++j)
+                record[A[i] + B[j]] ++;
+
+        int res = 0;
+        for (int i = 0; i < C.size(); ++i) {
+            for (int j = 0; j < D.size(); ++j) {
+                auto iter = record.find(0 - C[i] - D[j]);
+                if (iter != record.end())
+                    res += iter->second;
+            }
+        }
+        return res;
+    }
+};
+```
+
 
 
 
@@ -2987,6 +3247,76 @@ public:
     }
 };
 ```
+
+
+
+### 24. Swap Nodes in Pairs
+
+https://leetcode.com/problems/swap-nodes-in-pairs/description/
+
+给定一个链表, 将链表中所有相邻两个节点交换, 并返回头结点. 比如:
+
+Given `1->2->3->4`, you should return the list as `2->1->4->3`.
+
+Your algorithm should use only constant space. You may **not** modify the values in the list, only nodes itself can be changed.
+
+思路: 目测使用递归的话会非常简单. 需要判断头结点的下一个节点是否存在. 当交换完一开始的两个节点之后, 就使用递归交换剩下的节点.
+
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        ListNode *post = head->next->next;
+        dummy->next = head->next;
+        dummy->next->next = head;
+        dummy->next->next->next = swapPairs(post);
+
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
+    }
+};
+```
+
+好吧, 把它改成非递归版的似乎快了 1ms.
+
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        auto path = dummy;
+        auto ptr = head;
+      	// 要交换两个节点, 先要判断 ptr 以及 ptr->next 均存在,
+      	// 之后用 post 记录第三个节点, 也就是下一次交换的开始.
+        while (ptr && ptr->next) {
+            auto post = ptr->next->next;
+            path->next = ptr->next;
+            path->next->next = ptr;
+            path = path->next->next;
+            ptr = post;
+        }
+      	// 不管最后 ptr 是不是为空, 使用 path->next 指向它就可以了.
+        path->next = ptr;
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
+    }
+};
+```
+
+
+
+### 25. Reverse Nodes in k-Group(未完)
+
+https://leetcode.com/problems/reverse-nodes-in-k-group/description/
 
 
 
