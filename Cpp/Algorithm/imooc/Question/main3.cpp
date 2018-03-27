@@ -36,11 +36,27 @@ public:
         if (!head)
             return nullptr;
 
-        auto ptr = head;
+        stack<ListNode*> Stack;
+        auto end = head;
         for (int i = 0; i < k; ++i) {
-            if (!ptr)
-            ptr = ptr->next;
+            if (!end)
+                return head;
+            Stack.push(end);
+            end = end->next;
         }
+
+        auto post = end;
+        ListNode *dummy = new ListNode(0);
+        auto path = dummy;
+        while (!Stack.empty()) {
+            path->next = Stack.top();
+            Stack.pop();
+            path = path->next;
+        }
+        path->next = reverseKGroup(post, k);
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
     }
 };
 
@@ -64,7 +80,7 @@ int main() {
     //int arr[] = {1};
     auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
     //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
-    auto res = Solution().swapPairs(ls);
+    auto res = Solution().reverseKGroup(ls, 2);
     //cout << res << endl;
     //for (auto &d : res) {
         //for (auto & data : d)
