@@ -135,11 +135,113 @@ public:
     }
 };
 ```
-### 33. Search in Rotated Sorted Array(未完)
+
+
+### 33. Search in Rotated Sorted Array
 
 https://leetcode.com/problems/search-in-rotated-sorted-array/description/
 
 将一个排序数组进行旋转, 然后在其中搜索某个数. 比如 `[0, 1, 2, 3, 4, 5]` 旋转后为 `[3, 4, 5, 0, 1, 2]`, 然后在旋转后的数组中搜索.
+
+思路: 使用二分查找, 关键在于边界的确定. (参考了 leetcode-cpp.pdf 上 2.1.3 的解答)
+
+要分情况讨论, 当访问 nums[mid] 时, 考虑两种情况, nums[mid] 是大于或等于 nums[left] 呢, 还是小于 nums[left]. 在这两种情况下, 又要考虑 target 和 nums[mid] 以及 nums[left] 的关系.
+
+```cpp
+class Solution {
+public:
+    int search(vector<int>& nums, int target) {
+        if (nums.empty())
+            return -1;
+
+        int l = 0, r = nums.size() - 1;
+
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == target)
+                return mid;
+            else if (nums[mid] >= nums[l]) { // 说明 nums[l...mid] 是排序好的
+                if (target >= nums[l] && target < nums[mid])
+                    r = mid - 1;
+                else
+                    l = mid + 1;
+            }
+            else {// 说明 nums[mid...r] 是排序好的
+                if (target < nums[l] && target > nums[mid])
+                    l = mid + 1;
+                else
+                    r = mid - 1;
+            }
+        }
+        return -1;
+    }
+};
+```
+
+
+
+### 81. Search in Rotated Sorted Array II
+
+https://leetcode.com/problems/search-in-rotated-sorted-array-ii/description/
+
+在上一题的基础上, 如果排序数组中有重复元素会怎样? 比如数组 `{1, 2, 2, 2, 2, 3, 4}` 旋转之后成了
+
+`{2, 2, 3, 4, 1, 2, 2}`. 
+
+思路: 出现重复元素的话, 那么在 33. Search in Rotated Sorted Array 中使用的 `nums[mid] >= nums[l]` 就不能判定 `nums[l....mid]` 为递增序列了. 这个时候可以将其拆分为两个条件:
+
++ 如果 nums[mid] > nums[l], 那么 nums[l....mid] 一定是递增的;
++ 如果 nums[mid] == nums[l], 无法确认状况, 那么就令 `l++`, 往下看一步即可.
+
+```cpp
+class Solution {
+public:
+    bool search(vector<int>& nums, int target) {
+        if (nums.empty())
+            return false;
+
+        int l = 0, r = nums.size() - 1;
+
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] == target)
+                return true;
+            if (nums[mid] > nums[l]) {
+                if (target >= nums[l] && target < nums[mid])
+                    r = mid - 1;
+                else
+                    l = mid + 1;
+            }
+            else if (nums[mid] == nums[l]) {
+                l ++;
+            }
+            else {
+                if (target < nums[l] && target > nums[mid])
+                    l = mid + 1;
+                else
+                    r = mid - 1;
+            }
+        }
+        return false;
+    }
+};
+```
+
+可是我没想到下面的解法还更快... 来自 leetcode
+
+```cpp
+class Solution {
+public:
+    bool search(vector<int>& nums, int target) {
+        for(int i = 0; i < nums.size(); i++){
+            if(nums[i] == target) return true;
+        }
+        return false;
+    }
+};
+```
+
+
 
 
 
@@ -269,6 +371,223 @@ public:
     }
 };
 ```
+
+
+
+### 15. 3Sum
+
+https://leetcode.com/problems/3sum/description/
+
+给定含 n 个整数的数组 S, 找出是否存在 3 个整数使得 a + b + c = 0. 把所有不重复的三元组给找出来. 比如:
+
+```bash
+For example, given array S = [-1, 0, 1, 2, -1, -4],
+
+A solution set is:
+[
+  [-1, 0, 1],
+  [-1, -1, 2]
+]
+```
+
+
+
+思路: 首先给数组排序, 然后遍历整个数组(直到 `nums.size() - 2` 的位置), 每一次访问的 `nums[i]` 可以作为三元组的首位元素, 这样可以保证所有的三元组不重复(当然其实还有另外的约束, 下面谈到), 然后针对 `nums[i + 1, .... n - 1]` 范围内的元素, 进行 2sum 操作, 即使用对撞指针. 但还需要考虑的两点是, `nums[i+1, .... n-1]` 中可能有多个 pair 满足 2sum, 另外也会有大量的重复元素, 因此在进行 2sum 的时候, 要使用 while 循环将这些相同的元素给略过. 
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> threeSum(vector<int>& nums) {
+        if (nums.size() < 3)
+            return {};
+
+        vector<vector<int>> res;
+        std::sort(nums.begin(), nums.end());
+        for (int i = 0; i < nums.size() - 2; ++i) {
+          	// 当 i == 0 时, 进行判断; 当 i > 0 时, 需要判断 nums[i]
+          	// 是否和前一个元素相等, 如果相等, 就不需要考虑了.
+            if (i == 0 || (i > 0 && nums[i] != nums[i - 1])) {
+                int lo = i + 1, hi = nums.size() - 1, target = 0 - nums[i];
+                while (lo < hi) {
+                    vector<int> path;
+                  	// 注意, 当在 nums[i+1, .... n-1] 范围内找到了 target, 在考虑
+                  	// 下一个 pair 之前, 还要使用两个 while 循环判断 nums[lo] 和 
+                  	// nums[lo+1] 是否相等.
+                    if (nums[lo] + nums[hi] == target) {
+                        path.insert(path.end(), {nums[i], nums[lo], nums[hi]});
+                        res.push_back(path);
+
+                        while (lo < hi && nums[lo] == nums[lo + 1]) lo ++;
+                        while (lo < hi && nums[hi] == nums[hi - 1]) hi --;
+                        lo ++;
+                        hi --;
+                    }
+                    else if (nums[lo] + nums[hi] < target)
+                        lo ++;
+                    else
+                        hi --;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+针对 3元组的首个元素可能会重复的问题, 还有另外的写法:
+
+[Share my AC C++ solution, around 50ms, O(N*N), with explanation and comments](https://leetcode.com/problems/3sum/discuss/7402/Share-my-AC-C++-solution-around-50ms-O(N*N)-with-explanation-and-comments)
+
+```cpp
+vector<vector<int> > threeSum(vector<int> &num) {
+    
+    vector<vector<int> > res;
+
+    std::sort(num.begin(), num.end());
+
+    for (int i = 0; i < num.size(); i++) {
+        
+        int target = -num[i];
+        int front = i + 1;
+        int back = num.size() - 1;
+
+        while (front < back) {
+
+            int sum = num[front] + num[back];
+            
+            // Finding answer which start from number num[i]
+            if (sum < target)
+                front++;
+
+            else if (sum > target)
+                back--;
+
+            else {
+                vector<int> triplet(3, 0);
+                triplet[0] = num[i];
+                triplet[1] = num[front];
+                triplet[2] = num[back];
+                res.push_back(triplet);
+                
+                // Processing duplicates of Number 2
+                // Rolling the front pointer to the next different number forwards
+                while (front < back && num[front] == triplet[1]) front++;
+
+                // Processing duplicates of Number 3
+                // Rolling the back pointer to the next different number backwards
+                while (front < back && num[back] == triplet[2]) rear--;
+            }
+            
+        }
+		// 在这里考虑三元组的首元素可能重复的问题.
+        // Processing duplicates of Number 1
+        while (i + 1 < num.size() && num[i + 1] == num[i]) 
+            i++;
+
+    }
+    
+    return res;
+    
+}
+```
+
+
+
+### 16. 3Sum Closet
+
+https://leetcode.com/problems/3sum-closest/description/
+
+给定一个整数数组 S, 在其中找到 3 个整数使得它们的和接近一个给定的 target. 返回这 3 个数的和. (可以假设所有的测试用例中只有一个解) 比如:
+
+```bash
+For example, given array S = {-1 2 1 -4}, and target = 1.
+
+The sum that is closest to the target is 2. (-1 + 2 + 1 = 2).
+```
+
+
+
+思路: 类似于 15. 3Sum. 为了得到最接近 target 的值, 要计算使 `std::abs(target - sum)` 最小的那个 sum. 为了得到这些 sum, 和 3Sum 一样, 首先对数组进行排序, 然后固定 nums[i], 再对后面的内容进行 2Sum.
+
+```cpp
+class Solution {
+public:
+    int threeSumClosest(vector<int>& nums, int target) {
+        if (nums.size() < 3)
+            return accumulate(nums.begin(), nums.end(), 0);
+
+        int res = nums[0] + nums[1] + nums[nums.size() - 1];
+        std::sort(nums.begin(), nums.end());
+        for (int i = 0; i < nums.size() - 2; ++i) {
+            int lo = i + 1, hi = nums.size() - 1;
+            while (lo < hi) {
+                int sum = nums[lo] + nums[hi] + nums[i];
+                if (sum == target)
+                    return sum;
+                if (sum > target)
+                    hi --;
+                else {
+                    lo ++;
+                }
+                if (std::abs(target - sum) < std::abs(target - res))
+                    res = sum;
+            }
+        }
+        return res;
+    }
+};
+```
+
+再看一个 leetcode 上解释非常详细的:
+
+[A n^2 Solution, Can we do better ?](https://leetcode.com/problems/3sum-closest/discuss/7873/A-n2-Solution-Can-we-do-better)
+
+```cpp
+int threeSumClosest(vector<int> &num, int target) {        
+    vector<int> v(num.begin(), num.end()); // I didn't wanted to disturb original array.
+    int n = 0;
+    int ans = 0;
+    int sum;
+    
+    sort(v.begin(), v.end());
+    
+    // If less then 3 elements then return their sum
+    while (v.size() <= 3) {
+        return accumulate(v.begin(), v.end(), 0);
+    }
+    
+    n = v.size();
+    
+    /* v[0] v[1] v[2] ... v[i] .... v[j] ... v[k] ... v[n-2] v[n-1]
+     *                    v[i]  <=  v[j]  <= v[k] always, because we sorted our array. 
+     * Now, for each number, v[i] : we look for pairs v[j] & v[k] such that 
+     * absolute value of (target - (v[i] + v[j] + v[k]) is minimised.
+     * if the sum of the triplet is greater then the target it implies
+     * we need to reduce our sum, so we do K = K - 1, that is we reduce
+     * our sum by taking a smaller number.
+     * Simillarly if sum of the triplet is less then the target then we
+     * increase out sum by taking a larger number, i.e. J = J + 1.
+     */
+    ans = v[0] + v[1] + v[2];
+    for (int i = 0; i < n-2; i++) {
+        int j = i + 1;
+        int k = n - 1;
+        while (j < k) {
+            sum = v[i] + v[j] + v[k];
+            if (abs(target - ans) > abs(target - sum)) {
+                ans = sum;
+                if (ans == target) return ans;
+            }
+            (sum > target) ? k-- : j++;
+        }
+    }
+    return ans;
+}
+```
+
+
+
+
 
 
 
@@ -1646,12 +1965,6 @@ public:
     }
 };
 ```
-
-
-
-### 15. 3Sum (未完)
-
-https://leetcode.com/problems/3sum/description/
 
 
 
