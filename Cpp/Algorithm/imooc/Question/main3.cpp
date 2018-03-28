@@ -32,31 +32,19 @@ struct TreeNode {
 
 class Solution {
 public:
-    ListNode* reverseKGroup(ListNode* head, int k) {
-        if (!head)
-            return nullptr;
+    int maxProduct(vector<int>& nums) {
+        // 设 dp[n] 表示以 n 结尾的序列中子序列最大乘积的值.
+        if (nums.empty())
+            return 0;
 
-        stack<ListNode*> Stack;
-        auto end = head;
-        for (int i = 0; i < k; ++i) {
-            if (!end)
-                return head;
-            Stack.push(end);
-            end = end->next;
-        }
+        vector<int> dp(nums.size(), nums[0]);
+        for (int i = 1; i < nums.size(); ++i) {
+            int imin = min(nums[i - 1], dp[i - 1]);
+            int imax = max(nums[i - 1], dp[i - 1]);
 
-        auto post = end;
-        ListNode *dummy = new ListNode(0);
-        auto path = dummy;
-        while (!Stack.empty()) {
-            path->next = Stack.top();
-            Stack.pop();
-            path = path->next;
+            dp[i] = max(max(imin * nums[i], imax * nums[i]), nums[i]);
         }
-        path->next = reverseKGroup(post, k);
-        ListNode *res = dummy->next;
-        delete dummy;
-        return res;
+        return dp[nums.size() - 1];
     }
 };
 
@@ -75,19 +63,19 @@ int main() {
     //root->right = new TreeNode(1);
 
 
-    //int arr[] = {1, 2, 2, 2, 2, 3, 3, 4, 5};
-    int arr[] = {1, 0, -1, 0, 2, -2};
+    int arr[] = {2, 3, -2, 4};
+    //int arr[] = {1, 0, -1, 0, 2, -2};
     //int arr[] = {1};
-    auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
-    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
-    auto res = Solution().reverseKGroup(ls, 2);
-    //cout << res << endl;
+    //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
+    vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
+   auto res = Solution().maxProduct(nums);
+    cout << res << endl;
     //for (auto &d : res) {
         //for (auto & data : d)
             //cout << data << " ";
         //cout << endl;
     //}
-    printLinkedList(res);
+    //printLinkedList(res);
     //cout << res << endl;
 
     //for (auto &d : res)

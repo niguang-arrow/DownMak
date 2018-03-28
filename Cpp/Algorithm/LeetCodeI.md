@@ -1,4 +1,4 @@
-# LeetCode
+# LeetCode I
 
 2018 年 3 月 13 日
 
@@ -3314,9 +3314,182 @@ public:
 
 
 
-### 25. Reverse Nodes in k-Group(未完)
+### 25. Reverse Nodes in k-Group
 
 https://leetcode.com/problems/reverse-nodes-in-k-group/description/
+
+给定一个链表, 每次将其中连续的 k 个节点进行反转, 返回修改后的链表. k 是一个小于或等于链表长度的正数. 如果链表的长度无法整除 k, 那么剩下的节点应该保持原样. (注意不能改变节点本身的值, 只允许 O(1) 的空间复杂度), 比如:
+
+Given this linked list: `1->2->3->4->5`
+
+For *k* = 2, you should return: `2->1->4->3->5`
+
+For *k* = 3, you should return: `3->2->1->4->5`
+
+
+
+思路: 下面的第一个思路有点不厚道, 因为我使用了 stack 来简化 k 个节点的反转, 所以看起来很简单.(好吧, 写完后才发现只运行 O(1) 的空间复杂度). 那么之后看第二个思路, 真是非常简洁漂亮.
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if (!head)
+            return nullptr;
+
+        stack<ListNode*> Stack;
+        auto end = head;
+        for (int i = 0; i < k; ++i) {
+            if (!end)
+                return head;
+            Stack.push(end);
+            end = end->next;
+        }
+
+        auto post = end;
+        ListNode *dummy = new ListNode(0);
+        auto path = dummy;
+        while (!Stack.empty()) {
+            path->next = Stack.top();
+            Stack.pop();
+            path = path->next;
+        }
+        path->next = reverseKGroup(post, k);
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
+    }
+};
+```
+
+下面这个代码真的很简洁, reverse 的写法要学习: leetcode 上的讨论
+
+[C++ Elegant and Small](https://leetcode.com/problems/reverse-nodes-in-k-group/discuss/11435/C++-Elegant-and-Small)
+
+思路和我的一样, 使用递归, 但是 reverse 写的很简洁精妙,
+
+```bash
+ # 假设要反转的是 (1, 2, 3), 那么 pre 指向的是 4
+ # 使用 first 去遍历 1, 2, 3, tmp 用于保存 first 下一个要遍历的值.
+ # 当处理完 1 之后, 就要把 1 放在 3 后面, 此时还要将 prev 移动到 1 上,
+ # 这样的话, 当 first 移动到 2 上之后, prev 将移动到 1 上, 表示
+ # 已反转好的节点的地址.
+  1   ->  2   -> 3  ->  4  ->  5  -> 6 -> 7 -> NULL
+first    tmp          prev
+					  last
+```
+
+下面是具体代码:(注意while 循环中判断条件是 `first != last`, 不要写成了 `first != prev`, prev 用于记录已反转节点的首地址.)
+
+```cpp
+class Solution 
+{
+public:
+    
+    ListNode* reverse(ListNode* first, ListNode* last)
+    {
+        ListNode* prev = last;
+        
+        while ( first != last )
+        {
+            auto tmp = first->next;
+            first->next = prev;
+            prev = first;
+            first = tmp;
+        }
+        
+        return prev;
+    }
+    
+    ListNode* reverseKGroup(ListNode* head, int k) 
+    {
+        auto node=head;
+        for (int i=0; i < k; ++i)
+        {
+            if ( ! node  )
+                return head; // nothing to do list too sort
+            node = node->next;
+        }
+
+        auto new_head = reverse( head, node);
+        head->next = reverseKGroup( node, k);
+        return new_head;
+    }
+};
+```
+
+
+
+再补充一个非递归版本:
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if(k == 1 || head == NULL) return head;
+        ListNode *dummy = new ListNode(0), *pre = dummy, *cur = pre;
+        dummy->next = head;
+        int length = 0;
+        while(cur = cur->next) length++;
+        while(length >= k) {
+            cur = pre->next;
+            for (int i = 1; i < k; ++i) {//pre始终为每一段head的前一个结点
+                ListNode *t = cur->next;
+                cur->next = t->next;
+                t->next = pre->next;
+                pre->next = t;
+            }
+            pre = cur;
+            length -= k;
+        }
+        return dummy->next;
+    }
+};
+```
+
+
+
+### 206. Reverse Linked List
+
+https://leetcode.com/problems/reverse-linked-list/description/
+
+反转一个链表.
+
+做完上面 25. Reverse Nodes in k-Group 后再来看这道题, 就非常简单了. 当然还有一种使用 3 个指针的做法. 首先看非递归的版本:
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        ListNode *prev = nullptr;
+
+        while (head) {
+            ListNode *tmp = head->next;
+            head->next = prev;
+            prev = head;
+            head = tmp;
+        }
+        return prev;
+    }
+};
+```
+
+再看递归的版本:
+
+```cpp
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        if(head==NULL || head->next==NULL)return head;
+        ListNode* node=reverseList(head->next);
+        head->next->next=head;
+        head->next=NULL;
+        return node;
+    }
+};
+```
+
+
 
 
 
