@@ -117,21 +117,68 @@ namespace UnionFind1 {
 // 每一个元素都有一个指向父节点的指针, 而根节点的指针指向自身.
 // Quick Union
 
+
+void merge(vector<int> &nums, int left, int mid, int right) {
+    if (nums.empty() || left >= right)
+        return;
+    vector<int> array(right - left + 1);
+    int k = 0; // 用于遍历 array
+    int l = left, r = mid + 1;
+    while (l <= mid && r <= right) {
+        if (nums[l] < nums[r])
+            array[k++] = nums[l++];
+        else
+            array[k++] = nums[r++];
+    }
+    while (l <= mid)
+        array[k++] = nums[l++];
+    while (r <= right)
+        array[k++] = nums[r++];
+
+    for (int i = 0; i < array.size(); ++i)
+        nums[left + i] = array[i];
+    return;
+}
+
+void mergeSort(vector<int> &nums, int left, int right) {
+    if (left >= right)
+        return;
+
+    int mid = left + (right - left) / 2;
+    cout << mid << endl;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+void mergeSort(vector<int> &nums) {
+    if (nums.empty())
+        return;
+    mergeSort(nums, 0, nums.size() - 1);
+}
+
 int main() {
     
-    BinaryTree tree({1, 2, 3, 4, 5});
-    tree.preOrder();
-    //cout << tree.root->val << endl;
-    //cout << tree.root->left->val << endl;
-    //cout << tree.root->right->val << endl;
-    cout << std::max(10, 11) << endl;
+    //BinaryTree tree({1, 2, 3, 4, 5});
+    //tree.preOrder();
+    ////cout << tree.root->val << endl;
+    ////cout << tree.root->left->val << endl;
+    ////cout << tree.root->right->val << endl;
+    //cout << std::max(10, 11) << endl;
 
-    stringstream ss("abc abc bbb bbb"), end;
-    string s;
-    while (ss >> s) {
-        cout << s << " ";
-    }
-    cout << std::boolalpha << ss.eof() << endl;
+    //stringstream ss("abc abc bbb bbb"), end;
+    //string s;
+    //while (ss >> s) {
+        //cout << s << " ";
+    //}
+    //cout << std::boolalpha << ss.eof() << endl;
+    //cout << endl;
+
+    int arr[] = {1, 3, 5, 2, 6, 3, 4, 7};
+    vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
+    mergeSort(nums);
+    for (auto &d : nums)
+        cout << d << " ";
     cout << endl;
 
 }

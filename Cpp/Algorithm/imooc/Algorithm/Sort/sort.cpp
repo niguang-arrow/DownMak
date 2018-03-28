@@ -162,6 +162,45 @@ void quickSort1(T arr[], int n) {
 
 
 
+void merge(vector<int> &nums, int left, int mid, int right) {
+    if (nums.empty() || left >= right)
+        return;
+    vector<int> array(right - left + 1);
+    int k = 0; // 用于遍历 array
+    int l = left, r = mid + 1;
+    while (l <= mid && r <= right) {
+        if (nums[l] < nums[r])
+            array[k++] = nums[l++];
+        else
+            array[k++] = nums[r++];
+    }
+    while (l <= mid)
+        array[k++] = nums[l++];
+    while (r <= right)
+        array[k++] = nums[r++];
+
+    for (int i = 0; i < array.size(); ++i)
+        nums[left + i] = array[i];
+    return;
+}
+
+void mergeSort(vector<int> &nums, int left, int right) {
+    if (left >= right)
+        return;
+
+    int mid = left + (right - left) / 2;
+    mergeSort(nums, left, mid);
+    mergeSort(nums, mid + 1, right);
+    merge(nums, left, mid, right);
+}
+
+void mergeSort(vector<int> &nums) {
+    if (nums.empty())
+        return;
+    mergeSort(nums, 0, nums.size() - 1);
+}
+
+
 
 int main() {
     int n = 20;
@@ -172,10 +211,17 @@ int main() {
     quickSort1(arr, n);
     print_array(arr, n);
 
+
+    int *arr3 = generate_array<int>(10000);
+    vector<int> nums(arr3, arr3 + 10000);
+    mergeSort(nums);
+    int *ptr = &nums[0];
+    if (test_sorted(ptr, 10000))
+        cout << " true " << endl;
     //test_complexity<int>(selectionSort);
     //test_complexity<int>(insertionSort);
     //test_complexity<int>(mergeSort);
-    test_complexity<int>(quickSort1);
+    //test_complexity<int>(quickSort1);
 
     delete[] arr;
     delete[] arr2;
