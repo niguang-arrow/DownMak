@@ -31,29 +31,62 @@ struct TreeNode {
      Point(int a, int b) : x(a), y(b) {}
  };
 
+void preOrder(TreeNode *root) {
+    if (!root)
+        return;
+
+    cout << root->val << " ";
+    preOrder(root->left);
+    preOrder(root->right);
+}
 class Solution {
 public:
-    int minCostClimbingStairs(vector<int>& cost) {
-        if (cost.empty())
-            return 0;
+    void flatten(TreeNode *root) {
+        if (!root || (!root->left && !root->right))
+            return;
 
-        int n = cost.size();
-        vector<int> memo(n, INT32_MAX);
-        memo[0] = cost[0];
+        flatten(root->left);
+        flatten(root->right);
 
-        for (int i = 1; i < n; ++i)
-            memo[i] = cost[i] + min(memo[i - 1], i - 2 >= 0 ? memo[i - 2] : 0);
+        if (!root->left) return;
 
-        return min(memo[n - 1], memo[n - 2]);
+        auto p = root->left;
+        while (p->right) p = p->right;
+        p->right = root->right;
+        root->right = root->left;
+        root->left = nullptr;
+
     }
 };
+
+
+bool exists(vector<int> &nums) {
+    if (nums.size() < 3)
+        return false;
+
+    priority_queue<pair<int, int>> Queue;
+    for (int i = 0; i < nums.size(); ++i)
+        Queue.push(make_pair(nums[i], i));
+
+    while (!Queue.empty()) {
+        auto ele = Queue.top();
+        Queue.pop();
+
+        if (ele.second < Queue.size())
+            return true;
+    }
+
+    return false;
+}
+
 
 int main() {
     TreeNode *root = new TreeNode(1);
     root->left = new TreeNode(2);
-    root->right = new TreeNode(3);
-    root->left->left = new TreeNode(4);
-    root->left->right = new TreeNode(5);
+    root->right = new TreeNode(5);
+    root->right->right = new TreeNode(6);
+    root->left->left = new TreeNode(3);
+    root->left->right = new TreeNode(4);
     //root->left->right->left = new TreeNode(7);
     //root->left->right->right = new TreeNode(9);
     //root->right->right = new TreeNode(17);
@@ -63,19 +96,22 @@ int main() {
     //root->right = new TreeNode(1);
 
 
-    int arr[] = { 1, 100, 1, 1, 1, 100, 1, 1, 100, 1};
+    int arr[] = { 1, 1, 2, 2, 1, 2, 2, 2, 2 };
     //int arr[] = {1};
     //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
     vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
+    cout << std::boolalpha << exists(nums) << endl;
     //auto res = Solution().quickSort(nums);
-    auto res = Solution().minCostClimbingStairs(nums);
-    cout << res << endl;
+    Solution().flatten(root);
+    preOrder(root);
+    cout << endl;
+    //cout << res << endl;
     //for (auto &d : res) {
         //for (auto & data : d)
             //cout << data << " ";
         //cout << endl;
     //}
-    //printLinkedList(res);
+    //printLinkedList(root);
     //cout << res << endl;
 
     //for (auto &d : nums)
