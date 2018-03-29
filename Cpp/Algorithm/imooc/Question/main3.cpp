@@ -32,41 +32,19 @@ struct TreeNode {
  };
 
 class Solution {
-private:
-    int partition(vector<int> &nums, int start, int end) {
-        if (nums.empty() || start > end)
-            return -1;
-
-        // include <cstdlib>
-        int ridx = std::rand() % (end - start + 1) + start; 
-        swap(nums[ridx], nums[start]);
-        int v = nums[start];
-
-        // nums[start+1...lt] < v
-        // nums[lt+1....gt) == v
-        // nums[gt...end] > v
-        int lt = start, gt = end + 1, i = start + 1;
-        while (i < gt) {
-            if (nums[i] == v)
-                i ++;
-            else if (nums[i] < v)
-                swap(nums[++lt], nums[i++]);
-            else
-                swap(nums[--gt],nums[i]);
-        }
-        swap(nums[start], nums[lt]);
-        return lt;
-    }
-    void quickSort(vector<int> &nums, int start, int end) {
-        if (nums.empty() || start >= end)
-            return;
-        int index = partition(nums, start, end);
-        quickSort(nums, start, index - 1);
-        quickSort(nums, index + 1, end);
-    }
 public:
-    void quickSort(vector<int>& nums) {
-        quickSort(nums, 0, nums.size() - 1);
+    int minCostClimbingStairs(vector<int>& cost) {
+        if (cost.empty())
+            return 0;
+
+        int n = cost.size();
+        vector<int> memo(n, INT32_MAX);
+        memo[0] = cost[0];
+
+        for (int i = 1; i < n; ++i)
+            memo[i] = cost[i] + min(memo[i - 1], i - 2 >= 0 ? memo[i - 2] : 0);
+
+        return min(memo[n - 1], memo[n - 2]);
     }
 };
 
@@ -85,13 +63,13 @@ int main() {
     //root->right = new TreeNode(1);
 
 
-    int arr[] = {1, 0, -1, 0, 2, -2};
+    int arr[] = { 1, 100, 1, 1, 1, 100, 1, 1, 100, 1};
     //int arr[] = {1};
     //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
     vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //auto res = Solution().quickSort(nums);
-    Solution().quickSort(nums);
-    //cout << res << endl;
+    auto res = Solution().minCostClimbingStairs(nums);
+    cout << res << endl;
     //for (auto &d : res) {
         //for (auto & data : d)
             //cout << data << " ";
@@ -100,9 +78,9 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    for (auto &d : nums)
-        cout << d << " ";
-    cout << endl;
+    //for (auto &d : nums)
+        //cout << d << " ";
+    //cout << endl;
     //cout << std::boolalpha << res << endl;
 
 }
