@@ -60,26 +60,6 @@ public:
 };
 
 
-bool exists(vector<int> &nums) {
-    if (nums.size() < 3)
-        return false;
-
-    priority_queue<pair<int, int>> Queue;
-    for (int i = 0; i < nums.size(); ++i)
-        Queue.push(make_pair(nums[i], i));
-
-    while (!Queue.empty()) {
-        auto ele = Queue.top();
-        Queue.pop();
-
-        if (ele.second < Queue.size())
-            return true;
-    }
-
-    return false;
-}
-
-
 int main() {
     TreeNode *root = new TreeNode(1);
     root->left = new TreeNode(2);
@@ -120,3 +100,24 @@ int main() {
     //cout << std::boolalpha << res << endl;
 
 }
+
+//bool exists(vector<int> &nums) {
+    //if (nums.size() < 3)
+        //return false;
+
+    //priority_queue<pair<int, int>> Queue;
+    //for (int i = 0; i < nums.size(); ++i)
+        //Queue.push(make_pair(nums[i], i));
+
+    //int themax;
+    //while (!Queue.empty()) {
+        //auto ele = Queue.top();
+        //Queue.pop();
+        //themax = ele.first;
+
+        //if (ele.second < Queue.size())
+            //return true;
+    //}
+
+    //return false;
+//}

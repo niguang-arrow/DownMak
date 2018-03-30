@@ -124,6 +124,20 @@ public class Solution {
 
 
 
+### 198. House Robber II(未完)
+
+https://leetcode.com/problems/house-robber-ii/description/
+
+解释得很好的答案:
+
+[Simple AC solution in Java in O(n) with explanation](https://leetcode.com/problems/house-robber-ii/discuss/59934/Simple-AC-solution-in-Java-in-O(n)-with-explanation)
+
+[Super Simple 0ms solution with explanation](https://leetcode.com/problems/house-robber-ii/discuss/59986/C++-Super-Simple-0ms-solution-with-explanation)
+
+
+
+
+
 ### 343. Integer Break
 
 https://leetcode.com/problems/integer-break/description/
