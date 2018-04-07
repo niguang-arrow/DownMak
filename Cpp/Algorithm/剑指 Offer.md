@@ -414,6 +414,22 @@ Sibling:
 
 (另外, 还需要注意到一个重要问题是下面的代码是 O(n) 的! 虽然看起来似乎不那么像... 但注意 Partition 会改变数组中元素的顺序)
 
+**LeetCode 上有原题 169. Majority Element, 但是使用 Partition 的解法显示的是超时...**
+
+更简单的解法:
+
+```cpp
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        std::sort(nums.begin(), nums.end());
+        return nums[nums.size() / 2];
+    }
+};
+```
+
+下面是三路快排:
+
 ```cpp
 #include <iostream>
 using namespace std;

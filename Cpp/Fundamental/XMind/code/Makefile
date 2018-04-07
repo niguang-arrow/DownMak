@@ -1,0 +1,20 @@
+CC = clang++
+CFLAGS = -std=c++0x -Wall
+CLINKS = -pthread
+
+NAME = main
+SRC = $(NAME).cpp
+TAR = $(NAME).out
+
+
+$(TAR) : $(SRC)
+	$(CC) $(CFLAGS) -o $@ $^ $(CLINKS)
+
+
+.PHONY : clean run
+
+clean :
+	rm -rf *.out
+
+run :
+	./$(TAR)
