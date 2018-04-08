@@ -25,16 +25,16 @@
 使用下面的命令编译 Segmentation.cpp
 
 ```bash
-clang++ -pthread -fPIC -shared -std=c++0x -Wall -I/home/ieric/.pyenv/versions/2.7.13/include/python2.7 -o test.so test.cpp -lboost_python `pkg-config --libs opencv` BackgroundSubtractorPAWCS.cpp BackgroundSubtractorLBSP.cpp LBSP.cpp
+clang++ -pthread -fPIC -shared -std=c++0x -Wall -I/home/ieric/.pyenv/versions/2.7.13/include/python2.7 -o Segmentation.so Segmentation.cpp -lboost_python `pkg-config --libs opencv` BackgroundSubtractorPAWCS.cpp BackgroundSubtractorLBSP.cpp LBSP.cpp
 ```
 
 在当前目录下生成 `Segmentation.so` 文件, 在 Python 中使用:
 
-**必须注意, 当前目录下需要有 baseImage.jpg** 光板图片.
+**必须注意, 当前目录下需要有 baseImage.jpg** 光板图片, 另外路径似乎需要使用单引号而不是双引号.
 
 ```bash
 >>> import Segmentation
->>> Segmentation.Seg("/home/ieric/Codes/Qt5/pcb/figs/2.jpg")
+>>> Segmentation.Seg('/home/ieric/Codes/Qt5/pcb/figs/2.jpg')
 # 在当前目录中产生 result.jpg
 ```
 
@@ -81,14 +81,17 @@ clang++ -pthread -fPIC -shared -std=c++0x -Wall -I/home/ieric/.pyenv/versions/2.
 
   如果出现 `./engdemo: error while loading shared libraries`, 那么在 .bashrc 文件中加入如下命令:
 
+  注: 第三个 export 可以注释掉.
+
   ```bash
   # matlab used for mlab(python)
   # if 'can't start matlab engine' occurred, install csh
   export PATH=/usr/local/MATLAB/R2015b/bin:$PATH
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/MATLAB/R2015b/bin/glnxa64:/usr/local/MATLAB/R2015b/sys/os/glnxa64
+  export MLABRAW_CMD_STR='/usr/local/bin/matlab -nodisplay'
+  #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/MATLAB/R2015b/bin/glnxa64:/usr/local/MATLAB/R2015b/sys/os/glnxa64
   ```
 
-  **第二个 export 的内容如果不注释掉, clang++ 等就不能使用; 如果注释掉, 那么 engdemo 的这个问题不能解决...**
+  **第三个 export 的内容如果不注释掉, clang++ 等就不能使用; 如果注释掉, 那么 engdemo 的这个问题不能解决...**
 
 + 其他可能出现的问题:
 
