@@ -155,6 +155,7 @@ class DisplayArea(QFrame):
         pen.setWidth(2)
         originPainter.setPen(pen)
         painter.setPen(pen)
+        self.parent().parent().dataValue = []
         for index, ((x0, y0, w0, h0), (x1, y1, w1, h1), (x2, y2, w2, h2)) in \
                             enumerate(zip(self.bbox, self.exactPos, self.roiPos)):
             if (index < 3):
@@ -205,10 +206,10 @@ class DisplayArea(QFrame):
                 selectedRect = QRect(self.startRectPosx,
                     self.startRectPosy,
                     self.endRectPosx - self.startRectPosx,
-                    self.endRectPosy - self.startRectPosy).normalized()
-                # if (self.startRectPosx <= self.endRectPosx) and \
-                   # (self.startRectPosy <= self.endRectPosy):
-                painter.drawRect(selectedRect)
+                    self.endRectPosy - self.startRectPosy)#.normalized()
+                if (self.startRectPosx <= self.endRectPosx) and \
+                   (self.startRectPosy <= self.endRectPosy):
+                    painter.drawRect(selectedRect)
                 # self.imageLabel.setPixmap(self.imageLabel.pixmap())
 
 
