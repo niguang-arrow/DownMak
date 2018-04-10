@@ -40,12 +40,46 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-class Solution {
-public:
-    string simplifyPath(string path) {
-        stack<
-    }
-};
+//class Solution {
+//public:
+    //bool increasingTriplet(vector<int>& nums) {
+        //int c1 = INT32_MAX, c2 = INT32_MAX;
+        //for (int x : nums) {
+            //if (x <= c1) {
+                //c1 = x;           // c1 is min seen so far (it's a candidate for 1st element)
+            //} else if (x <= c2) { // here when x > c1, i.e. x might be either c2 or c3
+                //c2 = x;           // x is better than the current c2, store it
+            //} else {              // here when we have/had c1 < c2 already and x > c2
+                //return true;      // the increasing subsequence of 3 elements exists
+            //}
+            //cout << c1 << " " << c2 << endl;
+        //}
+        //return false;
+//}
+//};
+
+//class Solution {
+//public:
+    //string reverseWords(string s) {
+
+        //stringstream ss(s);
+        //string str;
+        //string res;
+        //while (ss >> str) {
+            //std::reverse(str.begin(), str.end());
+            //res += str + " ";
+        //}
+        //res.pop_back();
+        //return res;
+    //}
+//};
+
+//class Solution {
+//public:
+    //string simplifyPath(string path) {
+        //stack<
+    //}
+//};
 
 //class Solution {
 //public:
@@ -99,24 +133,6 @@ public:
     //}
 //};
 
-//class Solution {
-//public:
-    //bool isToeplitzMatrix(vector<vector<int>>& matrix) {
-        //int rows = matrix.size(), cols = matrix[0].size();
-
-        //for (int j = cols - 1; j >= 0; j --)
-            //for (int i = j + 1; i < cols; i ++)
-                //if (i - j < rows)
-                    //if (matrix[0][j] != matrix[i - j][i])
-                        //return false;
-        //for (int i = 1; i < rows; i ++)
-            //for (int j = i + 1; j < rows; j ++)
-                //if (j - i < cols)
-                    //if (matrix[i][0] != matrix[j][j - i])
-                        //return false;
-        //return true;
-    //}
-//};
 
 //class Solution {
 //public:
@@ -213,9 +229,11 @@ int main() {
     //string str = "Flag";
     int N = 4;
     //vector<vector<int>> nums = {{83}, {64}, {2}};
-    vector<int> nums = {-100, 2, 3, 4, -1};
-    auto res = Solution().maximumProduct(nums);
-    cout << res << endl;
+    vector<int> nums = {2, 3, 0, 2, 6};
+    string s = "Let's take LeetCode contest";
+    auto res = Solution().increasingTriplet(nums);
+    //cout << res << endl;
+    cout << std::boolalpha << res << endl;
     //preOrder(root);
     //cout << endl;
     //cout << res << endl;
@@ -231,5 +249,4 @@ int main() {
     //for (auto &d : res)
         //cout << d << " ";
     //cout << endl;
-    //cout << std::boolalpha << res << endl;
 }

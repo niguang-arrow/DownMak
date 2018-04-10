@@ -513,6 +513,86 @@ public:
 
 
 
+### 557. *Reverse Words in a String III
+
+https://leetcode.com/problems/reverse-words-in-a-string-iii/description/
+
+给定一个字符串句子, 将其中的每个单词都逆序, 同时保留其中的空格, 注意单词之间的顺序要保留. 在测试例子中, 每个句子中单词之间只有一个空格. 比如:
+
+```bash
+Input: "Let's take LeetCode contest"
+Output: "s'teL ekat edoCteeL tsetnoc"
+```
+
+
+
+思路: 利用 stringstream 以及标准库提供的 `std::reverse` 可以非常简单的解决这个问题. 先看解法一: 注意到参数不是引用, 因此下面这个解法使用 O(n) 的空间. 如果要在 s 上进行翻转的, 就需要使用一个索引记录要翻转单词的索引. 看解法二.
+
+```cpp
+class Solution {
+public:
+    string reverseWords(string s) {
+
+        stringstream ss(s);
+        string str;
+        string res;
+        while (ss >> str) {
+            std::reverse(str.begin(), str.end());
+            res += str + " ";
+        }
+        res.pop_back();
+        return res;
+    }
+};
+
+```
+
+解法二: 直接在 s 上进行翻转, 使用 start 记录每个单词的起始字符的索引:
+
+```cpp
+class Solution {
+public:
+    string reverseWords(string s) {
+
+        stringstream ss(s);
+        int start = 0;
+        string str;
+        while (ss >> str) {
+            std::reverse(s.begin() + start, s.begin() + start + str.size());
+            start += str.size() + 1;
+        }
+        return s;
+    }
+};
+```
+
+看 leetcode 上有不使用 stringstream 的解法:
+
+```cpp
+class Solution {
+public:
+    string reverseWords(string s) {
+        
+        int start = 0;
+      	// 使用 i 来查找空格的索引.
+        for (int i = 0; i < s.size(); i++) {
+            if (s[i] == ' ') {
+                reverse(begin(s) + start, begin(s) + i);
+                start = i + 1;
+            }
+        }
+        
+        reverse(begin(s) + start, end(s));
+        
+        return s;
+    }
+};
+```
+
+
+
+
+
 ### 521. *Longest Uncommon Subsequence I
 
 https://leetcode.com/problems/longest-uncommon-subsequence-i/description/
@@ -702,7 +782,7 @@ public:
 
 
 
-## 数字
+## 数学
 
 ### 788. *Rotated Digits
 
@@ -743,6 +823,194 @@ public:
             if (isGood(i))
                 count ++;
         return count;
+    }
+};
+```
+
+
+
+### 628. *Maximum Product of Three Numbers
+
+https://leetcode.com/problems/maximum-product-of-three-numbers/description/
+
+给定一个整数序列, 找到其中 3 个数的乘积最大, 并输出最大乘积. 比如:
+
+**Example 1:**
+
+```bash
+Input: [1,2,3]
+Output: 6
+```
+
+**Example 2:**
+
+```bash
+Input: [1,2,3,4]
+Output: 24
+```
+
+**Note:**
+
+1. The length of the given array will be in range [3,104] and all elements are in the range [-1000, 1000].
+2. Multiplication of any three numbers in the input won't exceed the range of 32-bit signed integer.
+
+
+
+思路: 这道题的要注意存在数组中是存在负数的. 当数组比较混乱时, 不太好找规律, 这个时候可以先对数组进行排序. 那么此时, 要找到乘积最大的三个数, 就相对轻松了. 如果存在负数的话, 那么最大值应该在 `a = nums[0] * nums[1] * nums[n - 1]` 和 ` b = nums[n - 3] * nums[n - 2] * nums[n - 1]` 中进行选择. 这是因为:
+
++ 数组中全是正数, 那么 `max(a, b)` 的结果为 b;
++ 数组中有多个负数和多个正数, 那么结果为 `max(a, b)`
++ ... 其余情况略.
+
+```cpp
+class Solution {
+public:
+    int maximumProduct(vector<int>& nums) {
+        int n = nums.size();
+        std::sort(nums.begin(), nums.end());
+        int res = max(nums[n - 3] * nums[n - 2] * nums[n - 1],
+                nums[0] * nums[1] * nums[n - 1]);
+        return res;
+    }
+};
+```
+
+leetcode 给出了详细的解法:
+
+https://leetcode.com/problems/maximum-product-of-three-numbers/solution/
+
+其中第三种解法只需要 O(n) 的时间复杂度, 空间复杂度为 O(1). 总结下面的思路可以知道, 其实最大值就是在最大的三个数的积 max1 * max2 * max3 或者最小的两个数与最大的数的积 min1 * min2 * max1 之间取最大值. (这里使用 max1 保存三个值中的最大值, 使用 min1 保存最小值.)
+
+We need not necessarily sort the given nums array to find the maximum product. Instead, we can only find the required 2 smallest values(min1 and min2) and the three largest values(max1, max2, max3) in the nums array, by iterating over the nums array only once.
+
+At the end, again we can find out the larger value out of `min1 x min2 x max1` and `max1 x max2 x max3` to find the required maximum product.
+
+```java
+public class Solution {
+    public int maximumProduct(int[] nums) {
+        int min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE;
+        int max1 = Integer.MIN_VALUE, max2 = Integer.MIN_VALUE, max3 = Integer.MIN_VALUE;
+        for (int n: nums) {
+            if (n <= min1) {
+                min2 = min1;
+                min1 = n;
+            } else if (n <= min2) {     // n lies between min1 and min2
+                min2 = n;
+            }
+            if (n >= max1) {            // n is greater than max1, max2 and max3
+                max3 = max2;
+                max2 = max1;
+                max1 = n;
+            } else if (n >= max2) {     // n lies betweeen max1 and max2
+                max3 = max2;
+                max2 = n;
+            } else if (n >= max3) {     // n lies betwen max2 and max3
+                max3 = n;
+            }
+        }
+        return Math.max(min1 * min2 * max1, max1 * max2 * max3);
+    }
+}
+```
+
+
+
+
+
+
+
+### 268. *Missing Number
+
+https://leetcode.com/problems/missing-number/description/
+
+给定一个包含 n 个整数的序列, 这 n 个数使用 `0, 1, 2, ..., n` 中取出来的, 并且这 n 个数都不相同, 那么 `0, 1, ..., n` 中哪个数没有被加入到序列中? 比如:
+
+**Example 1**
+
+```bash
+Input: [3,0,1]
+Output: 2
+```
+
+**Example 2**
+
+```bash
+Input: [9,6,4,2,3,5,7,0,1]
+Output: 8
+```
+
+
+
+思路: n 就是数组的大小 `nums.size()`, 只要对 0 ~ n 求和, 并减去数组中的元素的和, 就是输出了.
+
+```cpp
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        int n = nums.size();
+        long long allsum = ((n + 1) * n) >> 1; // 用公式求和.
+        long long a = accumulate(nums.begin(), nums.end(), 0);
+        int res = allsum - a;
+        return res;
+    }
+};
+```
+
+
+
+### 766. *Toeplitz Matrix
+
+https://leetcode.com/problems/toeplitz-matrix/description/
+
+A matrix is *Toeplitz* if every diagonal from top-left to bottom-right has the same element.
+
+Now given an `M x N` matrix, return `True` if and only if the matrix is *Toeplitz*.
+
+**Example 1:**
+
+```bash
+Input: matrix = [[1,2,3,4],[5,1,2,3],[9,5,1,2]]
+Output: True
+Explanation:
+1234
+5123
+9512
+
+In the above grid, the diagonals are "[9]", "[5, 5]", "[1, 1, 1]", "[2, 2, 2]", "[3, 3]", "[4]", and in each diagonal all elements are the same, so the answer is True.
+```
+
+**Example 2:**
+
+```bash
+Input: matrix = [[1,2],[2,2]]
+Output: False
+Explanation:
+The diagonal "[1, 2]" has different elements.
+```
+
+**Note:**
+
+1. `matrix` will be a 2D array of integers.
+2. `matrix` will have a number of rows and columns in range `[1, 20]`.
+3. `matrix[i][j]` will be integers in range `[0, 99]`.
+
+
+
+思路: 对于矩阵中的位于 `(i, j)` 处的元素, 判断它是否和 `(i - 1, j - 1)` 处的元素相等. 注意一下边界.
+
+```cpp
+class Solution {
+public:
+    bool isToeplitzMatrix(vector<vector<int>>& matrix) {
+        int rows = matrix.size(), cols = matrix[0].size();
+
+        for (int i = 1; i < rows; i++) {
+            for (int j = 1; j < cols; ++j) {
+                if (matrix[i][j] != matrix[i - 1][j - 1])
+                    return false;
+            }
+        }
+        return true;
     }
 };
 ```
