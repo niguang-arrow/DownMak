@@ -40,6 +40,65 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
+class Solution {
+private:
+    void print(vector<int> &nums) {
+        for (auto &d : nums)
+            cout << d << " ";
+        cout << endl;
+    }
+    void print2(vector<vector<int>> &nums) {
+        for (auto &data : nums) {
+            for (auto &d : data)
+                cout << d << " ";
+            cout << endl;
+        }
+        cout << endl;
+    }
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+
+        //vector<vector<int>> res{
+            //{},
+            //{1, 2}
+        //};
+        //vector<int> cur;
+
+        //auto start = res.begin();
+        //auto end = res.end();
+        //while (start != end) {
+            //cur = *start;
+            //cout << "start" << endl;
+            //print(cur);
+            //cur.push_back(5);//nums[i]);
+            //print(cur);
+            //res.push_back(cur);
+            //cout << "res" << endl;
+            //print2(res);
+            //start++;
+        //}
+        //return vector<vector<int>>{};
+        int n = nums.size();
+        int i = 0;
+        vector<vector<int>> res;
+        vector<int> cur;
+        res.push_back(cur);
+        while (i < n) {
+            int start = 0;
+            int end = res.size();
+
+            while (start < end) {
+                cur = res[start];
+                cur.push_back(nums[i]);
+                ++start;
+                res.push_back(cur);
+            }
+            ++i;
+        }
+        return res;
+    }
+};
+
 //class Solution {
 //public:
     //bool increasingTriplet(vector<int>& nums) {
@@ -229,11 +288,11 @@ int main() {
     //string str = "Flag";
     int N = 4;
     //vector<vector<int>> nums = {{83}, {64}, {2}};
-    vector<int> nums = {2, 3, 0, 2, 6};
+    vector<int> nums = {1, 2, 3};
     string s = "Let's take LeetCode contest";
-    auto res = Solution().increasingTriplet(nums);
+    auto res = Solution().subsets(nums);
     //cout << res << endl;
-    cout << std::boolalpha << res << endl;
+    //cout << std::boolalpha << res << endl;
     //preOrder(root);
     //cout << endl;
     //cout << res << endl;
