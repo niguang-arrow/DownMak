@@ -175,6 +175,13 @@ class DisplayArea(QFrame):
             QPixmap("resultWithRect.jpg").scaled(self.imageSize.width(), self.imageSize.height()))
         self.parent().parent().tableView.createTable(self.parent().parent().dataValue)
 
+    # whether the mouse is in an rect
+    def inRect(self, rectArea, x, y):
+        if (x > rectArea[0]) and (x < rectArea[0] + rectArea[2]):
+            if (y > rectArea[1]) and (y < rectArea[1] + rectArea[3]):
+                return True
+        return False
+
     def mousePressEvent(self, event):
         if self.name != "Original Image":
             return;
@@ -191,6 +198,20 @@ class DisplayArea(QFrame):
                     self.startOriginPosx = max((event.x() - self.imageLabel.x()) / self.wScaleFactor, 0)
                     self.startOriginPosy = max((event.y() - self.imageLabel.y()) / self.hScaleFactor, 0)
                     self.update()
+                    for rect in self.exactPos:
+                        if self.inRect(rect, self.startOriginPosx, self.startOriginPosy):
+                            if hasattr(self, 'originalPixmap'):
+                                self.parent().parent().zoomArea.imageLabel.setPixmap(
+                                    self.originalPixmap.copy(
+                                        rect[0], rect[1],
+                                        rect[2], rect[3]
+                                    ).scaledToHeight(self.imageSize.height()))
+                            else:
+                                self.parent().parent().zoomArea.imageLabel.setPixmap(
+                                    QPixmap.fromImage(self.originalImage).copy(
+                                        rect[0], rect[1],
+                                        rect[2], rect[3]
+                                    ).scaledToHeight(self.imageSize.height()))
 
     def paintEvent(self, event):
         if self.name != "Original Image":
@@ -241,6 +262,7 @@ class DisplayArea(QFrame):
                     self.endOriginPosy = min((event.y() - self.imageLabel.y()) / self.hScaleFactor, self.originalImage.height())
                     self.leftMousePress = False
                     self.updateZoomArea()
+                    self.update()
 
 
     def updateZoomArea(self):

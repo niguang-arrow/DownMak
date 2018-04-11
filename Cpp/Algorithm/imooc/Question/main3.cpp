@@ -41,11 +41,104 @@ void preOrder(TreeNode *root) {
 }
 
 class Solution {
+private:
+    void print(vector<int> &nums) {
+        for (auto &d : nums)
+            cout << d << " ";
+        cout << endl;
+    }
+    void print2(vector<vector<int>> &nums) {
+        for (auto &data : nums) {
+            for (auto &d : data)
+                cout << d << " ";
+            cout << endl;
+        }
+        cout << endl;
+    }
 public:
-    string simplifyPath(string path) {
-        stack<
+    vector<vector<int>> subsets(vector<int>& nums) {
+
+        //vector<vector<int>> res{
+            //{},
+            //{1, 2}
+        //};
+        //vector<int> cur;
+
+        //auto start = res.begin();
+        //auto end = res.end();
+        //while (start != end) {
+            //cur = *start;
+            //cout << "start" << endl;
+            //print(cur);
+            //cur.push_back(5);//nums[i]);
+            //print(cur);
+            //res.push_back(cur);
+            //cout << "res" << endl;
+            //print2(res);
+            //start++;
+        //}
+        //return vector<vector<int>>{};
+        int n = nums.size();
+        int i = 0;
+        vector<vector<int>> res;
+        vector<int> cur;
+        res.push_back(cur);
+        while (i < n) {
+            int start = 0;
+            int end = res.size();
+
+            while (start < end) {
+                cur = res[start];
+                cur.push_back(nums[i]);
+                ++start;
+                res.push_back(cur);
+            }
+            ++i;
+        }
+        return res;
     }
 };
+
+//class Solution {
+//public:
+    //bool increasingTriplet(vector<int>& nums) {
+        //int c1 = INT32_MAX, c2 = INT32_MAX;
+        //for (int x : nums) {
+            //if (x <= c1) {
+                //c1 = x;           // c1 is min seen so far (it's a candidate for 1st element)
+            //} else if (x <= c2) { // here when x > c1, i.e. x might be either c2 or c3
+                //c2 = x;           // x is better than the current c2, store it
+            //} else {              // here when we have/had c1 < c2 already and x > c2
+                //return true;      // the increasing subsequence of 3 elements exists
+            //}
+            //cout << c1 << " " << c2 << endl;
+        //}
+        //return false;
+//}
+//};
+
+//class Solution {
+//public:
+    //string reverseWords(string s) {
+
+        //stringstream ss(s);
+        //string str;
+        //string res;
+        //while (ss >> str) {
+            //std::reverse(str.begin(), str.end());
+            //res += str + " ";
+        //}
+        //res.pop_back();
+        //return res;
+    //}
+//};
+
+//class Solution {
+//public:
+    //string simplifyPath(string path) {
+        //stack<
+    //}
+//};
 
 //class Solution {
 //public:
@@ -99,24 +192,6 @@ public:
     //}
 //};
 
-//class Solution {
-//public:
-    //bool isToeplitzMatrix(vector<vector<int>>& matrix) {
-        //int rows = matrix.size(), cols = matrix[0].size();
-
-        //for (int j = cols - 1; j >= 0; j --)
-            //for (int i = j + 1; i < cols; i ++)
-                //if (i - j < rows)
-                    //if (matrix[0][j] != matrix[i - j][i])
-                        //return false;
-        //for (int i = 1; i < rows; i ++)
-            //for (int j = i + 1; j < rows; j ++)
-                //if (j - i < cols)
-                    //if (matrix[i][0] != matrix[j][j - i])
-                        //return false;
-        //return true;
-    //}
-//};
 
 //class Solution {
 //public:
@@ -213,9 +288,11 @@ int main() {
     //string str = "Flag";
     int N = 4;
     //vector<vector<int>> nums = {{83}, {64}, {2}};
-    vector<int> nums = {-100, 2, 3, 4, -1};
-    auto res = Solution().maximumProduct(nums);
-    cout << res << endl;
+    vector<int> nums = {1, 2, 3};
+    string s = "Let's take LeetCode contest";
+    auto res = Solution().subsets(nums);
+    //cout << res << endl;
+    //cout << std::boolalpha << res << endl;
     //preOrder(root);
     //cout << endl;
     //cout << res << endl;
@@ -231,5 +308,4 @@ int main() {
     //for (auto &d : res)
         //cout << d << " ";
     //cout << endl;
-    //cout << std::boolalpha << res << endl;
 }
