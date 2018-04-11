@@ -1,106 +1,77 @@
 #include <iostream>
-#include "function.h"
 #include <vector>
-
+#include <unordered_map>
+#include <unordered_set>
+#include <iomanip>
+#include "function.h"
+#include <queue>
+#include <string>
+#include <map>
+#include <set>
+#include <sstream>
+#include <cassert>
+#include <algorithm>
+#include <cstdlib>
 using namespace std;
 
+
 class Solution {
-private:
-    vector<vector<int>> res;
-    int mps(const vector<vector<int>> &matrix, int row, int col) {
-        if (matrix.empty() || row < 0 || col < 0)
-            return INT32_MAX;
-
-        if (row == 0 && col == 0)
-            return matrix[row][col];
-
-        if (res[row][col] != 0)
-            return res[row][col];
-
-        //vector<vector<int>> res(row + 1, vector<int>(col + 1));
-        for (int i = row; i >= 0; --i) {
-            for (int j = col; j >= 0; --j) {
-                res[i][j] = matrix[i][j] + min(mps(matrix, i - 1, j), mps(matrix, i, j - 1));
-                //memo[i][j] = res[i][j];
-            }
-        }
-        //// 可以打印中间过程
-        //cout << "res[" << row << "]" << "[" << col << "]: " << res[row][col] << endl;
-        return res[row][col];
-    }
 public:
-    int minPathSum(vector<vector<int>>& grid) {
-        res.resize(grid.size());
-        for (int i = 0; i < grid.size(); ++i)
-            res[i].resize(grid[0].size());
-        return mps(grid, grid.size() - 1, grid[0].size() - 1);
+    int findNumberOfLIS(vector<int>& nums) {
+        if (nums.empty())
+            return 0;
+        int n = nums.size();
+        vector<int> dp(n+1, 0);
+        unordered_map<int, int> record;
+        dp[0] = 1;
+        count[0] = 1;
+
+        for (int i = 1; i < n; ++i) {
+            int k = i - 1;
+            while (k >= 0) {
+                if (nums[k] < nums[i]) {
+                    dp[i] = max(dp[i],  dp[k] + 1);
+                    record[dp[i]] ++;
+                }
+                k --;
+            }
+            if (k < 0)
+                dp[i] = 1;
+            cout << "i: " << i << " dp:" << dp[i] << endl;
+        }
+
+        std::sort(dp.begin(), dp.end());
+        int res = 1;
+        for (int i = n - 1; i >= 0; --i)
+            if (dp[i] == dp[n])
+                res ++;
+        return res;
     }
 };
 
-
-void SortAge(int ages[], int length) {
-    if (ages == nullptr || length <= 0)
-        return;
-
-    const int oldestAge = 99;
-    int timesOfAge[oldestAge + 1];
-
-    for (int i = 0; i < oldestAge + 1; ++i)
-        timesOfAge[i] = 0;
-
-    for (int i = 0; i < length; ++i) {
-        if (ages[i] < 0 || ages[i] > oldestAge)
-            throw "age out of range";
-        timesOfAge[ages[i]]++;
-    }
-
-    int index = 0;
-    for (int i = 0; i <= oldestAge; ++i) {
-        for (int j = 0; j < timesOfAge[i]; ++j) {
-            ages[index] = i;
-            index++;
-        }
-    }
-}
-
-
-bool test_sorted(int arr[], int length) {
-    for (int i = 0; i < length - 1; ++i)
-        if (arr[i] > arr[i + 1])
-            return false;
-    return true;
-}
-
+////674. Longest Continuous Increasing Subsequence
+//class Solution {
+//public:
+    //int findLengthOfLCIS(vector<int>& nums) {
+        //if (nums.empty())
+            //return 0;
+        //int i = 0;
+        //int res = 1;
+        //// nums[i...j) 保存最长的连续递增子串
+        //for (int j = 1; j < nums.size(); ++j) {
+            //if (nums[j] <= nums[j - 1]) {
+                //i = j;
+            //}
+            //res = max(res, j - i + 1);
+        //}
+        //return res;
+    //}
+//};
 
 int main() {
 
-
-    //vector<vector<int>> arr = {{1}};
-    //vector<vector<int>> arr = {{1, 3, 1}, {1, 5, 1}};
-    //vector<vector<int>> arr = {{1, 2}, {1, 5}};
-    //vector<vector<int>> arr = {{1, 3, 1}, {1, 5, 1}, {4, 2, 1}};
-    //int res = Solution().minPathSum(arr);
-    //cout << res << endl;
-    //
-    int *a = generateArray(100);
-    SortAge(a, 100);
-    cout << test_sorted(a, 100) << endl;;
- 
-    //for (int n = 10; n < 10000; n *= 10) {
-        ////int n = 100;
-        //int *a = generateArray(n);
-        //vector<int> vec(a, a + n);
-        //vector<vector<int>> arr = {vec};
-        ////vector<vector<int>> arr = {{1, 3, 1}, {1, 5, 1}, {4, 2, 1}};
-        ////vector<vector<int>> arr = {{1, 2}, {1, 5}};
-        //clock_t start = clock();
-        //int res = Solution().minPathSum(arr);
-        //clock_t end = clock();
-        //cout << res << endl;
-        //cout << "time: " << double(end - start) / CLOCKS_PER_SEC << endl;
-
-        //delete[] a;
-
-    //}
+    vector<int> nums = {1, 3, 5, 4, 7};
+    auto res = Solution().findNumberOfLIS(nums);
+    cout << res << endl;
     return 0;
 }
