@@ -626,6 +626,219 @@ public:
 
 
 
+### 95. **Unique Binary Search Trees II
+
+https://leetcode.com/problems/unique-binary-search-trees-ii/description/
+
+先表扬一下自己, 这个代码是写好就 AC 的.
+
+Given an integer *n*, generate all structurally unique **BST's** (binary search trees) that store values 1...*n*.
+
+For example,
+Given *n* = 3, your program should return all 5 unique BST's shown below.
+
+```bash
+   1         3     3      2      1
+    \       /     /      / \      \
+     3     2     1      1   3      2
+    /     /       \                 \
+   2     1         2                 3
+```
+
+题意是给定数字 n, 产生所有唯一的二分搜索树保存 1 ~ n 个数.
+
+
+
+思路: 要解决这道题, 可以使用动态规划的方法. 如果我们知道了保存 1 ~ n - 1 的所有 BST, 假设为 `f(n - 1)`, 那么当考虑 n 时, 就要判断怎样将 n 插入到 f(n - 1) 中的每棵 BST 中, 这样就能得到 f(n) 了. 举个例子, 比如 n = 3 时, 上面可以产生 5 棵 BST, 那这 5 棵 BST 是怎么得到的呢? 先考虑 f(2). 
+
+如果 n = 2 时, 我们可以如下的 BST:
+
+```bash
+   1         2       
+   	\        /
+   	 2      1
+```
+
+即 f(2) 时产生了两棵 BST. 
+
++ 情况 1: 那么当要插入 n = 3 时, 由于 n 总比 f(n - 1) 中每棵 BST 中的最大值(即 n-1) 都要大, 那么可以将那些 BST 作为 n 的左子树, 即:
+
+```bash
+     3       3
+    /       /
+   1       2
+    \      /
+     2     1
+```
+
++ 情况二: 可以将 n 作为 f(n - 1) 中每棵 BST 的右子树, **但这里有个问题要注意**, 先看例子:
+
+```bash
+ 1          2
+  \        / \
+   2      1   3
+    \
+     3
+```
+
+但是如何得到下面这个呢?
+
+```bash
+   1
+    \
+     3
+    /
+   2
+```
+
+这时, 我们就知道了, 如果将 3 沿着根节点的右子节点一直走, 如果右子节点为空, 那么就将 3 插入进去; 如果右子节点不为空, 那么就需要将 3 插入到右子节点的上面(所谓"上面"自己体会), 并将右子节点以及后面的内容作为 3 的左子树. 根据这个思路, 我们从根节点开始, 依次判断右子节点是否为空, 然后插入节点 3. 按照顺序画图如下:
+
+```bash
+   1	   1          2
+  	\       \        / \
+     3       2      1   3
+     /        \
+    2          3
+```
+
+这样就得到了 5 个不同的 BST.
+
+具体代码如下:
+
+```cpp
+class Solution {
+private:
+  	// 由于最后的结果是返回所有的不同子树, 那么在求 f(n) 的
+  	// 时候, 需要拷贝 f(n - 1) 中的树, 再进行操作. 拷贝使用
+  	// 前向遍历即可.
+    TreeNode* copyTree(TreeNode *root) {
+        if (!root)
+            return nullptr;
+        
+        TreeNode *newroot = new TreeNode(root->val);
+        newroot->left = copyTree(root->left);
+        newroot->right = copyTree(root->right);
+        return newroot;
+    }
+
+public:
+    vector<TreeNode*> generateTrees(int n) {
+        if (n < 1)
+            return vector<TreeNode*>{};
+        if (n == 1)
+            return vector<TreeNode*>{new TreeNode(n)};
+		
+        auto treeSet = generateTrees(n - 1);
+        vector<TreeNode*> res;
+        for (auto &subroot : treeSet) {
+            TreeNode *root = new TreeNode(n);
+          	// 情况 1: 将 f(n - 1) 中的所有BST 作为 root 的左子树
+            root->left = subroot;
+            res.push_back(root);
+          	// 情况 2: 
+          	// 使用 ptr2 来记录 root 应插入的位置
+          	// 另一方面还要用 ptr 来记录产生下一棵BST时, ptr2 要移动的位置
+          	// 这个可以画图体会.
+            auto ptr = subroot;
+            while (ptr) {
+                TreeNode *node = new TreeNode(n);
+                TreeNode *root = copyTree(subroot);
+                auto ptr2 = root;
+                while (ptr2->val != ptr->val)// 使ptr2移动到和 ptr 对应的位置
+                    ptr2 = ptr2->right;
+                auto temp = ptr2->right;
+                ptr2->right = node;
+              	// 将 temp 作为 n 的左子树.
+                node->left = temp;
+                res.push_back(root);
+                ptr = ptr->right;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 300. **Longest Increasing Subsequence
+
+https://leetcode.com/problems/longest-increasing-subsequence/description/
+
+给定一个未排序的整数数组, 将其中最长递增子序列的长度求出来. 比如:
+
+Given `[10, 9, 2, 5, 3, 7, 101, 18]`,
+The longest increasing subsequence is `[2, 3, 7, 101]`, therefore the length is `4`. Note that there may be more than one LIS combination, it is only necessary for you to return the length.
+
+Your algorithm should run in O(*n2*) complexity.
+
+**Follow up:** Could you improve it to O(*n* log *n*) time complexity?
+
+思路: 使用动态规划求解. 目前我的思路是, 令 `f(n)` 表示以 `nums[n]` 为边界的最长递增子序列的长度. 为了求出 f(n), 我们要遍历 `nums[0,..., n-1]`. 如果存在某个 `nums[i] < nums[n]`, 那么就可以更新 f(n), 但是由于是求最长, 因此也许 `nums[i]` 前面的元素 LIS 长度比 f(i) 大. 因此, 状态转移方程应该是: `f(n) = max{f(i) for i < n if nums[i] < nums[n]}`. 下面就可以编写代码了. 由于采用的是迭代的思路, 所以要确定起始条件, 起始条件就是 `f(0) = 1`, 第一个元素的 LIS 长度为 1.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        if (nums.empty())
+            return 0;
+        int n = nums.size();
+        vector<int> dp(n, 1);
+
+        for (int i = 1; i < n; ++i) {
+            int k = i - 1;
+            while (k >= 0) {
+              	// 在更新的时候, 要判断 dp[i] 的最大值, 这里就是求解
+              	// 状态转移方程.
+                if (nums[k] < nums[i] && (dp[k] + 1) > dp[i]) {
+                    dp[i] =  dp[k] + 1;
+                }
+                k --;
+            }
+          	// 下面这行注释可以用来调试.
+            //cout << "i: " << i << " dp:" << dp[i] << endl;
+        }
+
+        int res = 1;
+        for (int i = 0; i < dp.size(); ++i)
+            res = max(res, dp[i]);
+        return res;
+    }
+};
+```
+
+leetcode 给出了官方的解答:
+
+https://leetcode.com/problems/longest-increasing-subsequence/solution/
+
+再来看我提交之后, 有个速度特别快的解法, 思路也异常简洁:
+
+在迭代过程中, 每次在 r 中查找当前访问元素 v 的 `lower_bound`, 其中 r 用来保存最长递增子序列. `lower_bound` 可以求出第一个大于或等于 v 的值. 如果在序列 r 中找不到 v, 说明 v 比 r 中的所有元素都大, 因此可以将 v 加入到 r 的末尾, 而如果 r 中存在某元素大于或等于 v, 那么用 v 将这个元素替换, 这样的话, 一方面, 如果 `*p` 原本就是 v, 那么没任何影响, 而如果 `*p` 原本大于 v, 那么此时变成了 v, 以后就可以插入新的元素, 使增长序列成为可能.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        vector<int> r;
+        
+        for(auto v : nums) {
+            auto p = std::lower_bound(r.begin(), r.end(), v);
+            if (r.end() == p)
+                r.push_back(v);
+            else
+                *p = v;
+        }
+        return r.size();
+    }
+};
+```
+
+
+
+
+
+
+
 ## 深度优先遍历
 
 深度优先是从一个节点开始, 不断地访问直到访问不下去位置, 即沿着一条路径走到底. 注意与深度优先遍历的区别, 深度优先遍历会从一个节点开始, 然后一次性将该节点的相邻节点全部访问, 再去遍历这些相邻节点的相邻节点, 直到所有的节点都遍历完成.

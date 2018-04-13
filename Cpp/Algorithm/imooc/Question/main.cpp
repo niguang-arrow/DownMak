@@ -24,7 +24,6 @@ public:
         vector<int> dp(n+1, 0);
         unordered_map<int, int> record;
         dp[0] = 1;
-        count[0] = 1;
 
         for (int i = 1; i < n; ++i) {
             int k = i - 1;

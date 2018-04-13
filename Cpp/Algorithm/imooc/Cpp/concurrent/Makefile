@@ -1,13 +1,13 @@
 CC = clang++
 CFLAGS = -Wall -std=c++0x
-CLINKS =
+CLINKS = -lpthread
 
-NAME = main3
+NAME = threading
 SRC = $(NAME).cpp
 TAR = $(NAME).out
 
-$(TAR) : $(SRC) function.h
-	$(CC) $(CFLAGS) -o $@ $< $(CLINK)
+$(TAR) : $(SRC)
+	$(CC) $(CFLAGS) -o $@ $< $(CLINKS)
 
 .PHONY : clean run
 
