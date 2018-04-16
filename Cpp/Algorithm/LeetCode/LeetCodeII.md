@@ -6,6 +6,95 @@
 
 ## 动态规划
 
+### 303. *Range Sum Query - Immutable
+
+https://leetcode.com/problems/range-sum-query-immutable/description/
+
+Given an integer array *nums*, find the sum of the elements between indices *i* and *j* (*i* ≤ *j*), inclusive.
+
+**Example:**
+
+```bash
+Given nums = [-2, 0, 3, -5, 2, -1]
+
+sumRange(0, 2) -> 1
+sumRange(2, 5) -> -1
+sumRange(0, 5) -> -3
+```
+
+**Note:**
+
+1.  You may assume that the array does not change.
+2.  There are many calls to *sumRange* function.
+
+思路: 刚看完题的时候我以为自己理解错了, 不自觉多读了几遍. 这道题太简单了, 主要注意可能超时的问题, 没错, O(n) 也会超时, 如果不注意看题的话.
+
+注意最后的注释是 leetcode 代码自带的, 根据题意中第二点, sumRange 会被调用多次, 因此只能在初始化的时候, 将和给求好, 然后在 sumRange 中进行相减.
+
+```cpp
+class NumArray {
+private:
+    int n;
+    unordered_map<int, int> record;
+public:
+    NumArray(vector<int> nums) {
+        n = nums.size();
+        int sum = 0;
+        for (int i = 0; i < n; ++i) {
+            sum += nums[i];
+            record[i] = sum;
+        }
+    }
+    
+    int sumRange(int i, int j) {
+        assert(i <= j &&
+              i >= 0 && i < n &&
+              j >= 0 && j < n);
+        
+        return i > 0 ? record[j] - record[i - 1] : record[j];
+    }
+};
+
+/**
+ * Your NumArray object will be instantiated and called as such:
+ * NumArray obj = new NumArray(nums);
+ * int param_1 = obj.sumRange(i,j);
+ */
+```
+
+
+
+### 307. **Range Sum Query - Mutable
+
+https://leetcode.com/problems/range-sum-query-mutable/description/
+
+Given an integer array *nums*, find the sum of the elements between indices *i* and *j* (*i* ≤ *j*), inclusive.
+
+The `update(i, val)` function modifies `nums` by updating the element at index `i` to val.
+
+**Example:**
+
+```bash
+Given nums = [1, 3, 5]
+
+sumRange(0, 2) -> 9
+update(1, 2)
+sumRange(0, 2) -> 8
+```
+
+**Note:**
+
+1.  The array is only modifiable by the *update* function.
+2.  You may assume the number of calls to *update* and *sumRange* function is distributed evenly.
+
+
+
+思路: 这题没法写, 看解答. 牵涉未知的知识点.
+
+https://leetcode.com/problems/range-sum-query-mutable/solution/
+
+
+
 ### 198. *House Robber
 
 https://leetcode.com/problems/house-robber/description/
@@ -835,7 +924,7 @@ public:
 
 
 
-### 377. Combination Sum IV
+### 377. **Combination Sum IV
 
 https://leetcode.com/problems/combination-sum-iv/description/
 
@@ -909,6 +998,67 @@ public:
 [1ms Java DP Solution with Detailed Explanation](https://leetcode.com/problems/combination-sum-iv/discuss/85036/1ms-Java-DP-Solution-with-Detailed-Explanation)
 
 
+
+### 647. **Palindromic Substrings
+
+https://leetcode.com/problems/palindromic-substrings/description/
+
+给定一个字符串, 计算它有多少个回文子字符串. 子字符串的内容相同, 但是它们的 start index 或者 end index 不同的话, 可以算是不同的子字符串. 比如:
+
+**Example 1:**
+
+```bash
+Input: "abc"
+Output: 3
+Explanation: Three palindromic strings: "a", "b", "c".
+```
+
+**Example 2:**
+
+```bash
+Input: "aaa"
+Output: 6
+Explanation: Six palindromic strings: "a", "a", "a", "aa", "aa", "aaa".
+```
+
+**Note:**
+
+1.  The input string length won't exceed 1000.
+
+思路: 原来似乎做过一道求字符串中最长回文子字符串的题, 思路可以用在这里. 方法是 O(N^2), 对于字符串中的每一个字符, 使用 i 和 j 来指向这个字符, 如果 `s[j] == s[i]`, 那么就继续移动 j, 直到 `s[j] != s[i]`; 这个时候 `s[i,... j-1]` 范围内的字符都是相同的, 它们显然都是回文子字符串(比如 "aaa"), 所以 count 要增大. 之后, 由于 `s[j] != s[i]`, 那么就要考虑字符不同的情况了, 于是不断判断 `a[i - 1] == a[j]`, 如果条件满足, 那么就要将 i 向左移动, 并且使 j 向右移动, 即考虑 "aba" 的这种情况. 下面代码中使用 index 记录当前访问的字符是哪一个.
+
+```cpp
+class Solution {
+public:
+    int countSubstrings(string s) {
+        int i = 0, j = 0;
+        int count = 0;
+        while (i < s.size()) {
+            int index = i;
+          	// 这里要注意, 不要为了省事写成 s[j++] == s[i], 这样结果会报错.
+          	// 比如 "aba" 这种情况. 因为, 当 s[j] 已经不等于 s[i] 时, j 却
+          	// 再一次被增加了 1. 比如当访问 s[0] 时, 原本希望 j 停留在 b 这个
+          	// 位置, 可是由于 s[j++] (j 此时为 1) 不等于 s[0], j 又再次增加 1,
+          	// 变为了 2, 下一个 while 循环中的 s[j] 是 s[2] 了, 这不是我们希望的.
+            while (j < s.size() && s[j] == s[i]) {
+                count ++;
+                j ++;
+            }
+            while (i > 0 && j < s.size() && s[i - 1] == s[j]) {
+                count ++;
+                i --;
+                j ++;
+            }
+            i = j = ++index;
+        }
+        return count;
+    }
+};
+```
+
+此题官方给了解答:
+
+https://leetcode.com/problems/palindromic-substrings/solution/
 
 
 

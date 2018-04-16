@@ -41,48 +41,24 @@ void preOrder(TreeNode *root) {
 }
 
 class Solution {
-private:
-    vector<vector<bool>> seen;
-    bool dfs(vector<vector<char>> &board, int i, int j, string word, int index) {
-        if (i < 0 || i >= board.size() ||
-            j < 0 || j >= board[0].size() ||
-            seen[i][j] || index >= word.size() ||
-            board[i][j] != word[index]) {
-            if (i == 1 && j == 3)
-                cout << "index: " << index << (board[i][j] == word[index]) << endl;
-            cout << "i: " << i << " " << j << endl;
-            return false;
-        }
-
-        if (index == word.size() - 1 && board[i][j] == word[index])
-            return true;
-        seen[i][j] = true;
-
-        cout << "index: " << index << " (i, j): " << i << "," << j << " "
-            << std::boolalpha << (board[i][j] == word[index]) << endl;
-        return (dfs(board, i - 1, j, word, index + 1) ||
-            dfs(board, i + 1, j, word, index + 1) ||
-            dfs(board, i, j - 1, word, index + 1) ||
-            dfs(board, i, j + 1, word, index + 1));
-    }
 public:
-    bool exist(vector<vector<char>>& board, string word) {
-        if (board.empty() || board[0].empty())
-            return false;
-        //seen = vector<vector<bool>>(board.size(), vector<bool>(board[0].size(), false));
-        //cout << "(i, j): " << 0 << "," << 0 << " "
-            //<< std::boolalpha << dfs(board, 0, 0, word, 0) << endl;
-        for (int i = 0; i < board.size(); ++i) {
-            for (int j = 0; j < board[0].size(); ++j) {
-                seen = vector<vector<bool>>(board.size(), vector<bool>(board[0].size(), false));
-                //cout << "(i, j): " << i << "," << j << " "
-                    //<< std::boolalpha << dfs(board, i, j, word, 0) << endl;
-                if (board[i][j] == word[0])
-                    if(dfs(board, i, j, word, 0))
-                        return true;
+    int countSubstrings(string s) {
+        int i = 0, j = 0;
+        int count = 0;
+        while (i < s.size()) {
+            int index = i;
+            while (j < s.size() && s[j] == s[i]) {
+                count ++;
+                j ++;
             }
+            while (i > 0 && j < s.size() && s[i - 1] == s[j]) {
+                count ++;
+                i --;
+                j ++;
+            }
+            i = j = ++index;
         }
-        return false;
+        return count;
     }
 };
 
@@ -110,10 +86,10 @@ int main() {
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
     //vector<int> nums = {1, 2};
-    //string s = "babad";
-    auto res = Solution().exist(nums, word);
-    //cout << res << endl;
-    cout << std::boolalpha << res << endl;
+    string s = "aba";
+    auto res = Solution().countSubstrings(s);
+    cout << res << endl;
+    //cout << std::boolalpha << res << endl;
     //preOrder(root);
     //cout << endl;
     //cout << res << endl;
