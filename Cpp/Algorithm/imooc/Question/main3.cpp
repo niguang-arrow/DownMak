@@ -42,23 +42,16 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    int countSubstrings(string s) {
-        int i = 0, j = 0;
-        int count = 0;
-        while (i < s.size()) {
-            int index = i;
-            while (j < s.size() && s[j] == s[i]) {
-                count ++;
-                j ++;
-            }
-            while (i > 0 && j < s.size() && s[i - 1] == s[j]) {
-                count ++;
-                i --;
-                j ++;
-            }
-            i = j = ++index;
-        }
-        return count;
+    bool isSubsequence(string s, string t) {
+        if (s.empty())
+            return true;
+        int k = 0;
+        for (int i = 0; i < t.size(); ++i)
+            if (t[i] == s[k])
+                k ++;
+        if (k >= s.size())
+            return true;
+        return false;
     }
 };
 
@@ -81,13 +74,13 @@ int main() {
     //int arr[] = {-1, -1, -1, -1, -1, 0};
     //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
  
-    vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
-    string word = "ABCESEEEFS";
+    //vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
+    //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
-    //vector<int> nums = {1, 2};
+    vector<int> nums = {1, 2, 3, 4};
     string s = "aba";
-    auto res = Solution().countSubstrings(s);
+    auto res = Solution().numberOfArithmeticSlices(nums);
     cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(root);

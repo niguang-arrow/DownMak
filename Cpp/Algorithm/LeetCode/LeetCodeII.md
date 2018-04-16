@@ -1062,6 +1062,154 @@ https://leetcode.com/problems/palindromic-substrings/solution/
 
 
 
+### 413. **Arithmetic Slices
+
+https://leetcode.com/problems/arithmetic-slices/description/
+
+A sequence of number is called arithmetic if it consists of at least three elements and if the difference between any two consecutive elements is the same.
+
+For example, these are arithmetic sequence:
+
+```bash
+1, 3, 5, 7, 9
+7, 7, 7, 7
+3, -1, -5, -9
+```
+
+The following sequence is not arithmetic.
+
+```bash
+1, 1, 2, 5, 7
+```
+
+A zero-indexed array A consisting of N numbers is given. A slice of that array is any pair of integers (P, Q) such that 0 <= P < Q < N.
+
+A slice (P, Q) of array A is called arithmetic if the sequence:
+A[P], A[p + 1], ..., A[Q - 1], A[Q] is arithmetic. In particular, this means that P + 1 < Q.
+
+The function should return the number of arithmetic slices in the array A.
+
+**Example:**
+
+```bash
+A = [1, 2, 3, 4]
+
+return: 3, for 3 arithmetic slices in A: [1, 2, 3], [2, 3, 4] and [1, 2, 3, 4] itself.
+```
+
+
+
+思路: 题目不是很难, 使用 `dp[i]` 表示以 `nums[i]` 结尾的序列它的 Arithmetic Slices 的个数, 那么, 思路一: 只要判断 `nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 2]` 成立即可将 `dp[i] ++`, 当然, 考虑完了 `nums[i - 2]` , 还需考虑 `i - 2` 之前的元素, 这样的话, 使用了两个 for 循环. 那么有没有可能只使用一个 for 循环呢? 答案是思路二: 当考虑完 `dp[i - 1]` 后, 只要 `nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 2]` 成立, 那么直接使用 `dp[i] = dp[i - 1] + 1` 即可. 
+
+思路一:
+
+```cpp
+class Solution {
+public:
+    int numberOfArithmeticSlices(vector<int>& A) {
+        if (A.size() < 3)
+            return 0;
+
+        int n = A.size();
+        // dp 表示以 nums[i] 结尾的 Arithmetic Slice 的个数
+        vector<int> dp(n, 0);
+
+        // 当考虑 A[i] 时, 只要判断 A[j] - A[j - 1] == A[i] - A[i - 1] 是否成立即可.
+        for (int i = 2; i < n; ++i) {
+            int diff = A[i] - A[i - 1];
+            int j = i - 1;
+            while (j > 0 && A[j] - A[j - 1] == diff) {
+                dp[i] ++;
+                j --;
+            }
+        }
+      	// 最后要对 dp 求和
+        return std::accumulate(dp.begin(), dp.end(), 0);
+    }
+};
+```
+
+思路二: 来自 leetcode:
+
+```cpp
+class Solution {
+public:
+    int numberOfArithmeticSlices(vector<int>& A) {
+        int n = A.size();
+        if(n <3) return 0;
+        vector<int> dp(n, 0);
+      	// 考虑初始条件
+        if(A[2]-A[1] == A[1]-A[0]) dp[2] =1;
+      
+        int res = dp[2];
+        for(int i = 3; i < n;i++){
+            if(A[i] - A[i-1] == A[i-1] - A[i-2]){
+                dp[i] = dp[i-1]+1;
+                
+            }
+            res += dp[i];
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 392. **Is Subsequence
+
+https://leetcode.com/problems/is-subsequence/description/
+
+判断字符串 s 是否是字符串 t 的子序列. 题中说明了两个字符串中都只有小写字母, 并且 t 的长度比 s 的长度长. 比如:
+
+**Example 1:**
+**s** = `"abc"`, **t** = `"ahbgdc"`
+
+Return `true`.
+
+**Example 2:**
+**s** = `"axc"`, **t** = `"ahbgdc"`
+
+Return `false`.
+
+思路: 感觉这道题我的做法并没有动态规划在里面, 而这道题的标签是 DP, Binary Search, 以及 Greedy. 如果感兴趣, 应该看看讨论. 我的做法是, 使用 i 遍历 t, 用 k 尝试遍历 s, 然后判断 `t[i] == s[k]` 是否成立, 成立就增加 k. 如果最后 k 遍历完了 s, 那么说明 s 就是 t 的子序列.
+
+```cpp
+class Solution {
+public:
+    bool isSubsequence(string s, string t) {
+        if (s.empty())
+            return true;
+        int k = 0;
+        for (int i = 0; i < t.size(); ++i)
+            if (t[i] == s[k])
+                k ++;
+        if (k >= s.size())
+            return true;
+        return false;
+    }
+};
+```
+
+
+
+### 357. **Count Numbers with Unique Digits
+
+https://leetcode.com/problems/count-numbers-with-unique-digits/description/
+
+给定非负整数 n, 求 `0 <= x < 10^n` 范围内无重复数字的 x 的个数. 比如:
+
+**Example:**
+Given n = 2, return 91. (The answer should be the total numbers in the range of 0 ≤ x < 100, excluding `[11,22,33,44,55,66,77,88,99]`)
+
+思路: 这类数字的题目有可能一开始容易陷入穷举的泥淖中, 比如分情况讨论啥的. 我就是这样, 看完解答后豁然开朗:
+
+[JAVA DP O(1) solution](https://leetcode.com/problems/count-numbers-with-unique-digits/discuss/83041/JAVA-DP-O(1)-solution.)
+
+使用 `f(n)` 表示长度为 n 的数字中含无重复数字的个数.
+
+
+
 
 
 
