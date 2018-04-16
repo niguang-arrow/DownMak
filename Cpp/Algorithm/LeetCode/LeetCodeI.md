@@ -782,6 +782,119 @@ public:
 
 
 
+### 38. *Count and Say
+
+https://leetcode.com/problems/count-and-say/description/
+
+The count-and-say sequence is the sequence of integers with the first five terms as following:
+
+```
+1.     1
+2.     11
+3.     21
+4.     1211
+5.     111221
+```
+
+`1` is read off as `"one 1"` or `11`.
+`11` is read off as `"two 1s"` or `21`.
+`21` is read off as `"one 2`, then `one 1"` or `1211`.
+
+Given an integer *n*, generate the *n*th term of the count-and-say sequence.
+
+Note: Each term of the sequence of integers will be represented as a string.
+
+**Example 1:**
+
+```bash
+Input: 1
+Output: "1"
+```
+
+**Example 2:**
+
+```bash
+Input: 4
+Output: "1211"
+```
+
+这道题就是要读懂题意. 比如当输入为 5 的时候, 为何结果为 "111221" 呢?
+
+因为输入为 4 的时候, 结果为 `str = "1211"`, 由于 `str[0] = 1`, 所以读作 `11`, `str[1] = 2`, 读作 `12`, 而 `str[2..3] = "11"`, 所以读作 "21". 因此最终的结果为 "111211".
+
+那么当输入为 6 的时候结果是什么? 我开始写的时候报错, 我以为是 "21112211", 但实际结果为 "312211". 所以明白了, 当有重复数字, 要合起来读.
+
+思路: 使用 pre 记录输入为 n - 1 的结果, 然后判断 `pre[i]` 是否和 `pre[i + 1]` 相等, 使用 count 来记录相等元素的个数. 但是我写的代码不够简洁优雅, 先看 leetcode 上的一个求解, 再贴出我的代码.
+
+```cpp
+class Solution {
+public:
+   string countAndSay(int n) {
+    if (n == 0) return "";
+    string pre = "1";
+    while (--n) {
+        string cur = "";
+        for (int i = 0; i < pre.size(); i++) {
+            int count = 1;
+             while ((i + 1 < pre.size()) && (pre[i] == pre[i + 1])){
+                count++;    
+                i++;
+            }
+            cur += to_string(count) + pre[i];
+        }
+        pre = cur;
+    }
+    return pre;
+}
+}
+```
+
+ 下面是我的粗糙的代码, 不多说, 太糙了.
+
+```cpp
+class Solution {
+public:
+    string countAndSay(int n) {
+        int num = 1;
+        int count = 1;
+        string pre = "1";
+        while (num < n) {
+            string res = "";
+            for (int i = 0; i < pre.size(); ) {
+                if (i + 1 < pre.size()) {
+                    if (pre[i + 1] == pre[i]) {
+                        count ++;
+                        i ++;
+                    }
+                    else {
+                        res += to_string(count);
+                        res += pre[i];
+                        i ++;
+                        count = 1;
+                    }
+                }
+                else {
+                    res += to_string(count);
+                    res += pre[i];
+                    i ++;
+                }
+                //cout << "i: " << i - 1 << " res: " << res << endl;
+            }
+            count = 1;
+            pre = res;
+            num ++;
+        }
+        return pre;
+    }
+};
+```
+
+
+
+
+
+
+
 ## 数学
 
 ### 788. *Rotated Digits
@@ -1021,7 +1134,7 @@ public:
 
 ## 二分搜索
 
-### 34. Search for a Range
+### 34. **Search for a Range
 
 https://leetcode.com/problems/search-for-a-range/description/
 
@@ -1187,6 +1300,133 @@ public:
         //if (l >= 0 && l < nums.size() && nums[l] == target)
         return l;
     }
+};
+```
+
+
+
+### 74. **Search a 2D Matrix
+
+https://leetcode.com/problems/search-a-2d-matrix/description/
+
+Write an efficient algorithm that searches for a value in an *m* x *n* matrix. This matrix has the following properties:
+
+- Integers in each row are sorted from left to right.
+- The first integer of each row is greater than the last integer of the previous row.
+
+For example,
+
+Consider the following matrix:
+
+```bash
+[
+  [1,   3,  5,  7],
+  [10, 11, 16, 20],
+  [23, 30, 34, 50]
+]
+```
+
+Given **target** = `3`, return `true`.
+
+二维数组每一行都是递增的, 而每一行的第一个数都比它上一行的最后一个数大.
+
+思路: 我的方法的时间复杂度为 O(n + m), 但是这道题如果将二维数组看成一维的, 其实可以直接使用二分搜索. 所以, 方法2: 从右上角元素开始比较, 如果 target 比该元素小, 那么在当前行向左移动; 如果比该元素大的话, 向下移动.
+
+方法 1: 使用二分搜索:
+
+[Don't treat it as a 2D matrix, just treat it as a sorted list](https://leetcode.com/problems/search-a-2d-matrix/discuss/26220/Don't-treat-it-as-a-2D-matrix-just-treat-it-as-a-sorted-list)
+
+```cpp
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int> > &matrix, int target) {
+        int n = matrix.size();
+        int m = matrix[0].size();
+        int l = 0, r = m * n - 1;
+        while (l != r){
+            int mid = (l + r - 1) >> 1;
+            if (matrix[mid / m][mid % m] < target)
+                l = mid + 1;
+            else 
+                r = mid;
+        }
+        return matrix[r / m][r % m] == target;
+    }
+};
+```
+
+方法 2: 
+
+```cpp
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {        
+        if (matrix.empty())
+            return false;
+        
+        int rows = matrix.size(), cols = matrix[0].size();
+        int i = 0, j = cols - 1;
+        while (i < rows && j >= 0) {
+            if (matrix[i][j] == target)
+                return true;
+            else if (matrix[i][j] > target)
+                -- j;
+            else
+                ++ i;
+        }
+        return false;
+    }
+};
+```
+
+
+
+### 240. **Search a 2D Matrix II
+
+https://leetcode.com/problems/search-a-2d-matrix-ii/description/
+
+这道题由于承接上面 74. Search a 2D Matrix 所以我就把它放在这里了. 但是这道题没有用二分搜索求解. 这一次, 二维数组有下面的两条性质:
+
++ 每一行的整数从左往右从小到大排列.
++ 每一列的整数从上到下从小到大排列.
+
+Consider the following matrix:
+
+```bash
+[
+  [1,   4,  7, 11, 15],
+  [2,   5,  8, 12, 19],
+  [3,   6,  9, 16, 22],
+  [10, 13, 14, 17, 24],
+  [18, 21, 23, 26, 30]
+]
+```
+
+Given **target** = `5`, return `true`.
+
+Given **target** = `20`, return `false`.
+
+思路: 这道题可以使用 74. Search a 2D Matrix 的方法 2 求解. 时间复杂度为 O(m + n); 从左上角的元素开始比较.
+
+```cpp
+class Solution {
+public:
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        if (matrix.empty())
+            return false;
+        
+        int rows = matrix.size(), cols = matrix[0].size();
+        int i = 0, j = cols - 1;
+        while (i < rows && j >= 0) {
+            if (matrix[i][j] == target)
+                return true;
+            else if (matrix[i][j] > target)
+                -- j;
+            else
+                ++ i;
+        }
+        return false;
+     }
 };
 ```
 

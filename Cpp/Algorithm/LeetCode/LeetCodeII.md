@@ -835,6 +835,83 @@ public:
 
 
 
+### 377. Combination Sum IV
+
+https://leetcode.com/problems/combination-sum-iv/description/
+
+Given an integer array with all positive numbers and no duplicates, find the number of possible combinations that add up to a positive integer target.
+
+**Example:**
+
+```bash
+nums = [1, 2, 3]
+target = 4
+
+The possible combination ways are:
+(1, 1, 1, 1)
+(1, 1, 2)
+(1, 2, 1)
+(1, 3)
+(2, 1, 1)
+(2, 2)
+(3, 1)
+
+Note that different sequences are counted as different combinations.
+Therefore the output is 7.
+```
+
+
+
+思路: 当时这道题是做完 216. Combination Sum III(笔记在 LeetCodeI.md 的 "回溯法" 中)后推荐的, 所以定式地想是不是也可以用回溯法解决. 但实际上这道题需要使用动态规划求解, 否则可能超时. 使用 `f(n)` 表示使用 nums 中的元素能组成的不同序列使得 sum 等于 n, 那么状态转移方程为 `f(n) = sum{f(n - nums[i]) for i < nums.size()}`. 但是要注意, 使用递归的方式求解的话, 一方面要注意递归到底的情况, 即当 `nums[i] < n` 时, 应该返回 0. 另一方面要发现重复子结构, 比如:
+
+```bash
+nums = [1, 2, 3]
+target = 7
+            f(7)
+       f(6)  f(5)  f(4)
+   f(5) f(4) f(3) .....                   
+```
+
+是存在最优子结构的, 因此需要使用 `memo` 这个 vector 来记录 `f(n)` 的值, 如果 n 已经被计算过, 那么就不需要再计算了, 直接将 memo 中记录的值返回即可.
+
+```cpp
+class Solution {
+private:
+    vector<int> memo;
+    int combinations(vector<int> &nums, int target) {
+        if (memo[target] != -1)
+            return memo[target];
+
+        int res = 0;
+        // 这行注释的代码是错误的, 当不满足 target >= nums[i] 时, 会直接跳出
+        // 循环, 这显然是不对的, 因为还要考虑 i 后面的情况(毕竟 nums 又没有排序)
+        //for (int i = 0; i < nums.size() && target >= nums[i]; ++i) {
+        for (int i = 0; i < nums.size(); ++i) {
+          	// 这里使用了 if 语句, 所以递归到底的话, 会直接返回 res = 0.
+          	// 所以没在外面写
+            if (target >= nums[i])
+                res += combinations(nums, target - nums[i]);
+        }
+        memo[target] = res;
+        return res;
+    }
+public:
+    int combinationSum4(vector<int>& nums, int target) {
+        memo = vector<int>(target + 1, -1);
+        memo[0] = 1;
+        return combinations(nums, target);
+    }
+};
+```
+
+关于这道题更为细致的讨论, 可以看:
+
+[1ms Java DP Solution with Detailed Explanation](https://leetcode.com/problems/combination-sum-iv/discuss/85036/1ms-Java-DP-Solution-with-Detailed-Explanation)
+
+
+
+
+
 
 
 

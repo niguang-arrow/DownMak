@@ -40,55 +40,51 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-
 class Solution {
+private:
+    vector<vector<bool>> seen;
+    bool dfs(vector<vector<char>> &board, int i, int j, string word, int index) {
+        if (i < 0 || i >= board.size() ||
+            j < 0 || j >= board[0].size() ||
+            seen[i][j] || index >= word.size() ||
+            board[i][j] != word[index]) {
+            if (i == 1 && j == 3)
+                cout << "index: " << index << (board[i][j] == word[index]) << endl;
+            cout << "i: " << i << " " << j << endl;
+            return false;
+        }
+
+        if (index == word.size() - 1 && board[i][j] == word[index])
+            return true;
+        seen[i][j] = true;
+
+        cout << "index: " << index << " (i, j): " << i << "," << j << " "
+            << std::boolalpha << (board[i][j] == word[index]) << endl;
+        return (dfs(board, i - 1, j, word, index + 1) ||
+            dfs(board, i + 1, j, word, index + 1) ||
+            dfs(board, i, j - 1, word, index + 1) ||
+            dfs(board, i, j + 1, word, index + 1));
+    }
 public:
-    vector<int> constructArray(int n, int k) {
-        vector<int> res(n, 0);
-        if (k == 1) {
-            for (int i = 0; i < n; ++i)
-                res[i] = i + 1;
-            return res;
+    bool exist(vector<vector<char>>& board, string word) {
+        if (board.empty() || board[0].empty())
+            return false;
+        //seen = vector<vector<bool>>(board.size(), vector<bool>(board[0].size(), false));
+        //cout << "(i, j): " << 0 << "," << 0 << " "
+            //<< std::boolalpha << dfs(board, 0, 0, word, 0) << endl;
+        for (int i = 0; i < board.size(); ++i) {
+            for (int j = 0; j < board[0].size(); ++j) {
+                seen = vector<vector<bool>>(board.size(), vector<bool>(board[0].size(), false));
+                //cout << "(i, j): " << i << "," << j << " "
+                    //<< std::boolalpha << dfs(board, i, j, word, 0) << endl;
+                if (board[i][j] == word[0])
+                    if(dfs(board, i, j, word, 0))
+                        return true;
+            }
         }
-        if (k >= 2) {
-            int count = 0, num = n;
-            for (int i = 0; i < k; i += 2)
-                res[i] = num --;
-            for (int i = 1; i < k; i += 2)
-                res[i] = ++count;
-            for (int i = k; i < n; i ++)
-                res[i] = ++count;
-        }
-        return res;
+        return false;
     }
 };
-
-//class Solution {
-//private:
-    //vector<int> memo;
-    //int combinations(vector<int> &nums, int target) {
-        //if (memo[target] != -1)
-            //return memo[target];
-
-        //int res = 0;
-         ////这行注释的代码是错误的, 当不满足 target >= nums[i] 时, 会直接跳出
-         ////循环, 这显然是不对的, 因为还要考虑 i 后面的情况
-        //for (int i = 0; i < nums.size() && target >= nums[i]; ++i) {
-        //for (int i = 0; i < nums.size(); ++i) {
-            //if (target >= nums[i])
-                //res += combinations(nums, target - nums[i]);
-        //}
-        //memo[target] = res;
-        //return res;
-    //}
-//public:
-    //int combinationSum4(vector<int>& nums, int target) {
-        //memo = vector<int>(target + 1, -1);
-        //memo[0] = 1;
-        //return combinations(nums, target);
-    //}
-//};
-
 
 int main() {
     TreeNode *root = new TreeNode(1);
@@ -106,31 +102,18 @@ int main() {
     //root->right = new TreeNode(1);
 
 
-    int arr[] = {-1, -1, -1, -1, -1, 0};
-    //int arr[] = {1};
+    //int arr[] = {-1, -1, -1, -1, -1, 0};
     //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
-    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
-    //auto res = Solution().quickSort(nums);
-    //vector<vector<int>> grid = {{1, 1, 1}, {0, 1, 0},
-                                //{1, 1, 1}};
-    //vector<vector<int>> grid = {{0}, {1}};
-    //vector<vector<char>> grid = {{'X','X','X','X'},
-                                 //{'X','O','O','X'},
-                                 //{'X','O','O','X'},
-                                 //{'X','O','X','X'}};
-    //vector<vector<char>> grid = {{'O','O','O','O',
-                                 //'O','O','O','O'}};
-    //Solution().solve(grid);
-    //vector<string> str = {"ab", "ac", "a", "c", "b"};
-    //string str = "Flag";
-    int N = 4;
-    //vector<vector<int>> nums = {{83}, {64}, {2}};
-    //vector<int> nums = {1, 3, 5, 4, 7};
-    vector<int> nums = {1,3,6,7,9,4,10,5,6};
-    string s = "babad";
-    auto res = Solution().constructArray(3, 2);
+ 
+    vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
+    string word = "ABCESEEEFS";
+   //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
+    //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
+    //vector<int> nums = {1, 2};
+    //string s = "babad";
+    auto res = Solution().exist(nums, word);
     //cout << res << endl;
-    //cout << std::boolalpha << res << endl;
+    cout << std::boolalpha << res << endl;
     //preOrder(root);
     //cout << endl;
     //cout << res << endl;
@@ -143,7 +126,7 @@ int main() {
     //printLinkedList(root);
     //cout << res << endl;
 
-    for (auto &d : res)
-        cout << d << " ";
-    cout << endl;
+    //for (auto &d : res)
+        //cout << d << " ";
+    //cout << endl;
 }
