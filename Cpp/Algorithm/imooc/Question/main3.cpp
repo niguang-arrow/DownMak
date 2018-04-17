@@ -42,16 +42,18 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    bool isSubsequence(string s, string t) {
-        if (s.empty())
-            return true;
-        int k = 0;
-        for (int i = 0; i < t.size(); ++i)
-            if (t[i] == s[k])
-                k ++;
-        if (k >= s.size())
-            return true;
-        return false;
+    char nextGreatestLetter(vector<char>& letters, char target) {
+        int l = 0, r = letters.size() - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (letters[mid] <= target)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+        if (l >= 0 && l < letters.size())
+            return letters[l];
+        return letters[0];
     }
 };
 
@@ -79,8 +81,7 @@ int main() {
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
     vector<int> nums = {1, 2, 3, 4};
-    string s = "aba";
-    auto res = Solution().numberOfArithmeticSlices(nums);
+    auto res = Solution().nextGreatestLetter(nums);
     cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(root);
