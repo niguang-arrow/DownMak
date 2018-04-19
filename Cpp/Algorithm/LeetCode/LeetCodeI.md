@@ -891,6 +891,286 @@ public:
 
 
 
+### 744. *Find Smallest Letter Greater Than Target
+
+https://leetcode.com/problems/find-smallest-letter-greater-than-target/description/
+
+给定由小写字母组成的已排序的序列 letters, 以及一个 target, 找出 letters 中 larger than target 的字母, Letters also wrap around. For example, if the target is `target = 'z'` and `letters = ['a', 'b']`, the answer is `'a'`. 
+
+
+
+思路: 这个使用二分搜索求 `upper_bound` 即可. 同时注意题中最后一句话, 如果 `upper_bound` 不存在, 那么结果就是 `letters[0]`.
+
+```cpp
+class Solution {
+public:
+  	// 其实就是 upper_bound 的代码, 如果找不到, 最后返回 letters[0] 即可.
+    char nextGreatestLetter(vector<char>& letters, char target) {
+        int l = 0, r = letters.size() - 1;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (letters[mid] <= target)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+        if (l >= 0 && l < letters.size())
+            return letters[l];
+        return letters[0];
+    }
+};
+```
+
+
+
+### 8. **String to Integer (atoi)
+
+https://leetcode.com/problems/string-to-integer-atoi/description/
+
+将字符串转换为整数. (a 表示 ascii 码). 题目中描述更清楚, 移步原题. 下面说下要注意的地方:
+
+1. 将字符串开头的空格全部去除, 直到找到第一个不为空格的字符 a 进行处理, 否则返回 0.
+2. 如果 a 为 `+` 或 `-`, 之后后面跟着的是整数, 那么正常返回.
+3. 如果 a 为其他不是整数的字符, 那么返回 0.
+4. 可能数据会非常大, 比如 `-91283472332` (小于 `INT32_MIN` 或者绝对值大于了 `INT32_MAX`), 此时返回 `INT32_MIN`.
+
+
+
+思路: 使用字符串的方法 `find_first_not_of` 找到第一个非空格字符, 或者自己写 while 循环, 然后判断当前字符是不是 `+` 或 `-`. 之后, 再判断后面的字符是不是整数. 考虑四种情况(来自 [My simple solution](https://leetcode.com/problems/string-to-integer-atoi/discuss/4654/My-simple-solution))
+
+1. discards all leading whitespaces
+2. sign of the number
+3. overflow
+4. invalid input
+
+下面的解答参考: 
+
+[8ms C++ solution, easy to understand](https://leetcode.com/problems/string-to-integer-atoi/discuss/4642/8ms-C++-solution-easy-to-understand)
+
+```cpp
+class Solution {
+public:
+    int myAtoi(string str) {
+        long result = 0;
+        int sign = 1;
+        size_t i = str.find_first_not_of(' ');
+        // 如果全是空格
+        if (i == string::npos)
+            return 0;
+        if (str[i] == '+' || str[i] == '-')
+            sign = (str[i++] == '-') ? -1 : 1;
+
+        while (str[i] >= '0' && str[i] <= '9') {
+            result = result * 10 + str[i++] - '0';
+            if (result * sign >= INT32_MAX) return INT32_MAX;
+            if (result * sign <= INT32_MIN) return INT32_MIN;
+        }
+        return (int)result * sign;
+
+    }
+};
+```
+
+
+
+### 179. **Largest Number
+
+https://leetcode.com/problems/largest-number/description/
+
+给定一个非负的整数序列, 重整它们的位置, 使得它们能形成最大的整数. 由于结果可能会非常大, 所以最后要返回字符串. 比如:
+
+For example, given `[3, 30, 34, 5, 9]`, the largest formed number is `9534330`.
+
+
+
+思路: 还好 Leetcode 官方给了详细的解答:
+
+[179. Largest Number](https://leetcode.com/problems/largest-number/solution/) 使用自定义的 Comparator 对数组进行排序.
+
+Intuition: 要构建最大的数字，我们希望确保最高有效位数被最大数字占用
+
+Algorithm: 首先需要把每个整数转换为字符串, 然后对这个字符串数组进行排序. 因为这样做, 就能保证数字按字典序排列, 只要设计好 Comparator, 就能让最高有效位数字最大的数排在前面. 
+
+但现在有个问题, 如果上面的字符串数字是严格下降的, 那么直接连接这些数即可. 通过两个数字的最高有效位相同, 比如上面例子中 `3` 和 `30`, 它们可以连接成两个数字 `330` 以及 `303`, 如果让 `30` 排在了 `3` 的前方, 那么就不能获得最大值了. Therefore, for each pairwise comparison during the sort, we compare the numbers achieved by concatenating the pair in both orders. We can prove that this sorts into the proper order as follows:
+
+Assume that (without loss of generality), for some pair of integers `a` and `b`, our comparator dictates that `a` should precede `b` in sorted order. This means that a $\frown$ b > b $\frown$ a (where $\frown$ represents concatenation). For the sort to produce an incorrect ordering, there must be some `c` for which `b` precedes `c` and `c` precedes `a`. This is a contradiction because a $\frown$ b > b $\frown$ a and b $\frown$ c > c $\frown$ b implies a $\frown$ c > c $\frown$ a. In other words, our custom comparator preserves transitivity, so the sort is correct.
+
+(我把原文部分保留在这里, 方便以后理解. 这里用中文说一下, 也就是说, 如果仅仅只是对字符串进行排序是无法得到预期的结果, 因此在考虑两个字符串的先后顺序时, 要考虑它们连接起来的数字的大小, 比如 `330` 要大于 `303`, 所以 `3` 应该排在 `30` 的前面, 又或者 `4` 与 `45`, 由于 `454 > 445`, 所以 45 排在 `4` 的前面. 总之, 排序的时候比较的是前后两个字符串对(pair)连接起来的数字的大小. 
+
+后面一段英文是对上面这种排序算法的有效性的证明. 比如让 a 排在 b 前面意味着 a $\frown$ b > b $\frown$ a, 那么该条件不成立的情况是, 存在 c, 使得 c 排在 b 后面, 但却排在 a 前面, 可是这与  a $\frown$ b > b $\frown$ a and b $\frown$ c > c $\frown$ b 矛盾, 因为该条件可以推出  a $\frown$ c > c $\frown$ a, 说明 a 应该排在 c 前面.)
+
+注意边界情况, 即字符串排序后第一个字符串是 "0", 说明整个字符串数组都是 "0", 最后只要返回 "0" 即可.
+
+```cpp
+class Solution {
+public:
+    string largestNumber(vector<int>& nums) {
+        if (nums.empty())
+            return "";
+        vector<string> res(nums.size());
+        std::transform(nums.begin(), nums.end(), res.begin(), [](int &n) { return to_string(n); });
+      	// 对 pair 排序极其重要.
+        std::sort(res.begin(), res.end(), [](const string &s1, const string &s2) { return s1 + s2 > s2 + s1; });
+        if (res[0] == "0")
+            return "0";
+      	// 注意最后要使用 string("") 而不是 ""
+        return std::accumulate(res.begin(), res.end(), string(""));
+    }
+};
+```
+
+或者: [A simple C++ solution](https://leetcode.com/problems/largest-number/discuss/53157/A-simple-C++-solution)
+
+```cpp
+class Solution {
+public:
+    string largestNumber(vector<int> &num) {
+        vector<string> arr;
+        for(auto i:num)
+            arr.push_back(to_string(i));
+        sort(begin(arr), end(arr), [](string &s1, string &s2){ return s1+s2>s2+s1; });
+        string res;
+        for(auto s:arr)
+            res+=s;
+        while(res[0]=='0' && res.length()>1)
+            res.erase(0,1);
+        return  res;
+    }
+};
+```
+
+
+
+### 415. *Add Strings
+
+https://leetcode.com/problems/add-strings/description/
+
+将两个用字符串表示的非负整数相加, 将和用字符串返回. 注意:
+
+**Note:**
+
+1. The length of both `num1` and `num2` is < 5100.
+2. Both `num1` and `num2` contains only digits `0-9`.
+3. Both `num1` and `num2` does not contain any leading zero.
+4. You **must not use any built-in BigInteger library** or **convert the inputs to integer** directly.
+
+思路: 与 67. Add Binary 以及 2. Add Two Numbers 一样, 使用 `carry_over`, 表示进位. 三道题的代码基本是一样的. 注意最后结果要翻转过来.
+
+```cpp
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        int i = num1.size() - 1, j = num2.size() - 1;
+
+        int carry_over = 0;
+        string res = "";
+        while (i >= 0 || j >= 0 || carry_over) {
+            int part1 = i >= 0 ? num1[i] - '0' : 0;
+            int part2 = j >= 0 ? num2[j] - '0' : 0;
+
+            int sum = part1 + part2 + carry_over;
+            res += sum % 10 + '0';
+            carry_over = sum / 10;
+            i --;
+            j --;
+        }
+        std::reverse(res.begin(), res.end());
+        return res;
+    }
+};
+```
+
+
+
+
+
+### 423. **Reconstruct Original Digits from English
+
+https://leetcode.com/problems/reconstruct-original-digits-from-english/description/
+
+给定一个非空字符串, 它包含 0 ~ 9 的英文表示, 但是这些单词的顺序是打乱的, 现在要你按从小到大的顺序输出这些单词表示的数字. 比如:
+
+**Example 1:**
+
+```bash
+Input: "owoztneoer"
+
+Output: "012"
+```
+
+**Example 2:**
+
+```bash
+Input: "fviefuro"
+
+Output: "45"
+```
+
+注意:
+
+1. Input contains only lowercase English letters.
+2. Input is guaranteed to be valid and can be transformed to its original digits. That means invalid inputs such as "abc" or "zerone" are not permitted.
+3. Input length is less than 50,000.
+
+
+
+思路: 主要注意上面第二点, 这些字符串都保证可以得到原始的数字. 那么现在就需要查找规律. 比如:
+
+```bash
+zero   0
+one    1
+two    2
+three  3
+four   4
+five   5
+six    6
+seven  7
+eight  8
+nine   9
+```
+
+观察到 `0, 2, 4, 6, 8` 分别可以通过 `z, w, u, x, g` 给判断出来. 下面来判断 5, 通过观察, 可以使用 `f` 来判断 5 的存在(当然也可以用其他的字符, 比如说 `v`), 但是要注意, 由于 `4` 中也含有 f, 那么有多少个 4, 就有多少个 f, 那么实际上可能组成 5 的英文单词只有 `count[5] - count[4]` 个. 其中 count 统计组成每个数字的单词个数. 其他数字同理.
+
+```cpp
+class Solution {
+public:
+    string originalDigits(string s) {
+        vector<int> count(10, 0);
+        for (auto &c : s) {
+            if (c == 'z') count[0] ++;
+            if (c == 'w') count[2] ++;
+            if (c == 'u') count[4] ++;
+            if (c == 'x') count[6] ++;
+            if (c == 'g') count[8] ++;
+          	// 上面几个数字可以通过一个单词统计出来
+          	// 下面的数字, 需要考虑重复的情况.
+            if (c == 'f') count[5] ++; // 5 - 4
+            if (c == 'v') count[7] ++; // 7 - 5
+            if (c == 'r') count[3] ++; // 3 - 4 - 0
+            if (c == 'o') count[1] ++; // 1 - 2 - 0 - 4
+            if (c == 'i') count[9] ++; // 9 - 5 - 6 - 8
+        }
+
+        count[5] -= count[4];
+        count[7] -= count[5];
+        count[3] -= (count[4] + count[0]);
+        count[1] -= (count[0] + count[2] + count[4]);
+        count[9] -= (count[5] + count[6] + count[8]);
+
+        string res = "";
+        for (int i = 0; i < 10; ++i)
+          	// count[i] 中记录着 i 的个数
+            for (int j = 0; j < count[i]; ++j)
+                res += i + '0';
+        return res;
+    }
+};
+```
+
+本题参阅了 [one pass O(n) JAVA Solution, Simple and Clear](https://leetcode.com/problems/reconstruct-original-digits-from-english/discuss/91207/one-pass-O(n)-JAVA-Solution-Simple-and-Clear)
+
+
+
 
 
 
@@ -1124,6 +1404,278 @@ public:
             }
         }
         return true;
+    }
+};
+```
+
+
+
+### 9. *Palindrome Number
+
+https://leetcode.com/problems/palindrome-number/description/
+
+判断某整数是不是回文的. 
+
+思路: 字符串的回文好判断, 但是整数稍微不那么直观. 如果不能直接将数字转换为字符串, 那么:
+
+方法一: 将整数中每个数字放到 vector 中, 然后判断.
+
+方法二: 将整数的后半部分进行翻转, 判断翻转后的数字是不是等于前半部分, 比如 1221, 将 12**21** 中的
+
+**21** 翻转为 **12**, 由于 **12** 等于前半部分的 12, 因此该数字是回文的. 但这种实现的难点在于判断什么时候是整数的一半? 其实只要后半部分的数字长度小于前半部分的数字长度, 就没有到一半, 具体看下面的代码. 先给出方法二的实现:
+
+参加 leetcode 的官方解答: [Palindrome Number](https://leetcode.com/problems/palindrome-number/solution/)
+
+Now the question is, how do we know that we've reached the half of the number?
+
+Since we divided the number by 10, and multiplied the reversed number by 10, when the original number is less than the reversed number, it means we've processed half of the number digits.
+
+```cpp
+class Solution {
+public:
+    bool isPalindrome(int x) {
+      	// Special cases:
+        // As discussed above, when x < 0, x is not a palindrome.
+        // Also if the last digit of the number is 0, in order to be a palindrome, 
+        // the first digit of the number also needs to be 0.
+        // Only 0 satisfy this property.
+        if (x < 0 || (x % 10 == 0 && x != 0))
+            return false;
+      
+        // 这个 while 循环是关键, 当没访问到一半的时候, 比如 1212 中, 就是
+      	// x=121 与 revertedNumber=2 的比较.
+        int revertedNumber = 0;
+        while (x > revertedNumber) {
+            revertedNumber = revertedNumber * 10 + x % 10;
+            x /= 10;
+        }
+      
+        // When the length is an odd number, we can get rid of the 
+      	// middle digit by revertedNumber/10
+        // For example when the input is 12321, at the end of the 
+      	// while loop we get x = 12, revertedNumber = 123, 
+        // since the middle digit doesn't matter in palidrome(it will 
+      	// always equal to itself), we can simply get rid of it.
+        return x == revertedNumber || (x == revertedNumber / 10);
+
+    }
+};
+```
+
+方法一:
+
+```cpp
+class Solution {
+private:
+    bool isPalindrome(vector<int> nums) {
+        int l = 0, r = nums.size() - 1;
+        while (l <= r) {
+            if (nums[l] != nums[r])
+                return false;
+            l ++;
+            r --;
+        }
+        return true;
+    }
+public:
+    bool isPalindrome(int x) {
+        if (x < 0)
+            return false;
+        vector<int> nums;
+        while (x) {
+            nums.push_back(x % 10);
+            x /= 10;
+        }
+        return isPalindrome(nums);
+    }
+};
+```
+
+
+
+### 537. **Complex Number Multiplication
+
+https://leetcode.com/problems/complex-number-multiplication/description/
+
+给定两个字符串表示两个复数, 返回一个字符串表示它们的乘积. 比如:
+
+**Example 1:**
+
+```bash
+Input: "1+1i", "1+1i"
+Output: "0+2i"
+Explanation: (1 + i) * (1 + i) = 1 + i2 + 2 * i = 2i, and you need convert it to the form of 0+2i.
+```
+
+**Example 2:**
+
+```bash
+Input: "1+-1i", "1+-1i"
+Output: "0+-2i"
+Explanation: (1 - i) * (1 - i) = 1 + i2 - 2 * i = -2i, and you need convert it to the form of 0+-2i.
+```
+
+**Note:**
+
+1. The input strings will not have extra blank.
+2. The input strings will be given in the form of **a+bi**, where the integer **a** and **b** will both belong to the range of [-100, 100]. And **the output should be also in this form**.
+
+
+
+思路: 看了讨论之后意识到 `stringstream` 是极其方便的, 我还自己写.... 这道题太简单.
+
+方法一: [c++ using stringstream](https://leetcode.com/problems/complex-number-multiplication/discuss/100440/c++-using-stringstream)
+
+**`stringstream` is very useful to extract num from a string**. 注意最后输出也是 stringstream.
+
+```cpp
+class Solution {
+public:
+    string complexNumberMultiply(string a, string b) {
+        int ra, ia, rb, ib;
+        char buff;
+        stringstream aa(a), bb(b), ans;
+        aa >> ra >> buff >> ia >> buff;
+        bb >> rb >> buff >> ib >> buff;
+        ans << ra*rb - ia*ib << "+" << ra*ib + rb*ia << "i";
+        return ans.str();
+    }
+};
+```
+
+方法二: 自己实现的从字符串中提取出 a 和 b.
+
+```cpp
+class Solution {
+private:
+    pair<int, int> stringToPair(string &comp) {
+        auto first = comp.find('+');
+        int a = std::stoi(comp.substr(0, first));
+        int b = std::stoi(comp.substr(first+1, comp.size() - first - 2));
+        return make_pair(a, b);
+    }
+public:
+    string complexNumberMultiply(string a, string b) {
+        auto p1 = stringToPair(a);
+        auto p2 = stringToPair(b);
+        string res = "";
+        res += to_string(p1.first * p2.first - p1.second * p2.second);
+        res += "+";
+        res += to_string(p1.first * p2.second + p1.second * p2.first);
+        res += "i";
+        return res;
+    }
+};
+```
+
+
+
+### 396. **Rotate Function
+
+https://leetcode.com/problems/rotate-function/description/
+
+Given an array of integers `A` and let *n* to be its length.
+
+Assume `Bk` to be an array obtained by rotating the array `A` *k* positions clock-wise, we define a "rotation function" `F` on `A` as follow:
+
+`F(k) = 0 * Bk[0] + 1 * Bk[1] + ... + (n-1) * Bk[n-1]`.
+
+Calculate the maximum value of `F(0), F(1), ..., F(n-1)`.
+
+**Note:**
+*n* is guaranteed to be less than 105.
+
+**Example:**
+
+```bash
+A = [4, 3, 2, 6]
+
+F(0) = (0 * 4) + (1 * 3) + (2 * 2) + (3 * 6) = 0 + 3 + 4 + 18 = 25
+F(1) = (0 * 6) + (1 * 4) + (2 * 3) + (3 * 2) = 0 + 4 + 6 + 6 = 16
+F(2) = (0 * 2) + (1 * 6) + (2 * 4) + (3 * 3) = 0 + 6 + 8 + 9 = 23
+F(3) = (0 * 3) + (1 * 2) + (2 * 6) + (3 * 4) = 0 + 2 + 12 + 12 = 26
+
+So the maximum value of F(0), F(1), F(2), F(3) is F(3) = 26.
+```
+
+
+
+思路: 这道题从 n 的范围来看, 必然要使用 O(n) 的方法才能通过测试. Bk 可以使用 `A[(n - k)%n]` 获得. 那么这道题就是要找规律, 或者数学公式, 才能得到 O(n) 的方法. 我查看 leetcode 的讨论如下:
+
+[Java O(n) solution with explanation](https://leetcode.com/problems/rotate-function/discuss/87853/Java-O(n)-solution-with-explanation)
+
+```bash
+F(k) = 0 * Bk[0] + 1 * Bk[1] + ... + (n-1) * Bk[n-1]
+F(k-1) = 0 * Bk-1[0] + 1 * Bk-1[1] + ... + (n-1) * Bk-1[n-1]
+       = 0 * Bk[1] + 1 * Bk[2] + ... + (n-2) * Bk[n-1] + (n-1) * Bk[0]
+```
+
+Then,
+
+```bash
+F(k) - F(k-1) = Bk[1] + Bk[2] + ... + Bk[n-1] + (1-n)Bk[0]
+              = (Bk[0] + ... + Bk[n-1]) - nBk[0]
+              = sum - nBk[0]
+```
+
+Thus,
+
+```bash
+F(k) = F(k-1) + sum - nBk[0]
+```
+
+What is Bk[0]?
+
+```bash
+k = 0; B[0] = A[0];
+k = 1; B[0] = A[len-1];
+k = 2; B[0] = A[len-2];
+...
+```
+
+所以最后的代码为:
+
+```java
+int allSum = 0;
+int len = A.length;
+int F = 0;
+for (int i = 0; i < len; i++) {
+    F += i * A[i];
+    allSum += A[i];
+}
+int max = F;
+for (int i = len - 1; i >= 1; i--) {
+    F = F + allSum - len * A[i];
+    max = Math.max(F, max);
+}
+return max;   
+```
+
+
+
+
+
+上面公式中的 `Bk[0]` 就是 `A[(n - k)%n]`, 那么很容易得到下面的代码:
+
+```cpp
+class Solution {
+public:
+    int maxRotateFunction(vector<int>& A) {
+        if (A.empty())
+            return 0;
+
+        int Fk = 0, sum = 0;
+        int n = A.size();
+        for (int i = 0; i < n; ++i) {
+            sum += A[i];
+            Fk += A[i] * i;
+        }
+        int res = Fk;
+        for (int k = 1; k < n; ++k) {
+            Fk += sum - A[(n - k) % n] * n;
+            res = max(res, Fk);
+        }
+        return res;
     }
 };
 ```
@@ -1436,7 +1988,7 @@ public:
 
 ## 链表
 
-### 2. Add Two Numbers
+### 2. **Add Two Numbers
 
 https://leetcode.com/problems/add-two-numbers/description/
 
@@ -2273,15 +2825,38 @@ https://leetcode.com/problems/rotate-list/description/
 
 
 
-## 数组
+### 237. *Delete Node in a Linked List
 
+https://leetcode.com/problems/delete-node-in-a-linked-list/description/
 
+删除链表中的节点(不考虑尾部的节点), 注意你只能访问要删除节点本身. 比如:
 
-## 查找表
+Supposed the linked list is `1 -> 2 -> 3 -> 4` and you are given the third node with value `3`, the linked list should become `1 -> 2 -> 4` after calling your function.
 
+思路: 用下一个节点的值覆盖当前要删除节点的值, 当然还要考虑指针的指向.
 
+```bash
+A -- B -- C -- NULL  # 假设要删除 B, 
+# 用 C 的值替换 B, 同时令 C 指向原来 C 的 next
+A -- C -- C -- NULL
+	 |__________|
+```
 
-## 二叉树
+代码如下:
+
+```cpp
+class Solution {
+public:
+    void deleteNode(ListNode* node) {
+        if (node->next) {
+            ListNode *delNode = node->next;
+            node->val = delNode->val;
+            node->next = delNode->next;
+            delete delNode;
+        }
+    }
+};
+```
 
 
 

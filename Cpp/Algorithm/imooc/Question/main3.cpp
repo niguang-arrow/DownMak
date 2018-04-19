@@ -13,6 +13,7 @@
 #include <cassert>
 #include <algorithm>
 #include <cstdlib>
+#include <climits>
 
 
 using namespace std;
@@ -42,18 +43,20 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    char nextGreatestLetter(vector<char>& letters, char target) {
-        int l = 0, r = letters.size() - 1;
-        while (l <= r) {
-            int mid = l + (r - l) / 2;
-            if (letters[mid] <= target)
-                l = mid + 1;
-            else
-                r = mid - 1;
+    int maxRotateFunction(vector<int>& A) {
+
+        int Fk = 0, sum = 0;
+        int n = A.size();
+        for (int i = 0; i < n; ++i) {
+            sum += A[i];
+            Fk += A[i] * i;
         }
-        if (l >= 0 && l < letters.size())
-            return letters[l];
-        return letters[0];
+        int res = Fk;
+        for (int k = 1; k < n; ++k) {
+            Fk += sum - A[(n - k) % n] * n;
+            res = max(res, Fk);
+        }
+        return res;
     }
 };
 
@@ -80,8 +83,9 @@ int main() {
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
-    vector<int> nums = {1, 2, 3, 4};
-    auto res = Solution().nextGreatestLetter(nums);
+    vector<int> nums = {4, 3, 2, 6};
+    string input = "owoztneoer";
+    auto res = Solution().maxRotateFunction(nums);
     cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(root);

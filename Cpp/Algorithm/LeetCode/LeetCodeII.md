@@ -1208,6 +1208,34 @@ Given n = 2, return 91. (The answer should be the total numbers in the range of 
 
 使用 `f(n)` 表示长度为 n 的数字中含无重复数字的个数.
 
+那么 `f(0) = 1` (初始), `f(1) = 10`, 即 0 ~ 9 十个整数. `f(2) = 9 * 9`, 十位数可以从 1 ~ 9 中选择, 而个位数可以从 `0 ~ 9` 中与十位数不相同的 9 个数中选择, 那么有 9 种选择方式. `f(3) = 9 * 9 * 8`, 这个同理, 那么一直到 `f(10) = 9 * 9 * 8 * 7 * 6 *... * 1`,
+
+`f(11) = 0 = f(12) ...`.
+
+而根据题意, 最后要求 `0 ~ 10^n` 范围内满足条件的个数, 那么要返回 `f(1) + f(2) + ... + f(n)`.
+
+```cpp
+class Solution {
+public:
+    int countNumbersWithUniqueDigits(int n) {
+        if (n == 0)
+            return 1;
+        int res = 10;
+        int uniqueDigits = 9;
+        int availableNumber = 9;
+      	// 这个求解真是优雅啊, 因为当 availableNumber 为 0 时, 返回的仍是正确的结果.
+        while (n-- > 1 && availableNumber > 0) {
+            uniqueDigits = uniqueDigits * availableNumber;
+            res += uniqueDigits;
+            availableNumber--;
+        }
+        return res;
+    }
+};
+```
+
+
+
 
 
 
