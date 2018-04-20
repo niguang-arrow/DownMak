@@ -42,21 +42,48 @@ void preOrder(TreeNode *root) {
 }
 
 class Solution {
-public:
-    int maxRotateFunction(vector<int>& A) {
+private:
+    ListNode* merge(ListNode *head1, ListNode *head2) {
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+        auto p1 = head1, p2 = head2;
+        while (p1 && p2) {
+            if (p1->val < p2->val) {
+                ptr->next = p1;
+                p1 = p1->next;
+            }
+            else {
+                ptr->next = p2;
+                p2 = p2->next;
+            }
+            ptr = ptr->next;
+        }
+        ptr->next = p1 ? p1 : p2;
+        return dummy->next;
+    }
 
-        int Fk = 0, sum = 0;
-        int n = A.size();
-        for (int i = 0; i < n; ++i) {
-            sum += A[i];
-            Fk += A[i] * i;
+public:
+    ListNode* sortList(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+        auto slow = dummy, fast = head;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
         }
-        int res = Fk;
-        for (int k = 1; k < n; ++k) {
-            Fk += sum - A[(n - k) % n] * n;
-            res = max(res, Fk);
-        }
-        return res;
+        auto rightHead = slow->next;
+        slow->next = nullptr;
+        auto leftHead = dummy->next;
+        //printLinkedList(rightHead);
+        //printLinkedList(leftHead);
+        //return nullptr;
+        leftHead = sortList(leftHead);
+        rightHead = sortList(rightHead);
+        auto newHead = merge(leftHead, rightHead);
+        return newHead;
     }
 };
 
@@ -76,17 +103,17 @@ int main() {
     //root->right = new TreeNode(1);
 
 
-    //int arr[] = {-1, -1, -1, -1, -1, 0};
-    //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
+    int arr[] = {1, 2};
+    auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
  
     //vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
-    vector<int> nums = {4, 3, 2, 6};
-    string input = "owoztneoer";
-    auto res = Solution().maxRotateFunction(nums);
-    cout << res << endl;
+    //vector<int> nums = {4, 3, 2, 6};
+    //string input = "owoztneoer";
+    auto res = Solution().sortList(ls);
+    //cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(root);
     //cout << endl;
@@ -97,7 +124,7 @@ int main() {
             //cout << data << " ";
         //cout << endl;
     //}
-    //printLinkedList(root);
+    printLinkedList(res);
     //cout << res << endl;
 
     //for (auto &d : res)

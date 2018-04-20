@@ -1651,10 +1651,6 @@ for (int i = len - 1; i >= 1; i--) {
 return max;   
 ```
 
-
-
-
-
 上面公式中的 `Bk[0]` 就是 `A[(n - k)%n]`, 那么很容易得到下面的代码:
 
 ```cpp
@@ -1676,6 +1672,194 @@ public:
             res = max(res, Fk);
         }
         return res;
+    }
+};
+```
+
+
+
+### 728. *Self Dividing Numbers
+
+https://leetcode.com/problems/self-dividing-numbers/description/
+
+A *self-dividing number* is a number that is divisible by every digit it contains.
+
+For example, 128 is a self-dividing number because `128 % 1 == 0`, `128 % 2 == 0`, and `128 % 8 == 0`.
+
+Also, a self-dividing number is not allowed to contain the digit zero.
+
+Given a lower and upper number bound, output a list of every possible self dividing number, including the bounds if possible.
+
+**Example 1:**
+
+```bash
+Input: 
+left = 1, right = 22
+Output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 22]
+```
+
+**Note:**
+
+The boundaries of each input argument are `1 <= left <= right <= 10000`.
+
+
+
+思路: 判断 left ~ right 范围内的数是不是 self dividing 的.
+
+```cpp
+class Solution {
+private:
+    bool selfDivide(int number) {
+        int n = number;
+        while (n) {
+            int a = n % 10;
+          	// 如果 a 为 0 或者不能整除 number 就返回 false.
+            if (a == 0 || (number % a))
+                return false;
+            n /= 10;
+        }
+        return true;;
+    }
+public:
+    vector<int> selfDividingNumbers(int left, int right) {
+        vector<int> res;
+        for (int i = left; i <= right; ++i)
+            if (selfDivide(i))
+                res.push_back(i);
+        return res;
+    }
+};
+```
+
+
+
+### 258. *Add Digits
+
+https://leetcode.com/problems/add-digits/description/
+
+给定一个非负整数 num, 将它各位上的数字重复相加, 直到最后的结果为一个数字. 比如:
+
+For example:
+
+Given `num = 38`, the process is like: `3 + 8 = 11`, `1 + 1 = 2`. Since `2` has only one digit, return it.
+
+**Follow up:**
+Could you do it without any loop/recursion in O(1) runtime?
+
+
+
+思路: 本来直接看题, 最直观的思路是使用 while 循环不断的求各位数字的和. 但是看到 follow up 之后发现这个思路可能不够好. 后来找规律时, 发现如下规律:
+
+```bash
+0      
+1        10 -> 1      19 -> 1
+2        11 -> 2      20 -> 2
+3        12 -> 3      21 -> 3
+...      ...          ...
+
+9        18 -> 9      27 -> 9
+```
+
+可以看到就是一个等差数列, `9 * (n - 1) + i`, 其中 `i` 为 1 ~ 9 中某个数字. 所以只需要求出 i 即可. 比如 38, 只要求 `38 % 9` 就能得到 2. 但是上面要注意 0 和 9 的情况, 0 就不多说了, 9 的话由于 `9 % 9 = 0`, 这是不对的, 所以下面代码中使用 `1 + (num - 1) % 9` 来替代.
+
+```cpp
+class Solution {
+public:
+    int addDigits(int num) {
+        return 1 + (num - 1) % 9;
+    }
+};
+```
+
+leetcode 上给出的使用 while 的代码, 可以参考:
+
+```cpp
+class Solution {
+public:
+    int addDigits(int num) {
+        while (num / 10 != 0) {
+			int sum = 0;
+			while (num / 10 != 0) {
+				if (num / 10 != 0)
+				{
+					sum += num % 10;
+					num = num / 10;
+				}
+				else sum += num;
+			}
+			num = num + sum;
+		}
+		return num;
+    }
+};
+```
+
+
+
+### 7. *Reverse Integer
+
+https://leetcode.com/problems/reverse-integer/description/
+
+将 32bit 的有符号整数翻转.
+
+**Example 1:**
+
+```bash
+Input: 123
+Output: 321
+```
+
+**Example 2:**
+
+```bash
+Input: -123
+Output: -321
+```
+
+**Example 3:**
+
+```bash
+Input: 120
+Output: 21
+```
+
+**Note:**
+Assume we are dealing with an environment which could only store integers within the 32-bit signed integer range: [−$2^31$,  $2^31$ − 1]. For the purpose of this problem, assume that your function returns 0 when the reversed integer overflows.
+
+
+
+思路一: 将数字转换为字符串, 然后翻转:
+
+```cpp
+class Solution {
+public:
+    int reverse(int x) {
+        int sign = (x < 0) ? -1 : 1;
+        string num = to_string(abs(x));
+        std::reverse(num.begin(), num.end());
+        string limit = to_string(INT32_MAX);
+      	// 如果翻转后的数字比 INT32_MAX 还大, 那么 overflow 了, 返回 0
+        if (num.size() >= limit.size() && num > limit)
+            return 0;
+        return sign * stoi(num);
+    }
+};
+```
+
+思路二: 使用 `long long` 保存翻转之后的结果:
+
+`long long` make res a 64 bit number, the overflow is checked.
+
+```cpp
+class Solution {
+public:
+    int reverse(int x) {
+        long long res = 0;
+        while(x) {
+            res = res*10 + x%10;
+            x /= 10;
+        }
+        return (res<INT_MIN || res>INT_MAX) ? 0 : res;
     }
 };
 ```
@@ -2077,7 +2261,7 @@ public:
 
 
 
-### 21. Merge Two Sorted Lists
+### 21. *Merge Two Sorted Lists
 
 https://leetcode.com/problems/merge-two-sorted-lists/description/
 
@@ -2117,7 +2301,7 @@ public:
 
 
 
-### 23. Merge k Sorted Lists
+### 23. ***Merge k Sorted Lists
 
 https://leetcode.com/problems/merge-k-sorted-lists/description/
 
@@ -2578,7 +2762,7 @@ public:
 
 
 
-### 24. Swap Nodes in Pairs
+### 24. **Swap Nodes in Pairs
 
 https://leetcode.com/problems/swap-nodes-in-pairs/description/
 
@@ -2642,7 +2826,7 @@ public:
 
 
 
-### 25. Reverse Nodes in k-Group
+### 25. ***Reverse Nodes in k-Group
 
 https://leetcode.com/problems/reverse-nodes-in-k-group/description/
 
@@ -2777,7 +2961,7 @@ public:
 
 
 
-### 206. Reverse Linked List
+### 206. *Reverse Linked List
 
 https://leetcode.com/problems/reverse-linked-list/description/
 
@@ -2857,6 +3041,598 @@ public:
     }
 };
 ```
+
+
+
+### 143. **Reorder List
+
+https://leetcode.com/problems/reorder-list/description/
+
+Given a singly linked list *L*: *L*0→*L*1→…→*Ln-1→*Ln,
+reorder it to: *L*0→*Ln*→*L*1→*Ln-1→*L*2→*Ln-2→…
+
+You must do this in-place without altering the nodes' values.
+
+For example,
+Given `{1,2,3,4}`, reorder it to `{1,4,2,3}`.
+
+
+
+思路: 前方高能, 我觉得这道题的算法实在是精彩, 链表还可以这样操作...
+
+参考 [A concise O(n) time, O(1) in place solution](https://leetcode.com/problems/reorder-list/discuss/45003/A-concise-O(n)-time-O(1)-in-place-solution), 分为三步解决这个问题:
+
+1. 找到位于中间的节点
+2. 将链表从中间分开, 然后反转后半部分链表
+3. 将两个链表合并.
+
+```cpp
+class Solution {
+public:
+    void reorderList(ListNode* head) {
+        if (!head || !head->next)
+            return;
+      	// find the middle node: O(n)
+      	// 关于找到中间的节点, 注意 p2 的移动速度总是 p1 的两倍,
+      	// 最终 p2 要么到最后一个节点, 要么到 nullptr, 如果是前者, p2 移动的
+      	// 距离就是 n - 1, 后者为 n, 两种情况中, p1 移动的距离分别为
+      	// (n - 1)/2 以及 n/2, 即中间的位置.
+        ListNode *p1 = head, *p2 = head->next;
+        while (p2 && p2->next) {
+            p1 = p1->next;
+            p2 = p2->next->next;
+        }
+		
+      	// cut from the middle and reverse the second half: O(n)
+      	// 然后从中间开始反转后半部分节点, 可以参考 25题 Reverse Nodes in k-Group
+      	// 中的做法.
+        p2 = p1->next;
+        ListNode *pre = nullptr;
+        while (p2) {
+            auto tmp = p2->next;
+            p2->next = pre;
+            pre = p2;
+            p2 = tmp;
+        }
+		// merge two lists: O(n)
+      	// 最后归并两个链表, 这段代码比较神奇, p1 先是指向 head 所指的前半部分节点
+      	// 然后再指向 pre 所指向的后半部分的节点.
+      	// 由于 p1 要访问 next, 所以最后要保证 p1 非空.
+        for (p1 = head, p2 = pre; p1; ) {
+            auto t = p1->next;
+            p1->next = p2;
+            p1 = p1->next;
+            p2 = t;
+        }
+    }
+};
+```
+
+
+
+### 234. *Palindrome Linked List
+
+https://leetcode.com/problems/palindrome-linked-list/description/
+
+给定一个单链表, 判断它是不是回文的.
+
+Could you do it in O(n) time and O(1) space?
+
+思路: 说实话, 将这道设置为 easy 有点不公平. 当然, 如果不考虑空间的话, 那么很简单, 使用 vector 保存链表中的元素就能轻松搞定, 但是如果规定只能使用 O(1) 的空间, 那么就需要一些特技. 联系上一题 143. Reorder List 中的思路, 找到中间的节点, 然后将后半部分的节点进行反转, 然后再比较前半部分的链表中节点的值和后半部分链表中节点的值是否相等.
+
+```cpp
+class Solution {
+public:
+    bool isPalindrome(ListNode* head) {
+        if (!head || !head->next)
+            return true;
+
+        ListNode *p1 = head, *p2 = head->next;
+        // find the middle node
+      	// 具体含义可以参见 143 题. Reorder List 中的注释, 大意是, p2 的速度
+      	// 是 p1 的两倍, 所以当 p2 到尾部的时候, p1 指向的是中点.
+        while (p2 && p2->next) {
+            p1 = p1->next;
+            p2 = p2->next->next;
+        }
+      	// 对后半段链表进行反转, 可以参考 25 题 Reverse Linked List
+        p2 = p1->next;
+        ListNode *pre = nullptr;
+        while (p2) {
+            auto tmp = p2->next;
+            p2->next = pre;
+            pre = p2;
+            p2 = tmp;
+        }
+		
+      	// head 表示前半段, pre 表示后半段, 前半段的结尾是 p1->next,
+      	// 后半段的结尾是 nullptr.
+        while (head != p1->next && pre) {
+            if (head->val != pre->val)
+                return false;
+            head = head->next;
+            pre = pre->next;
+        }
+        return true;
+    }
+};
+```
+
+
+
+### 141. *Linked List Cycle
+
+https://leetcode.com/problems/linked-list-cycle/description/
+
+Given a linked list, determine if it has a cycle in it.
+
+Follow up:
+Can you solve it without using extra space?
+
+
+
+思路: 使用快慢指针来判断链表有没有环.
+
+```cpp
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        if (!head || !head->next)
+            return false;
+
+        ListNode *slow = head, *fast = head->next;
+        while (fast && fast->next) {
+            if (fast == slow)
+                return true;
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        return false;
+    }
+};
+```
+
+
+
+### 328. **Odd Even Linked List
+
+https://leetcode.com/problems/odd-even-linked-list/description/
+
+给定一个单链表, 将奇节点和偶节点分组, 并将偶节点加在奇节点后面. 比如:
+
+**Example:**
+Given `1->2->3->4->5->NULL`,
+return `1->3->5->2->4->NULL`.
+
+**Note:**
+The relative order inside both the even and odd groups should remain as it was in the input. 
+The first node is considered odd, the second node even and so on ...
+
+
+
+思路: 题目不是很难, 但要考虑怎样将代码写得简洁明白. 基本思路是, 将奇节点放在一个链表中, 将偶节点放在另一个链表中, 然后将偶节点的链表加在奇节点的链表后面.
+
+写法有两种:
+
+写法一: 较为繁琐.
+
+```cpp
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+        ListNode *odd = new ListNode(0), *even = new ListNode(0);
+      	// 使用 ptr 来遍历原链表, 使用 p1 来遍历奇节点链表, 使用 p2 来遍历偶节点链表
+        ListNode *ptr = head, *p1 = odd, *p2 = even;
+        while (ptr && ptr->next) {
+            p1->next = ptr;
+            p2->next = ptr->next;
+            ptr = ptr->next->next;
+            p1 = p1->next;
+            p2 = p2->next;
+        }
+      	// 由于 ptr 初始化为 head, 也就是奇节点, 那么当上面 while 结束之后, 可能是
+      	// 因为 ptr->next 不成立造成的, 所以 ptr 可能不为空, 由于此时 ptr 指向奇节点, 
+      	// 所以要加在 p1 的后面, 注意最后如果不设置 p2->next = nullptr, 那么会无限循环.
+        if (ptr) {
+            p1->next = ptr;
+            p1 = p1->next;
+            p2->next = nullptr;
+        }
+        p1->next = even->next;
+        return odd->next;
+    }
+};
+```
+
+写法二: 参考: [leetcode 官方解答](https://leetcode.com/problems/odd-even-linked-list/solution/)
+
+```cpp
+class Solution {
+public:
+    ListNode* oddEvenList(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+      	// 这里没有设置虚拟头结点, 而是使用 head 来表示奇节点链表的头节点,
+      	// evenHead 表示偶节点链表的头结点, 可以看到, 判断偶节点 even 以及
+      	// next 是否存在让代码清晰很多.
+        ListNode *odd = head, *even = head->next, *evenHead = even;
+        while (even && even->next) {
+            odd->next = even->next;
+            odd = odd->next;
+            even->next = odd->next;
+            even = even->next;
+        }
+        odd->next = evenHead;
+        return head;
+    }
+};
+```
+
+
+
+### 160. *Intersection of Two Linked Lists
+
+https://leetcode.com/problems/intersection-of-two-linked-lists/description/
+
+找到两个链表相交的节点. 比如:
+
+For example, the following two linked lists:
+
+```bash
+A:          a1 → a2
+                   ↘
+                     c1 → c2 → c3
+                   ↗            
+B:     b1 → b2 → b3
+```
+
+begin to intersect at node c1.
+
+**Notes:**
+
+- If the two linked lists have no intersection at all, return `null`.
+- The linked lists must retain their original structure after the function returns.
+- You may assume there are no cycles anywhere in the entire linked structure.
+- Your code should preferably run in O(n) time and use only O(1) memory.
+
+
+
+思路: 这道题有一些 trick. 分析之前可以看看 [Linked List Cycle II](https://siddontang.gitbooks.io/leetcode-solution/content/linked_list/linked_list_cycle.html) 中的分析, 这道题也要设置双指针, 但需要注意到下面的事实:
+
+```bash
+ 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> NULL
+              /
+        7 -> 8
+```
+
+对于上面两个链表, 假设 1->4 的长度为 a, 7->4 的长度为 b, 4->NULL 的长度为 c,
+
+那么, 如果设 p1 来遍历链表 1, p2 来遍历链表 2, 那么由于链表 2 比较短, 所以 p2 肯定比 p1 先到 NULL, 那么此时让 p2 指向链表 1(对, 没错是链表 1), 然后两个指针继续移动, 当 p1 移到 NULL 时, 再让 p1 指向链表 2, 然后两个指针继续移动, 最后一定会在 4 这个节点处相遇.
+
+这是因为, 此时, p2 走过的路径长度为 `b + c + a`, 而 p1 走过的长度为 `a + c + b`, 两个长度相等!
+
+如果两个链表不相交, 那么最终两个指针都会指向 NULL. 此时, 两个链表的移动距离是 m + n.
+
+参考: 
+
+[Leetcode 官方解答](https://leetcode.com/problems/intersection-of-two-linked-lists/solution/)
+
+[Java solution without knowing the difference in len!](https://leetcode.com/problems/intersection-of-two-linked-lists/discuss/49785/Java-solution-without-knowing-the-difference-in-len!)
+
+```cpp
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        if (!headA || !headB)
+            return nullptr;
+
+        auto p1 = headA, p2 = headB;
+        while (p1 != p2) {
+            p1 = p1 == nullptr ? headB : p1->next;
+            p2 = p2 == nullptr ? headA : p2->next;
+        }
+
+        return p1;
+    }
+};
+```
+
+
+
+### 138. **Copy List with Random Pointer
+
+https://leetcode.com/problems/copy-list-with-random-pointer/description/
+
+考虑一个链表, 它的每个节点除了 next 指针还有 random 指针指向链表中任意一个节点, 现在要将这个链表进行拷贝. 比如, 节点的定义为为:
+
+```cpp
+/**
+ * Definition for singly-linked list with a random pointer.
+ * struct RandomListNode {
+ *     int label;
+ *     RandomListNode *next, *random;
+ *     RandomListNode(int x) : label(x), next(NULL), random(NULL) {}
+ * };
+ */
+```
+
+
+
+思路: 这道题复杂在 random 这个节点不好确定, 因为当 next 按顺序拷贝完成后, 新链表中的节点要确定 random 指针到底指向哪一个节点. 现在提供两种思路:
+
+思路 1: 引入一个哈希表用于保存原节点和新节点之间的对应关系, 那么要确定 random 就非常方便了, 直接搜索哈希表即可. 但是这样需要的空间复杂度就是 O(n)
+
+思路 2: 非常巧妙, 只需要 O(1) 的空间复杂度. 具体参考: [A solution with constant space complexity O(1) and linear time complexity O(N)](https://leetcode.com/problems/copy-list-with-random-pointer/discuss/43491/A-solution-with-constant-space-complexity-O(1)-and-linear-time-complexity-O(N))
+
+思路一的代码:
+
+```cpp
+class Solution {
+public:
+    RandomListNode *copyRandomList(RandomListNode *head) {
+      	// 注意如果 !head->next, 那么 head 仍需要拷贝.
+        if (!head)
+            return head;
+      	// fmap 用于保存原节点和新节点的对应关系
+        unordered_map<RandomListNode*, RandomListNode*> fmap;
+        RandomListNode *newhead = new RandomListNode(head->label);
+        fmap.insert(make_pair(head, newhead));
+      	
+      	// 遍历原节点, 然后复制成新节点, 同时保存它们的关系.
+        auto nptr = newhead;
+        auto ptr = head->next;
+        while (ptr) {
+            RandomListNode *node = new RandomListNode(ptr->label);
+            fmap.insert(make_pair(ptr, node));
+            nptr->next = node;
+            nptr = nptr->next;
+            ptr = ptr->next;
+        }
+		
+      	// 遍历复制后的链表, 确认每个节点的 random 指针的指向.
+        ptr = head;
+        nptr = newhead;
+        while (nptr) {
+            auto randomNode = fmap[ptr->random];
+            nptr->random = randomNode;
+            nptr = nptr->next;
+            ptr = ptr->next;
+        }
+        return newhead;
+    }
+};
+```
+
+思路 2:  [A solution with constant space complexity O(1) and linear time complexity O(N)](https://leetcode.com/problems/copy-list-with-random-pointer/discuss/43491/A-solution-with-constant-space-complexity-O(1)-and-linear-time-complexity-O(N))
+
+该算法的核心思想是将原节点和新节点联系起来, 并放在一个链表中. 算法由 3 个 iteration rounds 组成:
+
+1. Iterate the original list and duplicate each node. The duplicate
+   of each node follows its original immediately.
+2. Iterate the new list and assign the random pointer for each
+   duplicated node.
+3. Restore the original list and extract the duplicated nodes.
+
+```bash
+# 假设原链表是
+1  --  2   --  3  --  NULL
+|______________|
+
+# 复制之后, 那么第二个 1 就是复制的, 它的 random 就
+# 是第一个 1 的 random(也就是 3) 的后面那个
+1  --  1  --  2  --  2  --  3  --  3  -- NULL
+|______|____________________|      |
+       |___________________________|
+```
+
+下面是代码, 非常清晰:
+
+```java
+public RandomListNode copyRandomList(RandomListNode head) {
+	RandomListNode iter = head, next;
+
+	// First round: make copy of each node,
+	// and link them together side-by-side in a single list.
+	while (iter != null) {
+		next = iter.next;
+
+		RandomListNode copy = new RandomListNode(iter.label);
+		iter.next = copy;
+		copy.next = next;
+
+		iter = next;
+	}
+
+	// Second round: assign random pointers for the copy nodes.
+	iter = head;
+	while (iter != null) {
+		if (iter.random != null) {
+			iter.next.random = iter.random.next;
+		}
+		iter = iter.next.next;
+	}
+
+	// Third round: restore the original list, and extract the copy list.
+	iter = head;
+	RandomListNode pseudoHead = new RandomListNode(0);
+	RandomListNode copy, copyIter = pseudoHead;
+
+	while (iter != null) {
+		next = iter.next.next;
+
+		// extract the copy
+		copy = iter.next;
+		copyIter.next = copy;
+		copyIter = copy;
+
+		// restore the original list
+		iter.next = next;
+
+		iter = next;
+	}
+
+	return pseudoHead.next;
+}
+```
+
+C++ 的相关代码可以查看: [2 clean C++ algorithms without using extra array/hash table.  Algorithms are explained step by step.](https://leetcode.com/problems/copy-list-with-random-pointer/discuss/43497/2-clean-C++-algorithms-without-using-extra-arrayhash-table.-Algorithms-are-explained-step-by-step.)
+
+
+
+### 148. **Sort List
+
+https://leetcode.com/problems/sort-list/description/
+
+使用 O(nlogn) 算法将链表排序.
+
+
+
+思路: 使用归并排序的的思路, merge 操作非常好写, 题 21. Merge Two Sorted Lists 就可以参考. 现在需要考虑的是如何二分. 由于这几天写了好几道使用快慢指针的题, 比如 143. Reorder List 以及 234. Palindrome Linked List, 所以一下就想到可以使用快慢指针来找到链表中间的节点, 从而实现对链表的二分.
+
+**注意代码中查找中点的注释, 因为如果不注意的话, 代码就会无限循环.**
+
+```cpp
+class Solution {
+private:
+  	// merge 代码就不多说了, 非常简单.
+    ListNode* merge(ListNode *head1, ListNode *head2) {
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+        auto p1 = head1, p2 = head2;
+        while (p1 && p2) {
+            if (p1->val < p2->val) {
+                ptr->next = p1;
+                p1 = p1->next;
+            }
+            else {
+                ptr->next = p2;
+                p2 = p2->next;
+            }
+            ptr = ptr->next;
+        }
+      	// 这样写非常简洁.
+        ptr->next = p1 ? p1 : p2;
+        return dummy->next;
+    }
+
+public:
+    ListNode* sortList(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+        auto slow = dummy, fast = head;
+      	// 使用快慢指针来找到链表的中点, 这里要强调一点为什么 slow 初始化为
+      	// dummy 而 fast 初始化为 head, 也就是说, 初始化的时候, slow 应该要比
+      	// fast 慢上一步才行, 否则对于链表 1 -> 2 -> NULL, 如果 fast 和 slow 初始化
+      	// 都是 1, 那么当 while 循环结束后, slow 就会指向 2, 最终 leftHead 仍然是
+      	// 1 -> 2 -> NULL, 而 rightHead 就是 NULL, 这是不对的, 之后 sortList 处理
+      	// leftHead 就会造成无限循环. 只有当 while 结束时, slow 指向 1, 才是我们想要的,
+      	// 所以初始 slow 设置为 dummy. 另外 slow->next=nullptr, 让前半部分链表结尾为空,
+      	// 毕竟 merge 函数中要求的就是两个链表以空指针结尾.
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        auto rightHead = slow->next;
+        slow->next = nullptr;
+        auto leftHead = dummy->next;
+        
+      	// 归并排序
+        leftHead = sortList(leftHead);
+        rightHead = sortList(rightHead);
+        auto newHead = merge(leftHead, rightHead);
+        return newHead;
+    }
+};
+```
+
+使用非递归的方式可以参考:
+
+[Bottom-to-up(not recurring)  with o(1) space complextity and o(nlgn) time complextity](https://leetcode.com/problems/sort-list/discuss/46712/Bottom-to-up(not-recurring)-with-o(1)-space-complextity-and-o(nlgn)-time-complextity)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
