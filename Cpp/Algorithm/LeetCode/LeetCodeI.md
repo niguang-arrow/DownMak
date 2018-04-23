@@ -1171,6 +1171,182 @@ public:
 
 
 
+### 12. **Integer to Roman
+
+https://leetcode.com/problems/integer-to-roman/description/
+
+罗马数字如下:
+
+```bash
+Symbol       Value
+I             1
+V             5
+X             10
+L             50
+C             100
+D             500
+M             1000
+```
+
+For example, two is written as `II` in Roman numeral, just two one's added together. Twelve is written as, `XII`, which is simply `X` + `II`. The number twenty seven is written as `XXVII`, which is `XX` + `V` + `II`.
+
+另外, 罗马数字一般从左到右数字依次减小. 但是有以下特殊的情况, 比如 4 不是 `IIII` 而是 `IV`. 另外, 还有如下的情况:
+
+- `I` can be placed before `V` (5) and `X` (10) to make 4 and 9. 
+- `X` can be placed before `L` (50) and `C` (100) to make 40 and 90. 
+- `C` can be placed before `D` (500) and `M` (1000) to make 400 and 900.
+
+现在给定一个整数, 将其转换为一个罗马数字. 输入保证为 1 ~ 3999 之间. 比如:
+
+**Example 1:**
+
+```bash
+Input: 3
+Output: "III"
+```
+
+**Example 2:**
+
+```bash
+Input: 4
+Output: "IV"
+```
+
+**Example 3:**
+
+```bash
+Input: 9
+Output: "IX"
+```
+
+**Example 4:**
+
+```bash
+Input: 58
+Output: "LVIII"
+Explanation: C = 100, L = 50, XXX = 30 and III = 3.
+```
+
+**Example 5:**
+
+```bash
+Input: 1994
+Output: "MCMXCIV"
+Explanation: M = 1000, CM = 900, XC = 90 and IV = 4.
+```
+
+
+
+思路: 从第 5 个例子可以看出, 罗马数字中的数字求和就是输入. 而且由于从左向右依次减小, 并且由于罗马数字是有限的, 那么可以先构建一个表:
+
+```cpp
+    unordered_map<int, string> symbols = {
+        {1, "I"},
+        {4, "IV"},
+        {5, "V"},
+        {9, "IX"},
+        {10, "X"},
+        {40, "XL"},
+        {50, "L"},
+        {90, "XC"},
+        {100, "C"},
+        {400, "CD"},
+        {500, "D"},
+        {900, "CM"},
+        {1000, "M"},
+    };
+```
+
+之后从 1000 开始, 判断输入 num 是否比 1000 大, 如果小于 1000, 那么判断是否比 900 小, 然后继续这个过程, 每次去找第一个比 num 小的数.
+
+好, 现在拿 1994 上面第五个例子来说, 由于 1994 比 1000 大, 所以用 num 减去 1000, 结果为 994, 此时 res 变为 `M`, 由于 994 比 900 大, 所以 res 变为 `MCM`, 而 994 减 900 为 94.
+
+过程大致如此, 当在 symbols 中第一个小于 num 的数为 `symbols[i]`, 那么当 `num2 = num - symbols[i]` 后, 下一次迭代还要判断 `num2` 是否比 `symbols[i]` 大.
+
+下面是代码:
+
+```cpp
+class Solution {
+private:
+    unordered_map<int, string> symbols = {
+        {1, "I"},
+        {4, "IV"},
+        {5, "V"},
+        {9, "IX"},
+        {10, "X"},
+        {40, "XL"},
+        {50, "L"},
+        {90, "XC"},
+        {100, "C"},
+        {400, "CD"},
+        {500, "D"},
+        {900, "CM"},
+        {1000, "M"},
+    };
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        string res;
+      	// 注意当 num 小于或等于 0 的时候就不需要判断了.
+        for (int i = 0; i < choices.size() && num > 0; ) {
+            if (num >= choices[i]) {
+                res += symbols[choices[i]];
+                num -= choices[i];
+            }
+            else
+                i ++;
+        }
+        return res;
+    }
+};
+```
+
+注意上面的代码可以简化:
+
+```cpp
+class Solution {
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        vector<string> symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        string res = "";
+        for (int i = 0; num > 0; ++i) {
+            while (num >= choices[i]) {
+                res += symbols[i];
+                num -= choices[i];
+            }
+        }
+        return res;
+    }
+};
+```
+
+或者:
+
+```cpp
+class Solution {
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        vector<string> symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        string res = "";
+        for (int i = 0; num > 0; ) {
+            if (num >= choices[i]) {
+                res += symbols[i];
+                num -= choices[i];
+            }
+            else
+                i ++;
+        }
+        return res;
+    }
+};
+```
+
+
+
+
+
 
 
 
@@ -1860,6 +2036,294 @@ public:
             x /= 10;
         }
         return (res<INT_MIN || res>INT_MAX) ? 0 : res;
+    }
+};
+```
+
+
+
+
+
+### 812. *Largest Triangle Area
+
+https://leetcode.com/problems/largest-triangle-area/description/
+
+给定平面上的一些点, 求任意 3 个点构成的三角形中面积最大的面积大小.
+
+```bash
+Example:
+Input: points = [[0,0],[0,1],[1,0],[0,2],[2,0]]
+Output: 2
+Explanation: 
+The five points are show in the figure below. The red triangle is the largest.
+```
+
+
+
+思路: 这道题暴力搜索, 但是需要知道面积计算的公式, 我直接看讨论的:
+
+[Very short C++ Solution with explanation](https://leetcode.com/problems/largest-triangle-area/discuss/125581/Very-short-C++-Solution-with-explanation)
+
+```bash
+In triangle ABC, let a be vector AB, b be vector AC, then there is:
+
+S(ABC) = 1/2 * a * b * sin<a,b>
+|a X b| = |a| |b| sin<a,b> = | (a.y*b.z - a.z*b.y , -a.x*b.z + a.z*b.x , a.x*b.y - a.y*b.x) | 
+so: S(ABC) = 1/2 |a X b| 
+
+And ABC is in 2D plane, so a.z = b.z = 0
+so: |a X b| =  |a.x*b.y - a.y*b.x| 
+
+so: S(ABC) = 1/2 |a.x*b.y - a.y*b.x| 
+```
+
+代码如下:
+
+```cpp
+class Solution {
+public:
+    double largestTriangleArea(vector<vector<int>>& points) {
+        double ans=0;
+        for (int i=0;i<points.size()-2;i++)
+            for (int j=i+1;j<points.size()-1;j++)
+                for (int k=j+1;k<points.size();k++){
+                    int z = (points[j][0]-points[i][0])*(points[k][1]-points[i][1])-(points[j][1]-points[i][1])*(points[k][0]-points[i][0]);
+                    ans=max(ans,double(abs(z)));
+                }
+        return ans/2;
+    }
+};
+```
+
+
+
+### 66. *Plus One
+
+https://leetcode.com/problems/plus-one/description/
+
+Given a **non-empty** array of digits representing a non-negative integer, plus one to the integer.
+
+The digits are stored such that the most significant digit is at the head of the list, and each element in the array contain a single digit.
+
+You may assume the integer does not contain any leading zero, except the number 0 itself.
+
+**Example 1:**
+
+```bash
+Input: [1,2,3]
+Output: [1,2,4]
+Explanation: The array represents the integer 123.
+```
+
+**Example 2:**
+
+```bash
+Input: [4,3,2,1]
+Output: [4,3,2,2]
+Explanation: The array represents the integer 4321.
+```
+
+
+
+思路: 这题只要引入一个 `carry_over` 进位符就很简单, 但是有些细节要注意, 如果输入数组末尾最后一位不是 9 的话, 那么就不需要进位, 但如果是 9, 便需要考虑进位的事情, 特别是, 当输入是 9999, 而结果会变为 10000, 此时输出数组和输入数组的大小是不一样的.
+
+```cpp
+class Solution {
+public:
+    vector<int> plusOne(vector<int>& digits) {
+
+        vector<int> res;
+        int sum = digits.back() + 1;
+        int carry_over = sum / 10;
+      	// 当最后一位不是 9 的话, 只要将原数组中最后一个数字加 1 即可.
+        if (!carry_over) {
+            res = digits;
+            res[digits.size() - 1] = sum;
+            return res;
+        }
+		
+      	// 否则, 就要进位
+        res.push_back(sum % 10);
+        for (int i = digits.size() - 2; i >= 0; --i) {
+            int sum = digits[i] + carry_over;
+            carry_over = sum / 10;
+            res.push_back(sum % 10);
+        }
+      	// 注意最后 carry_over 是 1 的话,才能加入到 res 中.
+      	// 由于从后先前加, 因此最后要将 res 翻转.
+        if (carry_over)
+            res.push_back(carry_over);
+        std::reverse(res.begin(), res.end());
+        return res;
+    }
+};
+```
+
+
+
+### 781. **Rabbits in Forest
+
+In a forest, each rabbit has some color. Some subset of rabbits (possibly all of them) tell you how many other rabbits have the same color as them. Those `answers` are placed in an array.
+
+Return the minimum number of rabbits that could be in the forest.
+
+```bash
+Examples:
+Input: answers = [1, 1, 2]
+Output: 5
+Explanation:
+The two rabbits that answered "1" could both be the same color, say red.
+The rabbit than answered "2" can't be red or the answers would be inconsistent.
+Say the rabbit that answered "2" was blue.
+Then there should be 2 other blue rabbits in the forest that didn't answer into the array.
+The smallest possible number of rabbits in the forest is therefore 5: 3 that answered plus 2 that didn't.
+
+Input: answers = [10, 10, 10]
+Output: 11
+
+Input: answers = []
+Output: 0
+```
+
+**Note:**
+
+1. `answers` will have length at most `1000`.
+2. Each `answers[i]` will be an integer in the range `[0, 999]`.
+
+
+
+思路: 这道题有点考智力的感觉. 通过上面两个例子可以发现, 当 `nums[i] == nums[i - 1]` 时, 可以不管, 继续遍历, 直到  `nums[i] != nums[i - 1]` 时, 就可以得到兔子的个数 `nums[i - 1] + 1`, 其中的 1 就是当前兔子自身. 思路没有错, 但是要注意一个陷阱, 比如 `[1, 1, 1]`, 那么森林中最少只有两只兔子吗? 错! 至少 4 只. 因为 1 的数量太多了, 1 的数量有 3 个, 但是 `nums[i - 1] + 1` 最大为 2, 也就是说, `nums[0]` 和 `nums[1]` 这两只兔子可以说相互说自己与对方颜色相同, 然后 `nums[2]` 这只兔子就不能说自己与前两只兔子颜色相同, 因为这样说的话, 前两只兔子应该说与自己颜色相同的兔子有 2 只才对. 而由于 `nums[2]` 这只兔子说有一只兔子和自己颜色相同, 那么说明还有 1 只兔子没标明出来, 因此总共有 4 只兔子.
+
+下面的程序中, 使用 count 记录相同颜色兔子的个数, 如果 count 超过了 `nums[i - 1]`, 那么就需要重新计数. 但首先需要对所有兔子排序.
+
+```cpp
+class Solution {
+public:
+    int numRabbits(vector<int>& answers) {
+        if (answers.empty())
+            return 0;
+        std::sort(answers.begin(), answers.end());
+        int res = 0, count = 0;
+        for (int i = 1; i < answers.size(); ++i) {
+            if (answers[i] == answers[i - 1])
+                ++ count;
+          	// 注意 count 是可以刚好等于 answer[i - 1], 这种边界条件可以举几个
+          	// 简单的例子写出来, 比如说 `[1, 1, 1]`
+          	// 计数的条件是重复的兔子过多, 或者第 i 只兔子的颜色和第 i - 1 只兔子颜色不同.
+            if (count > answers[i - 1] || answers[i] != answers[i - 1]) {
+                res += answers[i - 1] + 1;
+                count = 0;
+            }
+          	// 下面注释的代码用于调试.
+            //cout << "i: " << i << " res: " << res << endl;
+        }
+      	// 由于前面总是求 answers[i - 1], 因此不要忘记加上最后的结果.
+        res += answers.back() + 1;
+        return res;
+    }
+};
+```
+
+
+
+### 171. *Excel Sheet Column Number
+
+https://leetcode.com/problems/excel-sheet-column-number/description/
+
+将 Excel 表格的列标题转换为数字.
+
+Given a column title as appear in an Excel sheet, return its corresponding column number.
+
+For example:
+
+```bash
+    A -> 1
+    B -> 2
+    C -> 3
+    ...
+    Z -> 26
+    AA -> 27
+    AB -> 28 
+```
+
+
+
+思路: 其实就是 26 进制. 首先最容易想到的就是使用 `pow` 来求解. 但实际上计算方式可以更快更简单, 有点动态规划的感觉, 比如对字符串 s, 当求到第 i 个字符的结果为 `f(i)` 时, 那么 `f(i + 1)` 的结果就是 `f(i + 1) = f(i) * 26 + (s[i] - 'A' + 1)`.
+
+方法一:
+
+```cpp
+class Solution {
+public:
+    int titleToNumber(string s) {
+        if (s.empty())
+            throw invalid_argument("s must contain A ~ Z!");
+        int n = s.size() - 1;
+        int res = 0;
+        for (int i = 0; i <= n; ++i)
+            res += (int)((s[i] - 'A' + 1) * pow(26, n - i));
+        return res;
+    }
+};
+```
+
+方法二:
+
+```cpp
+class Solution {
+public:
+    int titleToNumber(string s)
+    {
+        int result=0;
+        for(int i=0;i<s.length();i++)
+            result=result*26+s[i]-'A'+1;
+        return result;
+            
+    }
+};
+```
+
+
+
+### 168. *Excel Sheet Column Title
+
+https://leetcode.com/problems/excel-sheet-column-title/description/
+
+和 171 题 Excel Sheet Column Number 为对应的习题, 现在给定一个整数, 要转换为 Excel 表格的列标题.
+
+Given a positive integer, return its corresponding column title as appear in an Excel sheet.
+
+For example:
+
+```bash
+    1 -> A
+    2 -> B
+    3 -> C
+    ...
+    26 -> Z
+    27 -> AA
+    28 -> AB 
+```
+
+
+
+思路: 注意到 171 题中将列标题转换为数字的方法是 `s[i] - 'A' + 1`, 那么这里要得到字符串, `n` 必须先减 1.
+
+```cpp
+class Solution {
+public:
+    string convertToTitle(int n) {
+        if (n < 1)
+            throw invalid_argument("invalid argument");
+
+        string res = "";
+        while (n) {
+            res += ('A' + (n - 1) % 26);
+            n = (n - 1) / 26;
+        }
+      	// 由于从后向前求字符串, 所以最后要翻转.
+        std::reverse(res.begin(), res.end());
+        return res;
     }
 };
 ```
