@@ -43,17 +43,40 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    string convertToTitle(int n) {
-        if (n < 1)
-            throw invalid_argument("invalid argument");
-
-        string res = "";
-        while (n) {
-            res += ('A' + (n - 1) % 26);
-            n = (n - 1) / 26;
+    int numComponents(ListNode* head, vector<int>& G) {
+        if (!head)
+            return 0;
+        if ((!head->next && head->val == G.back()))
+            return 1;
+        unordered_map<int, int> record;
+        auto ptr = head;
+        while (ptr && ptr->next) {
+            record[ptr->val] = ptr->next->val;
+            ptr = ptr->next;
         }
-        std::reverse(res.begin(), res.end());
-        return res;
+
+        ptr = head;
+        while (ptr) {
+            if (record.find(ptr->val) != record.end()) {
+
+            }
+        }
+
+        //for (auto &iter : record) {
+            //cout << iter.first << " -> " << iter.second << endl;
+        //}
+
+        //unordered_set<int> iset(G.begin(), G.end());
+        //int res = 0;
+        //for (auto val : iset) {
+            //cout << "val: " << val << endl;
+            //while (record.find(val) != record.end()) {
+                //iset.erase(iset.find(val));
+                //val = record[val];
+            //}
+            //res ++;
+        //}
+        //return res;
     }
 };
 
@@ -68,21 +91,21 @@ int main() {
     //root->left->right->right = new TreeNode(9);
     //root->right->right = new TreeNode(17);
 
-    TreeNode *root2 = new TreeNode(0);
-    root2->left = new TreeNode(1);
-    root2->right = new TreeNode(1);
+    //TreeNode *root2 = new TreeNode(0);
+    //root2->left = new TreeNode(1);
+    //root2->right = new TreeNode(1);
 
 
-    //int arr[] = {1, 2};
-    //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
+    int arr[] = {1, 2, 3, 4, 5};
+    auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
  
     //vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
-    vector<int> nums = {0, 0, 1, 1, 1};
+    vector<int> nums = {4, 5};
     //string input = "owoztneoer";
-    auto res = Solution().convertToTitle(52);
+    auto res = Solution().numComponents(ls, nums);
     cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(root);
