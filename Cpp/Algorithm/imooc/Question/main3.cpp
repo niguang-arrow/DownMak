@@ -41,42 +41,35 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
+
+//class Solution {
+//public:
+    //void rotate(vector<int>& nums, int k) {
+        //if (nums.empty())
+            //return;
+
+        //int len = nums.size();
+        //vector<int> res(len);
+        //for (int i = 0; i < len; ++i) {
+            //int idx = (len - k % len + i) % len;
+            //res[i] = nums[idx];
+        //}
+        //nums = res;
+        //return;
+    //}
+//};
 class Solution {
 public:
-    int numComponents(ListNode* head, vector<int>& G) {
-        if (!head)
-            return 0;
-        if ((!head->next && head->val == G.back()))
-            return 1;
-        unordered_map<int, int> record;
-        auto ptr = head;
-        while (ptr && ptr->next) {
-            record[ptr->val] = ptr->next->val;
-            ptr = ptr->next;
-        }
+    void rotate(vector<int>& nums, int k) {
+        if (nums.empty() || (k % nums.size() == 0))
+            return;
 
-        ptr = head;
-        while (ptr) {
-            if (record.find(ptr->val) != record.end()) {
-
-            }
-        }
-
-        //for (auto &iter : record) {
-            //cout << iter.first << " -> " << iter.second << endl;
-        //}
-
-        //unordered_set<int> iset(G.begin(), G.end());
-        //int res = 0;
-        //for (auto val : iset) {
-            //cout << "val: " << val << endl;
-            //while (record.find(val) != record.end()) {
-                //iset.erase(iset.find(val));
-                //val = record[val];
-            //}
-            //res ++;
-        //}
-        //return res;
+        rotate(nums, k - 1);
+        int tmp = nums.back();
+        for (int i = nums.size() - 2; i >= 0; --i)
+            nums[i + 1] = nums[i];
+        nums[0] = tmp;
+        return;
     }
 };
 
@@ -96,19 +89,20 @@ int main() {
     //root2->right = new TreeNode(1);
 
 
-    int arr[] = {1, 2, 3, 4, 5};
-    auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
+    //int arr[] = {1, 2, 3};
+    //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
  
     //vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
-    vector<int> nums = {4, 5};
+    vector<int> nums = {1, 2, 3, 4, 5, 6, 7};
     //string input = "owoztneoer";
-    auto res = Solution().numComponents(ls, nums);
-    cout << res << endl;
+    Solution().rotate(nums, 3);
+    //auto res = Solution().rotate(nums, 3);
+    //cout << res << endl;
     //cout << std::boolalpha << res << endl;
-    //preOrder(root);
+    //preOrder(res);
     //cout << endl;
     //cout << res << endl;
 
@@ -120,7 +114,7 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    //for (auto &d : res)
-        //cout << d << " ";
-    //cout << endl;
+    for (auto &d : nums)
+        cout << d << " ";
+    cout << endl;
 }
