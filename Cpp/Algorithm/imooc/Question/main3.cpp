@@ -42,34 +42,37 @@ void preOrder(TreeNode *root) {
 }
 
 
-//class Solution {
-//public:
-    //void rotate(vector<int>& nums, int k) {
-        //if (nums.empty())
-            //return;
-
-        //int len = nums.size();
-        //vector<int> res(len);
-        //for (int i = 0; i < len; ++i) {
-            //int idx = (len - k % len + i) % len;
-            //res[i] = nums[idx];
-        //}
-        //nums = res;
-        //return;
-    //}
-//};
 class Solution {
+private:
+    struct Comp {
+        bool operator()(const pair<char, int> &p1, const pair<char, int> &p2) {
+            if (p1.first < p2.first)
+                return true;
+            else if (p1.first == p2.first && p1.second > p2.second)
+                return true;
+            return false;
+        }
+    };
 public:
-    void rotate(vector<int>& nums, int k) {
-        if (nums.empty() || (k % nums.size() == 0))
-            return;
+    int maximumSwap(int num) {
+        string s = to_string(num);
+        priority_queue<pair<char, int>, vector<pair<char, int>>, Comp> maxHeap;
+        for (int i = 0; i < s.size(); ++i)
+            maxHeap.push(make_pair(s[i], i));
 
-        rotate(nums, k - 1);
-        int tmp = nums.back();
-        for (int i = nums.size() - 2; i >= 0; --i)
-            nums[i + 1] = nums[i];
-        nums[0] = tmp;
-        return;
+
+        int i = 0, index = -1;
+        while (!maxHeap.empty()) {
+            auto p = maxHeap.top();
+            maxHeap.pop();
+            index = p.second;
+            if (index != i) 
+                break;
+            ++i;
+        }
+        if (i < s.size())
+            std::swap(s[index], s[i]);
+        return std::stoi(s);
     }
 };
 
@@ -95,12 +98,11 @@ int main() {
     //vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
-    //vector<vector<int>> nums = {{1, 2, 3}, {4, 5, 6}};
-    vector<int> nums = {1, 2, 3, 4, 5, 6, 7};
+    //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
+    vector<int> nums = {1, 2, 3, 4};
     //string input = "owoztneoer";
-    Solution().rotate(nums, 3);
-    //auto res = Solution().rotate(nums, 3);
-    //cout << res << endl;
+    auto res = Solution().maximumSwap(1);
+    cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
@@ -114,7 +116,7 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    for (auto &d : nums)
-        cout << d << " ";
-    cout << endl;
+    //for (auto &d : res)
+        //cout << d << " ";
+    //cout << endl;
 }

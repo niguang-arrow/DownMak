@@ -1817,9 +1817,761 @@ public:
 
 
 
+## 广度优先搜索
+
+将符合要求的节点加入到队列中(queue, 也可以是 stack, 或 `unordered_set` 等数据结构)中, 表示两节点连了一条边. 新的节点的生成是靠考虑多种情况生成的.(通常可以使用一个或多个 for 循环得到)
+
+### 279. **Perfect Squares
+
+https://leetcode.com/problems/perfect-squares/description/
+
+给定一个正整数 n, 求最少的完全平方数的个数, 使得这些这些完全平方数的和等于 n. 比如:
+
+For example, given *n* = `12`, return `3` because `12 = 4 + 4 + 4`; given *n* = `13`, return `2` because `13 = 4 + 9`.
 
 
 
+思路: 这道题对于任意正整数 n, 肯定是有解的, 因为 1 也是完全平方数. 需要对这道题进行建模, 将整个问题转化为一个图论问题. 图论问题就是要创建一张图, 对于这张图来说, 我们要定义节点和边. 这道题中令从 n 到 0, 每个数字表示一个节点; 如果两个数字 x 到 y 相差一个完全平方数, 则连接一条边. 我们就得到了一个无权图. 原问题转化为: 求这个无权图中从 n 到 0 的最短路径.
+
+下面代码中, 队列 q 保存 pair, `pair.first` 表示访问的数字(0 ~ n), 而 `pair.second` 表示访问该数字需要在图上移动的步数(step), 那么只要统计从 n 开始访问到 0 需要经过的步数, 就是我们要求的结果. 由于图不是树, 树从某节点访问到另一个节点只有一条路径, 而图从一个节点访问到另一个节点可能存在多条路径, 因此引入 `visited` 来记录已经访问过的节点.
+
+```cpp
+class Solution {
+public:
+    int numSquares(int n) {
+        assert(n > 0);
+        queue<pair<int, int>> q;
+        q.push(make_pair(n, 0));
+
+        vector<bool> visited(n+1, false);
+        visited[n] = true;
+
+        while (!q.empty()) {
+            int num = q.front().first;
+            int step = q.front().second;
+
+            q.pop();
+          	// 下面这两行可以保留也可以不要, 因为在下面的 for 循环中
+          	// 只要 a == 0 就说明找到了最短的路径, 这样就可以少进行一次 while
+          	// 循环, 但是相应的, 下面的 for 循环中返回的是 step + 1.
+            //if (num == 0)
+                //return step;
+
+            for(int i = 0; ; ++i) {
+                int a = num - i * i;
+              	// for 循环的判断条件放在这里, 原因是为了计算 num - i * i,
+              	// for 循环中原本的判断条件是 num - i * i >= 0
+                if (a < 0)  
+                    break;
+                if (a == 0)
+                    return step + 1;
+                if (!visited[a]) {
+                    q.push(make_pair(a, step + 1));
+                    visited[a] = true;
+                }
+            }
+        }
+      	// 由于必然存在解, 那么如果在 while 中没有返回, 应该是个异常.
+        throw invalid_argument("No Solution");
+    }
+};
+```
+
+
+
+### 127. **Word Ladder
+
+https://leetcode.com/problems/word-ladder/description/
+
+Given two words (*beginWord* and *endWord*), and a dictionary's word list, find the length of shortest transformation sequence from *beginWord* to *endWord*, such that:
+
+1. Only one letter can be changed at a time.
+2. Each transformed word must exist in the word list. Note that *beginWord* is *not* a transformed word.
+
+**Note:**
+
+- Return 0 if there is no such transformation sequence.
+- All words have the same length.
+- All words contain only lowercase alphabetic characters.
+- You may assume no duplicates in the word list.
+- You may assume *beginWord* and *endWord* are non-empty and are not the same.
+
+**Example 1:**
+
+```bash
+Input:
+beginWord = "hit",
+endWord = "cog",
+wordList = ["hot","dot","dog","lot","log","cog"]
+
+Output: 5
+
+Explanation: As one shortest transformation is "hit" -> "hot" -> "dot" -> "dog" -> "cog",
+return its length 5.
+```
+
+**Example 2:**
+
+```bash
+Input:
+beginWord = "hit"
+endWord = "cog"
+wordList = ["hot","dot","dog","lot","log"]
+
+Output: 0
+
+Explanation: The endWord "cog" is not in wordList, therefore no possible transformation.
+```
+
+
+
+推荐: 参考教程 http://zxi.mytechroad.com/blog/searching/127-word-ladder/
+
+思路 1: 求最小路径, 应尝试建模转换为图的问题, 然后使用 BFS 解决. 对于 beginWord = "hit", 它的长度为 n = 3, 依次将每个字符用 26 个小写字母替换, 那么总共有 (n * 26) 种情况, 这些情况得到的字符串中, 有很多不在 word list 内, 那么可以将它们忽略. 而对于那些在 word list 中的单词, 就要使用 BFS 对它们进行遍历. 但在这个过程中还有一点要注意的是: word list 中的单词被使用过了就不能再使用了, 因为这样会使得路径变长. 假设最后的路径长度是 l, 那么就要考虑 ($n\times26^{l}$) 种情况.
+
+```cpp
+class Solution {
+public:
+    int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+		// 使用哈希表加快单词的查找
+        unordered_set<string> words(wordList.begin(), wordList.end());
+      	// 如果 endWord 本就不在单词表中, 那么返回 0
+        if (!words.count(endWord)) return 0;
+		
+      	// 类似于题 279 Perfect Squares 中的解法, 使用 queue 保存 pair, 其中
+      	// pair.first 保存节点, 第二个值保存访问到该节点, 此时路径的长度.
+        queue<pair<string, int>> Queue;
+        Queue.push(make_pair(beginWord, 1));
+
+        while (!Queue.empty()) {
+            string w = Queue.front().first;
+            int step = Queue.front().second;
+            Queue.pop();
+			
+          	// 对于一个节点 w, 要尝试修改其每一个字符.
+            for (int i = 0; i < w.size(); ++i) {
+                char ch = w[i];
+                for (char c = 'a'; c <= 'z'; ++c) {
+                    w[i] = c;
+                  	// 如果已经访问到 endWord 了, 那么返回 step + 1.
+                    if (w == endWord) return step + 1;
+                  	// 如果单词表中没有这个单词, 不必考虑.
+                    if (!words.count(w)) continue;
+                    // 用过的节点就不需要再访问了, 否则会增加变换路径的长度
+                    words.erase(w);
+                    Queue.push(make_pair(w, step + 1));
+                }
+                // 在上一个 for 循环中修改了 w, 这里要恢复, 用于访问 w 中下一个字符.
+                w[i] = ch;
+            }
+        }
+        return 0;
+    }
+};
+```
+
+
+
+思路 2: 另外一种更快的搜索方式是使用双向广度优先搜索, Bidirectional BFS. 从起点和终点交替搜索. 这里使用两个哈希表(q1 和 q2)来实现搜索的过程, 它们分别用 beginWord 以及 endWord 进行初始化, 它们都保存每一层符合要求的节点. 然后 q1 和 q2 交替搜索新的节点, 如果某一刻 q1 中搜索到的新节点出现在了 q2 中, 那么说明两端向中间相遇了, 此时可以返回路径长度. 
+
+交替的代码使用 `std::swap` 实现. 下面代码中使用 q 来保存新产生的节点. 另外注意返回条件 `if (q2.count(w))` 发生了变化, 不再是判断 w 是否和 endWord 相等, 而是判断 q2 中是否有 w, 即是否在中间相遇.
+
+```cpp
+class Solution {
+public:
+    int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+
+        unordered_set<string> words(wordList.begin(), wordList.end());
+        if (!words.count(endWord)) return 0;
+
+        // BFS 也成为层序遍历, q1 和 q2 中放的是每一层的节点
+        // 后面的变量 q 也是如此, 只保留其中一层的节点
+        unordered_set<string> q1{beginWord};
+        unordered_set<string> q2{endWord};
+        int step = 0;
+
+        while (!q1.empty() && !q2.empty()) {
+            step ++;
+            // 由于双向 BFS 从起点和终点交替扩展, 这里选择每次
+            // 优先扩展较小的队列
+            if (q1.size() > q2.size())
+                std::swap(q1, q2);
+
+            // 保存新产生的节点
+            unordered_set<string> q;
+            for (string w : q1) {
+                for (int i = 0; i < w.size(); ++i) {
+                    char ch = w[i];
+                    for (char c = 'a'; c <= 'z'; ++c) {
+                        w[i] = c;
+                        // 特别注意这里条件变成了, 如果在 q2 中找到了w,
+                        // 就返回路径长度. 因为双向 BFS 不是找到 goal, 而是
+                        // 两端在中间相遇.
+                        if (q2.count(w)) return step + 1;
+                        if (!words.count(w)) continue;
+                        // 用过的节点就不需要再访问了, 否则会增加变换路径的长度
+                        words.erase(w);
+                        q.insert(w);
+                    }
+                    w[i] = ch;
+                }
+            }
+            std::swap(q, q1); // 处理新加入的节点
+        }
+        return 0;
+    }
+};
+```
+
+
+
+思路 1 的另一种实现: http://zxi.mytechroad.com/blog/searching/127-word-ladder/
+
+这个博客上给出了思路 1 的伪代码和具体实现分别如下:
+
+```cpp
+// 伪代码
+q.push(start)
+step = 0
+
+while not q.empty():
+	++step
+	size = q.size()
+	while size-- > 0:
+		node = q.pop()
+		new_nodes = expand(node)
+		if goal in new_nodes: return step + 1
+		q.append(new_nodes)
+return NOT_FOUND		
+```
+
+C++ 的具体实现如下:
+
+```cpp
+// Author: Huahua
+// Running time: 93 ms
+class Solution {
+public:
+    int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
+        unordered_set<string> dict(wordList.begin(), wordList.end());        
+        if (!dict.count(endWord)) return 0;
+        
+        queue<string> q;
+        q.push(beginWord);
+        
+        int l = beginWord.length();
+        int step = 0;
+        
+      	// 这里只是想说明, 由于 queue 中只保存了节点, 而没有保存相应的 step, 因此, 在下面
+      	// 的 while 循环中, 首先将 step 的长度加 1, 然后判断 for 循环将同一层的所有节点进行
+      	// 处理, 也就是说, q 只保存同一层的节点, 和我在上面使用思路一实现的代码的不同就在这.
+        while (!q.empty()) {
+            ++step;
+            for (int size = q.size(); size > 0; size--) {                
+                string w = q.front();                
+                q.pop();
+                for (int i = 0; i < l; i++) {                
+                    char ch = w[i];
+                    for (int j = 'a'; j <= 'z'; j++) {
+                        w[i] = j;
+                        // Found the solution
+                        if (w == endWord) return step + 1;
+                        // Not in dict, skip it
+                        if (!dict.count(w)) continue;
+                        // Remove new word from dict
+                        dict.erase(w);
+                        // Add new word into queue
+                        q.push(w);                    
+                    }
+                    w[i] = ch;
+                }
+            }
+        }
+        return 0;
+    }
+};
+```
+
+
+
+### 107. *Binary Tree Level Order Traversal II
+
+https://leetcode.com/problems/binary-tree-level-order-traversal-ii/description/
+
+对二叉树进行层序遍历, 返回从下往上层序遍历的结果(每一层之间是从左往右, 从叶子节点到根节点), 比如:
+
+For example:
+Given binary tree `[3,9,20,null,null,15,7]`,
+
+```bash
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+return its bottom-up level order traversal as:
+
+```bash
+[
+  [15,7],
+  [9,20],
+  [3]
+]
+```
+
+
+
+思路: 树的层序遍历比较简单, 每个节点到另外的节点都只有一条路径, 不像图那般, 可以有多条路径到达另一个节点. 最后的结果只要翻转一下即可. Queue 中每次只保存一层的节点. 这道题的实现达到 100%. 
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+        vector<vector<int>> res;
+        if (!root)
+            return res;
+
+        queue<TreeNode*> Queue;
+        Queue.push(root);
+
+        while (!Queue.empty()) {
+            int size = Queue.size();
+            vector<int> level;
+          	// 这种写法可以保证每次 Queue 中只保存一层的节点.
+            for (int i = size; i > 0; --i) {
+                auto root = Queue.front();
+                Queue.pop();
+
+                level.push_back(root->val);
+                if (root->left)
+                    Queue.push(root->left);
+                if (root->right)
+                    Queue.push(root->right);
+            }
+            res.push_back(level);
+        }
+      	// 由于要从下往上遍历, 最后结果要翻转.
+        std::reverse(res.begin(), res.end());
+        return res;
+    }
+};
+```
+
+leetcode 上还有一种使用递归方式实现的层序遍历:
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> levelOrderBottom(TreeNode* root) {
+        vector<vector<int>> res;
+        levelOrder(root,res,0); // 对第 0 层开始层序遍历
+        reverse(res.begin(),res.end());
+        return res;
+    }
+    void levelOrder(TreeNode* root,vector<vector<int>> &res,int level)
+    {
+        if(!root) return ;
+      	// 如果要访问新的一层, 那么先 push_back.
+        if(res.empty()||level>res.size()-1)
+            res.push_back(vector<int>());
+        res[level].push_back(root->val);
+        levelOrder(root->left,res,level+1);
+        levelOrder(root->right,res,level+1);
+        
+    }
+};
+```
+
+
+
+### 513. **Find Bottom Left Tree Value
+
+https://leetcode.com/problems/find-bottom-left-tree-value/description/
+
+Given a binary tree, find the leftmost value in the last row of the tree.
+
+**Example 1:**
+
+```bash
+Input:
+
+    2
+   / \
+  1   3
+
+Output:
+1
+```
+
+**Example 2: **
+
+```bash
+Input:
+
+        1
+       / \
+      2   3
+     /   / \
+    4   5   6
+       /
+      7
+
+Output:
+7
+```
+
+**Note:** You may assume the tree (i.e., the given root node) is not **NULL**.
+
+
+
+思路: 广度优先遍历, 输出最后一层的第一个节点的值即可.
+
+```cpp
+class Solution {
+public:
+    int findBottomLeftValue(TreeNode* root) {
+
+        queue<TreeNode*> Queue;
+        Queue.push(root);
+
+        int res = 0;
+        while (!Queue.empty()) {
+
+            int size = Queue.size();
+            res = Queue.front()->val; // res 会不断的更新.
+            for (int i = size; i > 0; --i) {
+                auto root = Queue.front();
+                Queue.pop();
+                if (root->left)
+                    Queue.push(root->left);
+                if (root->right)
+                    Queue.push(root->right);
+            }
+        }
+        return res;
+    }
+};
+```
+
+leetcode 上另一种写法:
+
+```cpp
+class Solution {
+public:
+    int findBottomLeftValue(TreeNode* root) {
+        queue<TreeNode *> q;
+        int res = root->val;
+        q.push(root);
+        while(!q.empty()) {
+            root = q.front();
+          	// 这里是先插入右子节点, 然后再插入左子节点, 那么最后的输出
+          	// root->val 就是最后一层最靠左的节点的值.
+            if(root->right) q.push(root->right);
+            if(root->left) q.push(root->left);
+            q.pop();
+        }
+        return root->val;
+    }
+};
+```
+
+
+
+### 690. *Employee Importance
+
+https://leetcode.com/problems/employee-importance/description/
+
+这道题题目很长, 但是非常简单, 就不详细说明了. 直接放解答. 使用 BFS 即可解决.
+
+```cpp
+/*
+// Employee info
+class Employee {
+public:
+    // It's the unique ID of each node.
+    // unique id of this employee
+    int id;
+    // the importance value of this employee
+    int importance;
+    // the id of direct subordinates
+    vector<int> subordinates;
+};
+*/
+class Solution {
+public:
+    int getImportance(vector<Employee*> employees, int id) {
+
+        queue<Employee*> Queue;
+        unordered_map<int, Employee*> record;
+        for (const auto &man : employees)
+            record[man->id] = man;
+        Queue.push(record[id]);
+
+        int importance = 0;
+        while (!Queue.empty()) {
+            auto man = Queue.front();
+            Queue.pop();
+            importance += man->importance;
+            if (!man->subordinates.empty())
+                for (const auto &subid : man->subordinates)
+                    Queue.push(record[subid]);
+        }
+        return importance;
+    }
+};
+```
+
+
+
+### 102. **Binary Tree Level Order Traversal
+
+https://leetcode.com/problems/binary-tree-level-order-traversal/description/
+
+二叉树的层序遍历, 基础, 不多说.
+
+For example:
+Given binary tree `[3,9,20,null,null,15,7]`,
+
+```
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+return its level order traversal as:
+
+```
+[
+  [3],
+  [9,20],
+  [15,7]
+]
+```
+
+代码实现如下:
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if (!root)
+            return res;
+
+        queue<TreeNode*> Queue;
+        Queue.push(root);
+
+        while (!Queue.empty()) {
+            int size = Queue.size();
+            vector<int> level;
+            for (int i = size; i > 0; --i) {// 每次只考虑一层.
+                auto root = Queue.front();
+                Queue.pop();
+                level.push_back(root->val);
+                if (root->left) Queue.push(root->left);
+                if (root->right) Queue.push(root->right);
+            }
+            res.push_back(level);
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 199. **Binary Tree Right Side View
+
+https://leetcode.com/problems/binary-tree-right-side-view/description/
+
+Given a binary tree, imagine yourself standing on the *right* side of it, return the values of the nodes you can see ordered from top to bottom.
+
+**Example:**
+
+```
+Input: [1,2,3,null,5,null,4]
+Output: [1, 3, 4]
+Explanation:
+
+   1            <---
+ /   \
+2     3         <---
+ \     \
+  5     4       <---
+```
+
+
+
+思路: 使用 BFS, 每次先将右子节点加入到队列中, 然后将左子节点加入到队列中. 而每次访问某一层的节点时, 保存先从队列中弹出来的节点的值即可.
+
+```cpp
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        vector<int> res;
+        if (!root)
+            return res;
+
+        queue<TreeNode*> Queue;
+        Queue.push(root);
+
+        while (!Queue.empty()) {
+            int size = Queue.size();
+            auto root = Queue.front();
+            res.push_back(root->val);
+            for (int i = size; i > 0; --i) {
+                root = Queue.front();
+                Queue.pop();
+                if (root->right) Queue.push(root->right);
+                if (root->left) Queue.push(root->left);
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 103. **Binary Tree Zigzag Level Order Traversal
+
+https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/description/
+
+将二叉树按层序遍历, 但是以 Z 的形式遍历, 比如:
+
+Given binary tree `[3,9,20,null,null,15,7]`,
+
+```bash
+    3
+   / \
+  9  20
+    /  \
+   15   7
+```
+
+return its zigzag level order traversal as:
+
+```bash
+[
+  [3],
+  [20,9],
+  [15,7]
+]
+```
+
+也就是说, 第一行从左向右遍历, 然后第二行从右向左遍历, 之后交替这样遍历.
+
+
+
+思路: 如果使用队列的话, 不方便处理, 比如:
+
+```cpp
+        1
+      /   \
+     2     3
+    / \   / \
+   4  5  6   7    
+```
+
+当访问到 3 时, 如果使用的是队列, 那么此时会先将 7 推入队列(毕竟访问 1 的时候, 会先将 3 推入队列已达到从右向左遍历的目的), 当遍历 4 所在的层时, 首先访问的应该是 4 才对, 可是使用 queue 会先访问 7. 于是想到, 如果使用栈来保存这些节点, 那么就可以将问题给解决. 比如如果下一层要从左向右访问, 那么当前层必然是从右向左访问, 那么此时可以先将节点的右子节点 push 到栈中, 然后再将左子节点推入到栈中(比如访问 3 所在的层时, 推入子节点的顺序为 7, 6, 5, 4, 那么之后访问到第 3 层时, 输出就是 4, 5, 6, 7), 下一层是从右向左访问, 那么就需要先推入左子节点, 然后再推入右子节点.
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if (!root)
+            return res;
+        stack<TreeNode*> Stack1;
+        stack<TreeNode*> Stack2;
+        Stack1.push(root);
+        bool toleft = false; // 当前层是不是从右向左遍历, 初始的时候不是
+
+        while (!Stack1.empty() || !Stack2.empty()) {
+            vector<int> level;
+            int size = Stack1.size();
+            for (int i = size; i > 0; --i) {
+                auto root = Stack1.top();
+                Stack1.pop();
+                level.push_back(root->val);
+                // 如果要从左向右遍历, 那么应该先把右子节点放入栈中,
+                // 再把左子节点放入栈中; 而要从右向左遍历, 则正好相反.
+                if (!toleft) { // 当前层是从左向右遍历
+                    if (root->left) Stack2.push(root->left);
+                    if (root->right) Stack2.push(root->right);
+                }
+                else { // 当前层是从右向左遍历
+                    if (root->right) Stack2.push(root->right);
+                    if (root->left) Stack2.push(root->left);
+                }
+            }
+            toleft = !toleft;
+            res.push_back(level);
+          	// 此时 Stack1 中一层的元素已经遍历完, Stack2 中保存着下一层的元素.
+            std::swap(Stack1, Stack2);
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 515. **Find Largest Value in Each Tree Row
+
+https://leetcode.com/problems/find-largest-value-in-each-tree-row/description/
+
+You need to find the largest value in each row of a binary tree.
+
+**Example:**
+
+```bash
+Input: 
+
+          1
+         / \
+        3   2
+       / \   \  
+      5   3   9 
+
+Output: [1, 3, 9]
+```
+
+
+
+思路: 不多说, bfs
+
+```cpp
+class Solution {
+public:
+    vector<int> largestValues(TreeNode* root) {
+        vector<int> res;
+        if (!root)
+            return res;
+
+        queue<TreeNode*> Queue;
+        Queue.push(root);
+
+        while (!Queue.empty()) {
+            int imax = INT32_MIN;
+            int size = Queue.size();
+            for (int i = size; i > 0; --i) {
+                auto root = Queue.front();
+                Queue.pop();
+                imax = max(imax, root->val);
+                if (root->left) Queue.push(root->left);
+                if (root->right) Queue.push(root->right);                
+            }
+            res.push_back(imax);
+        }
+        return res;
+    }
+};
+```
 
 
 

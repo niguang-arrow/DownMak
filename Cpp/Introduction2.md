@@ -2741,7 +2741,7 @@ int main() {
 
 +   OOP
 
-    +   继承 (inheritance) 基类 (base class) 派生类 (derived class)
+    +   继承 (inh9eritance) 基类 (base class) 派生类 (derived class)
 
     +   在 C++ 语言中, 基类将类型相关的函数与派生类不做改变直接继承的函数区分对待. 对于某些函数, 基类希望它的派生类各自定义适合自身的版本, 此时基类就将这些函数声明为虚函数 (virtual function). 
 

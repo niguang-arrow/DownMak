@@ -1171,179 +1171,147 @@ public:
 
 
 
-### 12. **Integer to Roman
 
-https://leetcode.com/problems/integer-to-roman/description/
 
-罗马数字如下:
+### 28. *Implement strStr()
 
-```bash
-Symbol       Value
-I             1
-V             5
-X             10
-L             50
-C             100
-D             500
-M             1000
+https://leetcode.com/problems/implement-strstr/description/
+
+实现 C++ 中的 `strstr(s1, s2)` 函数, 判断 s2 是不是 s1 的子串. 如果 s2 为空, 那么返回 0; 如果 s2 是 s1 的子串, 那么返回 s2 在 s1 中的起始位置; 否则返回 -1.
+
+
+
+思路: 暴力搜索, 遍历 s1, 判断 s2 是不是 s1 的子串. 这里用到了字符串的 `substr(index, length)` 方法.
+
+```cpp
+class Solution {
+public:
+    int strStr(string haystack, string needle) {
+        if (needle.empty())
+            return 0;
+
+        int l1 = haystack.size();
+        int l2 = needle.size();
+        for (int i = 0; i <= l1 - l2; ++i)
+            if (haystack.substr(i, l2) == needle)
+                return i;
+        return -1;
+
+    }
+};
 ```
 
-For example, two is written as `II` in Roman numeral, just two one's added together. Twelve is written as, `XII`, which is simply `X` + `II`. The number twenty seven is written as `XXVII`, which is `XX` + `V` + `II`.
 
-另外, 罗马数字一般从左到右数字依次减小. 但是有以下特殊的情况, 比如 4 不是 `IIII` 而是 `IV`. 另外, 还有如下的情况:
 
-- `I` can be placed before `V` (5) and `X` (10) to make 4 and 9. 
-- `X` can be placed before `L` (50) and `C` (100) to make 40 and 90. 
-- `C` can be placed before `D` (500) and `M` (1000) to make 400 and 900.
+### 567. **Permutation in String
 
-现在给定一个整数, 将其转换为一个罗马数字. 输入保证为 1 ~ 3999 之间. 比如:
+https://leetcode.com/problems/permutation-in-string/description/
+
+给定两个字符串 s1 和 s2, 判断 s2 中是否包含 s1 的 permutation. 换句话说, s1 的某一个排列是否是 s2 的子串. 比如:
 
 **Example 1:**
 
 ```bash
-Input: 3
-Output: "III"
+Input:s1 = "ab" s2 = "eidbaooo"
+Output:True
+Explanation: s2 contains one permutation of s1 ("ba").
 ```
 
 **Example 2:**
 
 ```bash
-Input: 4
-Output: "IV"
+Input:s1= "ab" s2 = "eidboaoo"
+Output: False
 ```
 
-**Example 3:**
+**Note:**
 
-```bash
-Input: 9
-Output: "IX"
-```
-
-**Example 4:**
-
-```bash
-Input: 58
-Output: "LVIII"
-Explanation: C = 100, L = 50, XXX = 30 and III = 3.
-```
-
-**Example 5:**
-
-```bash
-Input: 1994
-Output: "MCMXCIV"
-Explanation: M = 1000, CM = 900, XC = 90 and IV = 4.
-```
+1. The input strings only contain lower case letters.
+2. The length of both given strings is in range [1, 10,000].
 
 
 
-思路: 从第 5 个例子可以看出, 罗马数字中的数字求和就是输入. 而且由于从左向右依次减小, 并且由于罗马数字是有限的, 那么可以先构建一个表:
-
-```cpp
-    unordered_map<int, string> symbols = {
-        {1, "I"},
-        {4, "IV"},
-        {5, "V"},
-        {9, "IX"},
-        {10, "X"},
-        {40, "XL"},
-        {50, "L"},
-        {90, "XC"},
-        {100, "C"},
-        {400, "CD"},
-        {500, "D"},
-        {900, "CM"},
-        {1000, "M"},
-    };
-```
-
-之后从 1000 开始, 判断输入 num 是否比 1000 大, 如果小于 1000, 那么判断是否比 900 小, 然后继续这个过程, 每次去找第一个比 num 小的数.
-
-好, 现在拿 1994 上面第五个例子来说, 由于 1994 比 1000 大, 所以用 num 减去 1000, 结果为 994, 此时 res 变为 `M`, 由于 994 比 900 大, 所以 res 变为 `MCM`, 而 994 减 900 为 94.
-
-过程大致如此, 当在 symbols 中第一个小于 num 的数为 `symbols[i]`, 那么当 `num2 = num - symbols[i]` 后, 下一次迭代还要判断 `num2` 是否比 `symbols[i]` 大.
-
-下面是代码:
+思路: 这道题想半天没搞定...要不就是超时... 看了答案之后发现可以使用滑动窗口解决. 哈希表是需要的, 但是这里最好使用数组代替, 毕竟元素都是小写字母, 可以方便后面的处理. 使用滑动窗口解决的思路是: 对于 s2 中的每一个滑动窗口, 判断其中的元素是否和 s1 中的元素完全匹配, 如果是, 返回 true; 否则, 将滑动窗口向右移动, 同时, 更新 s2 对应的哈希表中 `s2[i]` 的元素个数, 以及减少 `s2[i - s1.size()]` (它为滑动窗口未移动前的第一个元素)的元素个数. 每次移动都要判断窗口中的元素是否和 s1 中的元素匹配.
 
 ```cpp
 class Solution {
 private:
-    unordered_map<int, string> symbols = {
-        {1, "I"},
-        {4, "IV"},
-        {5, "V"},
-        {9, "IX"},
-        {10, "X"},
-        {40, "XL"},
-        {50, "L"},
-        {90, "XC"},
-        {100, "C"},
-        {400, "CD"},
-        {500, "D"},
-        {900, "CM"},
-        {1000, "M"},
-    };
+  	// 判断两个哈希表是否完全匹配
+    bool matches(vector<int> &vec1, vector<int> &vec2) {
+        for (int i = 0; i < vec1.size(); ++i)
+            if (vec1[i] != vec2[i])
+                return false;
+        return true;
+    }
 public:
-    string intToRoman(int num) {
-        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-        string res;
-      	// 注意当 num 小于或等于 0 的时候就不需要判断了.
-        for (int i = 0; i < choices.size() && num > 0; ) {
-            if (num >= choices[i]) {
-                res += symbols[choices[i]];
-                num -= choices[i];
-            }
-            else
-                i ++;
+    bool checkInclusion(string s1, string s2) {
+        if (s1.size() > s2.size())
+            return false;
+
+        vector<int> vec1(26), vec2(26);
+        for (int i = 0; i < s1.size(); ++i) {
+            vec1[s1[i] - 'a'] ++;
+            vec2[s2[i] - 'a'] ++;
         }
-        return res;
+      	// 第一个窗口
+        if (matches(vec1, vec2))
+            return true;
+      	// 窗口进行移动, 注意更新窗口中的元素.
+        for (int i = s1.size(); i < s2.size(); ++i) {
+            vec2[s2[i - s1.size()] - 'a'] --;
+            vec2[s2[i] - 'a'] ++;
+            if (matches(vec1, vec2))
+                return true;
+        }
+        return false;
     }
 };
 ```
 
-注意上面的代码可以简化:
+其中时间复杂度为 `O(l1 + 26 * (l2 - l1))`, (第一个 l1 是将元素存入哈希表, 第二个式子表示可能做 (l2 - l1) 个 matches), 空间复杂度为 O(1).
+
+leetcode 的官方解答: 
+
+https://leetcode.com/problems/permutation-in-string/solution/
+
+其中需要注意的是解法一 Approach #1 Brute Force [Time Limit Exceeded], 虽然这个方法超时了, 但是其中用于求 permutation 的方法可以借鉴. (这种解法的思路是求出 s1 的所有 permutation, 
+
+然后判断 s2 是否含有这个 permutation). permutation 使用递归求解, 下面是根据上面的解答写的对字符串进行排列的代码, 可能会有 bug, 但目前我使用了几个测试用例均能得到正确解答. (当然, 世家你复杂度是非常高的... (O(n!)))
 
 ```cpp
 class Solution {
-public:
-    string intToRoman(int num) {
-        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-        vector<string> symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-        string res = "";
-        for (int i = 0; num > 0; ++i) {
-            while (num >= choices[i]) {
-                res += symbols[i];
-                num -= choices[i];
+private:
+  	// permutation(s, index) 表示求 s[index...] 字符串的所有排列.
+    vector<string> permutation(string &s, int index) {
+      	// 如果 s[index...] 长度为 1, 那么直接返回
+        if (index == s.size() - 1)
+            return vector<string>{s.substr(index, 1)};
+        vector<string> res;
+      	// 求每一个排列时, 将 s[index] 和当前访问的元素 s[i] 进行交换,
+      	// 然后再求 s[index + 1....] 的所有排列, 再将 s[index] 放在这些
+      	// 排列的前面即可. 注意最后要将 s[index] 和 s[i] 交换回来, 以免
+      	// 重复计算. 上面 leetcode 解答中有个图很好的演示了这个过程, 我在这里简要画一下.
+      	// 对于 [1 2 3] 的所有排列:
+      	//                        [1 2 3]
+      	//            /              |              \
+      	//      [1 2 3]           [2 1 3]          [3 2 1]
+      	//  [1 2 3] [1 3 2]   [2 1 3] [2 3 1]   [3 2 1] [3 1 2]
+        for (int i = index; i < s.size(); ++i) {
+            std::swap(s[index], s[i]);
+            auto vec = permutation(s, index + 1);
+            for (auto &ele : vec) {
+                res.push_back(s.substr(index, 1) + ele);
             }
+            std::swap(s[index], s[i]);
         }
         return res;
     }
-};
-```
-
-或者:
-
-```cpp
-class Solution {
 public:
-    string intToRoman(int num) {
-        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-        vector<string> symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-        string res = "";
-        for (int i = 0; num > 0; ) {
-            if (num >= choices[i]) {
-                res += symbols[i];
-                num -= choices[i];
-            }
-            else
-                i ++;
-        }
-        return res;
+    vector<string> permutation(string s) {
+        return permutation(s, 0);
     }
 };
 ```
-
-
 
 
 
@@ -2330,6 +2298,401 @@ public:
 
 
 
+### 12. **Integer to Roman
+
+https://leetcode.com/problems/integer-to-roman/description/
+
+罗马数字如下:
+
+```bash
+Symbol       Value
+I             1
+V             5
+X             10
+L             50
+C             100
+D             500
+M             1000
+```
+
+For example, two is written as `II` in Roman numeral, just two one's added together. Twelve is written as, `XII`, which is simply `X` + `II`. The number twenty seven is written as `XXVII`, which is `XX` + `V` + `II`.
+
+另外, 罗马数字一般从左到右数字依次减小. 但是有以下特殊的情况, 比如 4 不是 `IIII` 而是 `IV`. 另外, 还有如下的情况:
+
+- `I` can be placed before `V` (5) and `X` (10) to make 4 and 9. 
+- `X` can be placed before `L` (50) and `C` (100) to make 40 and 90. 
+- `C` can be placed before `D` (500) and `M` (1000) to make 400 and 900.
+
+现在给定一个整数, 将其转换为一个罗马数字. 输入保证为 1 ~ 3999 之间. 比如:
+
+**Example 1:**
+
+```bash
+Input: 3
+Output: "III"
+```
+
+**Example 2:**
+
+```bash
+Input: 4
+Output: "IV"
+```
+
+**Example 3:**
+
+```bash
+Input: 9
+Output: "IX"
+```
+
+**Example 4:**
+
+```bash
+Input: 58
+Output: "LVIII"
+Explanation: C = 100, L = 50, XXX = 30 and III = 3.
+```
+
+**Example 5:**
+
+```bash
+Input: 1994
+Output: "MCMXCIV"
+Explanation: M = 1000, CM = 900, XC = 90 and IV = 4.
+```
+
+
+
+思路: 从第 5 个例子可以看出, 罗马数字中的数字求和就是输入. 而且由于从左向右依次减小, 并且由于罗马数字是有限的, 那么可以先构建一个表:
+
+```cpp
+    unordered_map<int, string> symbols = {
+        {1, "I"},
+        {4, "IV"},
+        {5, "V"},
+        {9, "IX"},
+        {10, "X"},
+        {40, "XL"},
+        {50, "L"},
+        {90, "XC"},
+        {100, "C"},
+        {400, "CD"},
+        {500, "D"},
+        {900, "CM"},
+        {1000, "M"},
+    };
+```
+
+之后从 1000 开始, 判断输入 num 是否比 1000 大, 如果小于 1000, 那么判断是否比 900 小, 然后继续这个过程, 每次去找第一个比 num 小的数.
+
+好, 现在拿 1994 上面第五个例子来说, 由于 1994 比 1000 大, 所以用 num 减去 1000, 结果为 994, 此时 res 变为 `M`, 由于 994 比 900 大, 所以 res 变为 `MCM`, 而 994 减 900 为 94.
+
+过程大致如此, 当在 symbols 中第一个小于 num 的数为 `symbols[i]`, 那么当 `num2 = num - symbols[i]` 后, 下一次迭代还要判断 `num2` 是否比 `symbols[i]` 大.
+
+下面是代码:
+
+```cpp
+class Solution {
+private:
+    unordered_map<int, string> symbols = {
+        {1, "I"},
+        {4, "IV"},
+        {5, "V"},
+        {9, "IX"},
+        {10, "X"},
+        {40, "XL"},
+        {50, "L"},
+        {90, "XC"},
+        {100, "C"},
+        {400, "CD"},
+        {500, "D"},
+        {900, "CM"},
+        {1000, "M"},
+    };
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        string res;
+      	// 注意当 num 小于或等于 0 的时候就不需要判断了.
+        for (int i = 0; i < choices.size() && num > 0; ) {
+            if (num >= choices[i]) {
+                res += symbols[choices[i]];
+                num -= choices[i];
+            }
+            else
+                i ++;
+        }
+        return res;
+    }
+};
+```
+
+注意上面的代码可以简化:
+
+```cpp
+class Solution {
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        vector<string> symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        string res = "";
+        for (int i = 0; num > 0; ++i) {
+            while (num >= choices[i]) {
+                res += symbols[i];
+                num -= choices[i];
+            }
+        }
+        return res;
+    }
+};
+```
+
+或者:
+
+```cpp
+class Solution {
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        vector<string> symbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        string res = "";
+        for (int i = 0; num > 0; ) {
+            if (num >= choices[i]) {
+                res += symbols[i];
+                num -= choices[i];
+            }
+            else
+                i ++;
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 13. *Roman to Integer
+
+https://leetcode.com/problems/roman-to-integer/description/
+
+承接上一题 12. Integer to Roman. 现在要将罗马数字转换为整数. 
+
+
+
+思路: 由于题意中已经说明, 罗马数字总是从左往右读, 只要累加其中的数字即可. 主要注意 4, 40, 90 等情况(IV, XL, XC 等).
+
+```cpp
+class Solution {
+private:
+    unordered_map<string, int> symbols = {
+        {"I", 1},
+        {"IV", 4},
+        {"V", 5},
+        {"IX", 9},
+        {"X", 10},
+        {"XL", 40},
+        {"L", 50},
+        {"XC", 90},
+        {"C", 100},
+        {"CD", 400},
+        {"D", 500},
+        {"CM", 900},
+        {"M", 1000},
+    };
+public:
+    int romanToInt(string s) {
+        int res = 0;
+        for (int i = 0; i < s.size(); ) {
+          	// 判断 s[i, i+1] 是不是在 symbols, 在的话, 就把表示的数给加上.
+            if (i + 1 < s.size() && symbols.find(s.substr(i, 2)) != symbols.end()) {
+                res += symbols[s.substr(i, 2)];
+                i += 2;
+            }
+            else {
+                res += symbols[s.substr(i, 1)];
+                i += 1;
+            }  
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 453. *Minimum Moves to Equal Array Elements
+
+https://leetcode.com/problems/minimum-moves-to-equal-array-elements/description/
+
+Given a **non-empty** integer array of size *n*, find the minimum number of moves required to make all array elements equal, where a move is incrementing *n* - 1 elements by 1.
+
+**Example:**
+
+```bash
+Input:
+[1,2,3]
+
+Output:
+3
+
+Explanation:
+Only three moves are needed (remember each move increments two elements):
+
+[1,2,3]  =>  [2,3,3]  =>  [3,4,3]  =>  [4,4,4]
+```
+
+
+
+思路: 实际上这是一道数学题, 如果没有得到如下的公式, 恐怕很难通过所有的测试用例. 参考:
+
+[It is a math question](https://leetcode.com/problems/minimum-moves-to-equal-array-elements/discuss/93817/It-is-a-math-question)
+
+let's define sum as the sum of all the numbers, before any moves; minNum as the min number int the list; n is the length of the list;
+
+After, say m moves, we get all the numbers as x , and we will get the following equation
+
+```bash
+ sum + m * (n - 1) = x * n
+```
+
+and actually,
+
+```bash
+  x = minNum + m
+```
+
+and finally, we will get
+
+```bash
+  sum - minNum * n = m
+```
+
+So, it is clear and easy now.
+
+也就是说, 必须注意到, 数组中的最小值 minNum 在经过 m 次变化之后的值为 `minNum + m`, 并且等于其他值 `x = minNum + m`, 此时总和一方面可以通过初始的 sum 加上 `m * (n - 1)` 计算, 或者通过最终数组中所有值都相等进行计算 `n * x`, 那么可以得到公式 `m = sum - minNum * n`.
+
+```cpp
+class Solution {
+public:
+    int minMoves(vector<int>& nums) {
+        int sum = std::accumulate(nums.begin(), nums.end(), 0);
+        int imin = *std::min_element(nums.begin(), nums.end());
+        return (sum - imin * nums.size());
+    }
+};
+```
+
+最快的做法是在求和的过程中, 将最小值找到:
+
+```cpp
+class Solution {
+public:
+    int minMoves(vector<int>& nums) {
+        int sum, min;
+        sum = nums[0];
+        min = nums[0];
+        for(int i = 1; i < nums.size(); i++){
+            sum += nums[i];
+            if(min > nums[i])   min = nums[i];
+        }
+        return sum - nums.size() * min;
+    }
+};
+```
+
+
+
+### 447. *Number of Boomerangs
+
+https://leetcode.com/problems/number-of-boomerangs/description/
+
+Given *n* points in the plane that are all pairwise distinct, a "boomerang" is a tuple of points `(i, j, k)` such that the distance between `i` and `j` equals the distance between `i` and `k` (**the order of the tuple matters**).
+
+Find the number of boomerangs. You may assume that *n* will be at most **500** and coordinates of points are all in the range **[-10000, 10000]** (inclusive).
+
+**Example:**
+
+```bash
+Input:
+[[0,0],[1,0],[2,0]]
+
+Output:
+2
+
+Explanation:
+The two boomerangs are [[1,0],[0,0],[2,0]] and [[1,0],[2,0],[0,0]]
+```
+
+给定一个 vector, 里面包含 n 个点, 如果 3 个点(索引分别为 i, j, k)满足 `dis(p[i], p[j])` 等于 `dis(p[i], p[k])`, 那么就称 (i, j, k) 为一个 boomerang. 注意 tuple 中的元素的顺序. 现在要统计 boomerang 的个数. 
+
+
+
+思路: 由于 tuple 中有 3 个元素, 可以考虑先固定索引 i, 然后寻找符合条件的 j 和 k. 这样的话, 假设到 i 的节点有 m 个(m >= 2), 那么就可以从这 m 个节点中选出 2 个来, 和 i 一起组成一个 boomerang, 那么总共有 (m * (m - 1)) 中选择.
+
+```cpp
+class Solution {
+private:
+    int distance(pair<int, int> &p1, pair<int, int> &p2) {
+        int a = p1.first - p2.first;
+        int b = p1.second - p2.second;
+        return a * a + b * b;
+    }
+public:
+    int numberOfBoomerangs(vector<pair<int, int>>& points) {
+        int res = 0;
+        const int rows = points.size();
+        for (int i = 0; i < rows; ++i) {
+          	// 注意此时 record 在 i 固定时产生, 第二个参数保存索引.
+            unordered_map<int, vector<int>> record;
+            for (int j = 0; j < rows; ++j) {
+                if (j == i) continue; // 节点自身不用考虑.
+                record[distance(points[j], points[i])].push_back(j);
+            }
+          	// record 中此时保存的是到 points[i] 的距离相同的所有节点.
+            for (auto &iter : record) {
+                int size = iter.second.size();
+                if (size >= 2) res += size * (size - 1);
+            }
+        }
+        return res;
+    }
+};
+```
+
+上面速度稍慢, 改成下面加快速度: 使用了关联型容器的 clear 方法.
+
+```cpp
+class Solution {
+private:
+    int distance(pair<int, int> &p1, pair<int, int> &p2) {
+        int a = p1.first - p2.first;
+        int b = p1.second - p2.second;
+        return a * a + b * b;
+    }
+public:
+    int numberOfBoomerangs(vector<pair<int, int>>& points) {
+        int res = 0;
+      	// record的第二个参数保存索引的个数
+        unordered_map<int, int> record;
+        const int rows = points.size();
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < rows; ++j) {
+                if (j != i)
+                    record[distance(points[j], points[i])] ++;
+            }
+          	// 如果 record 中只有一个索引, 结果为 0.
+            for (auto &iter : record)
+                res += iter.second * (iter.second - 1);
+            record.clear();
+        }
+        return res;
+    }
+};
+```
+
+
+
 
 
 ## 二分搜索
@@ -2632,3 +2995,92 @@ public:
 
 
 
+### 441. *Arranging Coins
+
+https://leetcode.com/problems/arranging-coins/description/
+
+将 n 个硬币摆成阶梯状, 找到能完整形成一层阶梯的个数. 完整形成一层阶梯是指第 k 行刚好有 k 个硬币.(k 以 1 开始索引.)
+
+n 是非负的 32bit int. 比如 n = 8, 可以摆成:
+
+```bash
+*
+* *
+* * *
+* *
+
+# 由于第 4 行只能放下 2 个硬币, 所以最后只能形成 3 层完整的阶梯, 所以返回 3.
+```
+
+
+
+思路 1: 这道题没有要求必须使用二分查找, 如果一下子没有想到二分查找, 可以先考虑 O(n) 的方法, 即对阶梯数进行累加, 然后统计能形成完整阶梯的层数.
+
+```cpp
+class Solution {
+public:
+    int arrangeCoins(int n) {
+      	// 注意 num 是最后的和, 但由于会累加很多数, 比如 n=2^31 - 1, 那么 num
+      	// 如果是 int 就会出问题, 因此用 long long.
+        long long num = 0;
+        int k = 0;
+        while (num <= n) {
+            ++ k;
+            num += k;
+        }
+      	// 注意最后返回 k - 1, 不管while 中 num 有没有等于 n, k 总是被 ++
+        return k - 1;
+    }
+};
+```
+
+下面这种写法也是可以的, 使用减法而不是加法:
+
+```cpp
+class Solution {
+public:
+    int arrangeCoins(int n) {
+        int i = 1;
+        while(n >= i) n -= i, i++;
+        return i - 1;
+    }
+};
+```
+
+思路二: 使用二分查找, 有求和公式为 `(k + 1) * k / 2`, 那么 k 的范围为 1 ~ n, 查找满足 `k * (k + 1) <= 2 * n` 的 k 值即可.
+
+```cpp
+class Solution {
+public:
+    int arrangeCoins(int n) {
+        long m = (long)n;
+        long l = 1, r = m;
+        while (l <= r) {
+            long mid = l + (r - l) / 2;
+            if (mid * (mid + 1) == 2 * m)
+                return (int)mid;
+            if (mid * (mid + 1) < 2 * m)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+        return (int)(l - 1);
+    }
+};
+```
+
+思路三: 使用公式直接计算:
+
+[Java O(1) Solution - Math Problem](https://leetcode.com/problems/arranging-coins/discuss/92298/Java-O(1)-Solution-Math-Problem)
+
+The idea is about quadratic equation, the formula to get the sum of arithmetic progression is
+sum = (x + 1) * x / 2
+so for this problem, if we know the the sum, then we can know the x = (-1 + sqrt(8 * n + 1)) / 2
+
+```java
+public class Solution {
+    public int arrangeCoins(int n) {
+        return (int)((-1 + Math.sqrt(1 + 8 * (long)n)) / 2);
+    }
+}
+```
