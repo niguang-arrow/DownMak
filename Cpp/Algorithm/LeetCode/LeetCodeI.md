@@ -3084,3 +3084,98 @@ public class Solution {
     }
 }
 ```
+
+
+### 367. *Valid Perfect Square
+
+https://leetcode.com/problems/valid-perfect-square/description/
+
+给定一个正整数, 判断它是不是完全平方数, 注意不能使用标准库提供的 `sqrt` 函数.
+
+
+
+思路1: 使用二分搜索, 判断 `[1, num]` 范围内的数的平方是不是等于 num.
+
+注意看下面的代码, 非常简单是吧, 其实不然...  
+
+```cpp
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        long long l = 1, r = num;
+        while (l <= r) {
+            long long mid = l + (r - l) / 2;
+            long long res = mid * mid;
+            if (res == num)
+                return true;
+            else if (res < num)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+        return false;
+    }
+};
+```
+
+注意看 l 和 r 以及其他的变量都是 `long long` 类型, 如果都改成 int 类型, 会出现什么情况呢? 
+
+当 num 为 `INT32_MAX = 2147483647` 时, 下面代码:
+
+```cpp
+// 注意下面代码是错误的, 仅做展示用.
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        int l = 1, r = num;
+        int count = 0;
+        while (l <= r && count < 10) {
+            int mid = l + (r - l) / 2;
+            cout << l << " " << r << " " << mid << endl;
+            long long res = mid * mid;
+            cout << res << endl;
+            count ++;
+            if (res == num)
+                return true;
+            else if (res < num)
+                l = mid + 1;
+            else
+                r = mid - 1;
+        }
+        return false;
+    }
+};
+// 第一个输出:
+1 2147483647 1073741824
+0
+```
+
+为什么 res 会输出 0 呢? 当然是发生溢出了, 具体求值的方法给忘了, 可以看下 <深入理解计算机系统>. 这就是为什么上面代码会错误的原因.
+
+leetcode 上还有牛顿法以及对 `1 + 3 + 5 + ... 求极限:`
+
+[A square number is 1+3+5+7+..., JAVA code](https://leetcode.com/problems/valid-perfect-square/discuss/83874/A-square-number-is-1+3+5+7+...-JAVA-code)
+
+```java
+public boolean isPerfectSquare(int num) {
+     int i = 1;
+     while (num > 0) {
+         num -= i;
+         i += 2;
+     }
+     return num == 0;
+ }
+```
+
+The time complexity is **O(sqrt(n))**
+
+```java
+public boolean isPerfectSquare(int num) {
+        long x = num;
+        while (x * x > num) {
+            x = (x + num / x) >> 1;
+        }
+        return x * x == num;
+    }
+```
+

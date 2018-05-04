@@ -42,39 +42,11 @@ void preOrder(TreeNode *root) {
 }
 
 
-class Solution {
-private:
-    struct Comp {
-        bool operator()(const pair<char, int> &p1, const pair<char, int> &p2) {
-            if (p1.first < p2.first)
-                return true;
-            else if (p1.first == p2.first && p1.second > p2.second)
-                return true;
-            return false;
-        }
-    };
-public:
-    int maximumSwap(int num) {
-        string s = to_string(num);
-        priority_queue<pair<char, int>, vector<pair<char, int>>, Comp> maxHeap;
-        for (int i = 0; i < s.size(); ++i)
-            maxHeap.push(make_pair(s[i], i));
-
-
-        int i = 0, index = -1;
-        while (!maxHeap.empty()) {
-            auto p = maxHeap.top();
-            maxHeap.pop();
-            index = p.second;
-            if (index != i) 
-                break;
-            ++i;
-        }
-        if (i < s.size())
-            std::swap(s[index], s[i]);
-        return std::stoi(s);
-    }
-};
+//class Solution {
+//public:
+    //int kthSmallest(vector<vector<int>>& matrix, int k) {
+    //}
+//};
 
 int main() {
     TreeNode *root = new TreeNode(1);
@@ -101,9 +73,9 @@ int main() {
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     vector<int> nums = {1, 2, 3, 4};
     //string input = "owoztneoer";
-    auto res = Solution().maximumSwap(1);
-    cout << res << endl;
-    //cout << std::boolalpha << res << endl;
+    auto res = Solution().isPerfectSquare(INT32_MAX);
+    //cout << res << endl;
+    cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
     //cout << res << endl;
