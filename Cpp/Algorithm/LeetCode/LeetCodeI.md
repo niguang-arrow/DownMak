@@ -2695,6 +2695,49 @@ public:
 
 
 
+### 263. *Ugly Number
+
+https://leetcode.com/problems/ugly-number/description/
+
+判断一个给定的整数是不是 Ugly Number. Ugly Number 的定义是: 如果某个正整数的质因子只有 2, 3, 5, 那么它就是 Ugly Nunber. 比如 6, 8 就是 Ugly Number, 而 14 则不适合, 因为 14 含有质因子 7. 一般来说, 1 被认为是 Ugly Number. 另外, 测试用例中输入的数是 32bit 的有符号整数.
+
+
+
+思路: 首先要注意输入是有符号整数, 那么负数和 0 都被认为不是 UN. 对于正整数 num, 可以不断地使用 2, 3, 5 对其进行整除, 最后判断 num 是不是等于 1. 如果相等, 说明 num 总是以 2, 3, 5 为质因子, 如果不相等, 那么不是 UN.
+
+```cpp
+class Solution {
+public:
+    bool isUgly(int num) {
+        if (num <= 0) return false;
+        while (num % 2 == 0) num /= 2;
+        while (num % 3 == 0) num /= 3;
+        while (num % 5 == 0) num /= 5;
+        return num == 1;
+    }
+};
+```
+
+leetcode 的讨论中还有更简洁的代码:
+
+[2-4 lines, every language](https://leetcode.com/problems/ugly-number/discuss/69214/2-4-lines-every-language)
+
+Just divide by 2, 3 and 5 as often as possible and then check whether we arrived at 1. Also try divisor 4 if that makes the code simpler / less repetitive.
+
+```cpp
+if (num > 0)
+    for (int i=2; i<6; i++)
+        while (num % i == 0)
+            num /= i;
+return num == 1;
+```
+
+
+
+
+
+
+
 ## 二分搜索
 
 ### 34. **Search for a Range
@@ -3177,5 +3220,37 @@ public boolean isPerfectSquare(int num) {
         }
         return x * x == num;
     }
+```
+
+
+
+### 278. *First Bad Version
+
+https://leetcode.com/problems/first-bad-version/description/
+
+给定 `[1, 2, 3,..., n]`, 其中某个元素 m 表示第 m 个版本的 API, 如果第 m 个版本的 API 有 bug, 那么之后版本的 API 都有 bug. 现在要查找第一个有 bug 的 API 是哪个版本.
+
+
+
+思路: 使用二分搜索, 相当于找 lower_bound.
+
+```cpp
+// Forward declaration of isBadVersion API.
+bool isBadVersion(int version);
+
+class Solution {
+public:
+    int firstBadVersion(int n) {
+        int l = 1, r = n;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (isBadVersion(mid))
+                r = mid - 1;
+            else
+                l = mid + 1;
+        }
+        return l;
+    }
+};
 ```
 

@@ -42,6 +42,17 @@ void preOrder(TreeNode *root) {
 }
 
 
+class Solution {
+public:
+    bool isUgly(int num) {
+        if (num <= 0) return false;
+        if (num == 1) return true;
+        if ((num % 2 != 0) && (num % 3 != 0) && num % 5 != 0))
+            return false;
+        return isUgly(num / 2) || isUgly(num / 3) || isUgly(num / 5);
+    }
+};
+
 //class Solution {
 //public:
     //int kthSmallest(vector<vector<int>>& matrix, int k) {
@@ -71,11 +82,11 @@ int main() {
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
-    vector<int> nums = {1, 2, 3, 4};
+    vector<int> nums = {1, 3, 2, 4};
     //string input = "owoztneoer";
-    auto res = Solution().isPerfectSquare(INT32_MAX);
+    auto res = Solution().findErrorNums(nums);
     //cout << res << endl;
-    cout << std::boolalpha << res << endl;
+    //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
     //cout << res << endl;
@@ -88,7 +99,7 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    //for (auto &d : res)
-        //cout << d << " ";
-    //cout << endl;
+    for (auto &d : res)
+        cout << d << " ";
+    cout << endl;
 }
