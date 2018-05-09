@@ -1236,9 +1236,136 @@ public:
 
 
 
+### 264. **Ugly Number II
+
+https://leetcode.com/problems/ugly-number-ii/description/
+
+承接 263. Ugly Number, 现在要求的是第 n 个 Ugly Number 是谁?
+
+Write a program to find the `n`-th ugly number.
+
+Ugly numbers are positive numbers whose prime factors only include `2, 3, 5`. For example, `1, 2, 3, 4, 5, 6, 8, 9, 10, 12` is the sequence of the first `10` ugly numbers.
+
+Note that `1` is typically treated as an ugly number, and *n* **does not exceed 1690**.
 
 
 
+思路: 动态规划求解. 如果使用比较直观的解法, 会超时, 比如不断递增 `i`, 然后判断每个 i 是不是 Ugly Number(这可以使用 263 题的代码). 动态规划的方法参考 leetcode 的讨论: [My 16ms C++ DP solution with short explanation](https://leetcode.com/problems/ugly-number-ii/discuss/69364/My-16ms-C++-DP-solution-with-short-explanation):
+
+We have an array *k* of first n ugly number. We only know, at the beginning, the first one, which is 1. Then
+
+k[1] = min( k[0]x2, k[0]x3, k[0]x5). The answer is k[0]x2. So we move 2's pointer to 1(这一句话看代码就明白了). Then we test:
+
+k[2] = min( k[1]x2, k[0]x3, k[0]x5). And so on. Be careful about the cases such as 6, in which we need to forward both pointers of 2 and 3.
+
+x here is multiplication.(上面的符号 x 表示乘积)
+
+```cpp
+class Solution {
+public:
+    int nthUglyNumber(int n) {
+        if (n <= 0) return 0; // get rid of corner cases
+        if (n == 1) return 1; // base case
+        int p1 = 0, p2 = 0, p3 = 0;  // pointers for 2, 3, 5, 即索引.
+        vector<int> k(n);
+        k[p1] = k[p2] = k[p3] = 1; // 初始化都为 1;
+        for (int i = 1; i < n; ++i) { // 注意这里 i 从 1 开始.
+            k[i] = min(k[p1] * 2, min(k[p2] * 3, k[p3] * 5));
+            if (k[i] == 2 * k[p1]) p1++;
+            if (k[i] == 3 * k[p2]) p2++;
+            if (k[i] == 5 * k[p3]) p3++;
+        }
+        return k[n - 1];
+    }
+};
+```
+
+leetcode 上还有更详细的讨论:
+
+[O(n) Java solution](https://leetcode.com/problems/ugly-number-ii/discuss/69362/O(n)-Java-solution) 
+
+即所有的 Ugly Number 是由比它们更小的 UN 乘上 2, 3, 5 得到的, 因此, 我们可以得到如下的 3 个序列. 由于这 3 个序列每一个都是已排好序的, 下面要做的就是对 3 个序列进行归并排序, 比较每个序列的最小值, 如果得到第 i 个序列的最小值, 那么就需要将第 i 个序列的指针向后移动. 需要注意的情况是: 比如 6, 它既可以是 3 * 2, 也可以是 2 * 3, 此种情况下, 序列 1 和序列 2 的指针要同时向后移动一位, 这也就是前一个讨论中提到的情况.
+
+The ugly-number sequence is 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, …
+because every number can only be divided by 2, 3, 5, one way to look at the sequence is to split the sequence to three groups as below:
+
+```bash
+(1) 1×2, 2×2, 3×2, 4×2, 5×2, …
+(2) 1×3, 2×3, 3×3, 4×3, 5×3, …
+(3) 1×5, 2×5, 3×5, 4×5, 5×5, …
+```
+
+We can find that every subsequence is the ugly-sequence itself (1, 2, 3, 4, 5, …) multiply 2, 3, 5.
+
+Then we use similar merge method as merge sort, to get every ugly number from the three subsequence.
+
+Every step we choose the smallest one, and move one step after,including nums with same value.
+
+另外, 还有一种使用优先队列(最小堆的方法):
+
+参考的是: [Java solution -- using PriorityQueue](https://leetcode.com/problems/ugly-number-ii/discuss/69372/Java-solution-using-PriorityQueue)
+
+速度慢一些, 但思路也非常清晰, 下面代码是我用 C++ 重写的.
+
+```cpp
+class Solution {
+public:
+    int nthUglyNumber(int n) {
+        if (n <= 0) return 0;
+        if (n == 1) return 1;
+        priority_queue<long, vector<long>, std::greater<long>> q;
+        q.push(1l);
+        for (int i = 1; i < n; ++i) {
+            long tmp = q.top();
+            q.pop();
+          	// 处理堆中值相同的情况, 比如 2 * 3 和 3 * 2.
+            while (!q.empty() && q.top() == tmp) q.pop();
+            q.push(tmp * 2);
+            q.push(tmp * 3);
+            q.push(tmp * 5);
+        }
+        return (int)q.top();
+    }
+};
+
+```
+
+
+
+### 313. **Super Ugly Number
+
+https://leetcode.com/problems/super-ugly-number/description/
+
+查找第 n 个 Super Ugly Number, 这道题承接 264. Ugly Number II, 此题给定一个质数列表 primes, (题 264 只给定了 2, 3, 5 这三个数), Super Ugly Number 的质因数只能从这个列表中取得. primes 已经从小到大排好序了. 比如:
+
+For example, `[1, 2, 4, 7, 8, 13, 14, 16, 19, 26, 28, 32] `is the sequence of the first 12 super ugly numbers given `primes` = `[2, 7, 13, 19]` of size 4.
+
+
+
+思路: 和题 264 的思路一样, 针对 primes 中的每个质数指定一个指针 p1 ~ pk, n 个 SUN 保存在数组 k 中, 对于第 i 个 SUN, 它是由 `min(k[p1] * primes[1], k[p2] * primes[2], ..., k[pk] * primes[k])` 得到的, 简单修改一下 264 的代码即可. 但注意, n 其实不能超过 1690, 否则会溢出. 这道题却说 n 最大可以到 10^6, 这是不对的.
+
+```cpp
+class Solution {
+public:
+    int nthSuperUglyNumber(int n, vector<int>& primes) {
+        vector<int> k(n);
+        vector<int> idx(primes.size(), 0);
+        k[0] = 1;
+        for (int i = 1; i < n; ++i) {
+            int imin = INT32_MAX;
+            for (int j = 0; j < primes.size(); ++j)
+                imin = min(imin, k[idx[j]] * primes[j]);
+            k[i] = imin;
+            for (int j = 0; j < primes.size(); ++j)
+                if (imin == k[idx[j]] * primes[j])
+                    idx[j] ++;
+        }
+        return k[n - 1];
+    }
+};
+```
+
+ 
 
 
 

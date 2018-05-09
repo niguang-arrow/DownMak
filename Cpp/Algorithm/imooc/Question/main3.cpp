@@ -41,15 +41,31 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-
 class Solution {
 public:
-    bool isUgly(int num) {
-        if (num <= 0) return false;
-        if (num == 1) return true;
-        if ((num % 2 != 0) && (num % 3 != 0) && num % 5 != 0))
-            return false;
-        return isUgly(num / 2) || isUgly(num / 3) || isUgly(num / 5);
+    int findLHS(vector<int>& nums) {
+        std::sort(nums.begin(), nums.end());
+        int pre_count = 1, res = 0;
+        for (int i = 1; i < nums.size(); ++i) {
+            int count = 0;
+            if (nums[i] - nums[i - 1] == 1) {
+                while (i < nums.size() - 1 && nums[i] == nums[i + 1]) {
+                    count ++;
+                    i ++;
+                }
+                res = max(res, count + pre_count);
+                pre_count = count;
+            }
+            else {
+                while (i < nums.size() - 1 && nums[i] == nums[i + 1]) {
+                    count ++;
+                    i ++;
+                }
+                pre_count = count;
+            }
+            cout << i << " : " << nums[i] << " : " << count << endl;
+        }
+        return res;
     }
 };
 
@@ -82,10 +98,10 @@ int main() {
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
-    vector<int> nums = {1, 3, 2, 4};
+    vector<int> nums = {1, 2, 2, 2, 3, 3, 3, 3, 7};
     //string input = "owoztneoer";
-    auto res = Solution().findErrorNums(nums);
-    //cout << res << endl;
+    auto res = Solution().findLHS(nums);
+    cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
@@ -99,7 +115,7 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    for (auto &d : res)
-        cout << d << " ";
-    cout << endl;
+    //for (auto &d : res)
+        //cout << d << " ";
+    //cout << endl;
 }
