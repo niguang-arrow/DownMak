@@ -43,28 +43,21 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    int findLHS(vector<int>& nums) {
-        std::sort(nums.begin(), nums.end());
-        int pre_count = 1, res = 0;
-        for (int i = 1; i < nums.size(); ++i) {
-            int count = 0;
-            if (nums[i] - nums[i - 1] == 1) {
-                while (i < nums.size() - 1 && nums[i] == nums[i + 1]) {
-                    count ++;
-                    i ++;
-                }
-                res = max(res, count + pre_count);
-                pre_count = count;
+    vector<int> nextGreaterElement(vector<int>& findNums, vector<int>& nums) {
+        vector<int> res(findNums.size(), -1);
+        stack<int> s;
+        unordered_map<int, int> record; // nums[i] -> index of nums[nextGreaterElement]
+        for (int i = 0; i < nums.size(); ++i) {
+            while (!s.empty() && nums[i] > nums[s.top()]) {
+                record[nums[s.top()]] = i;
+                s.pop();
             }
-            else {
-                while (i < nums.size() - 1 && nums[i] == nums[i + 1]) {
-                    count ++;
-                    i ++;
-                }
-                pre_count = count;
-            }
-            cout << i << " : " << nums[i] << " : " << count << endl;
+            s.push(i);
         }
+        for (int i = 0; i < findNums.size(); ++i)
+            if (record.count(findNums[i]))
+                res[i] = record[findNums[i]];
+
         return res;
     }
 };
@@ -98,10 +91,11 @@ int main() {
     //string word = "ABCESEEEFS";
    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
-    vector<int> nums = {1, 2, 2, 2, 3, 3, 3, 3, 7};
+    vector<int> nums1 = {2, 4};
+    vector<int> nums = {1, 2, 3, 4};
     //string input = "owoztneoer";
-    auto res = Solution().findLHS(nums);
-    cout << res << endl;
+    auto res = Solution().nextGreaterElement(nums1, nums);
+    //cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
@@ -115,7 +109,7 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    //for (auto &d : res)
-        //cout << d << " ";
-    //cout << endl;
+    for (auto &d : res)
+        cout << d << " ";
+    cout << endl;
 }
