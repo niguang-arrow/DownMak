@@ -41,23 +41,41 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-class Solution {
-public:
-    vector<int> nextGreaterElement(vector<int>& findNums, vector<int>& nums) {
-        vector<int> res(findNums.size(), -1);
-        stack<int> s;
-        unordered_map<int, int> record; // nums[i] -> index of nums[nextGreaterElement]
-        for (int i = 0; i < nums.size(); ++i) {
-            while (!s.empty() && nums[i] > nums[s.top()]) {
-                record[nums[s.top()]] = i;
-                s.pop();
-            }
-            s.push(i);
-        }
-        for (int i = 0; i < findNums.size(); ++i)
-            if (record.count(findNums[i]))
-                res[i] = record[findNums[i]];
 
+class Solution {
+private:
+    bool matches(string &word, unordered_map<char, int> &plate) {
+        unordered_map<char, int> record;
+        for (auto &c : word)
+            record[c] ++;
+        
+        // 这里的两个判断条件在思路中解释了.
+        for (auto &iter : plate) {
+            if (!record.count(iter.first) ||
+                (record.count(iter.first) && record[iter.first] < iter.second))
+                return false; 
+        }
+        return true;
+    }
+public:
+    string shortestCompletingWord(string licensePlate, vector<string>& words) {
+      	// 统计 licensePlate 中的字符个数
+        unordered_map<char, int> plate;
+        for (auto &c : licensePlate)
+            if (isalpha(c))
+                plate[tolower(c)] ++;
+        for (auto &iter : plate)
+            cout << iter.first << " " << iter.second << endl;
+		
+        string res;
+        int len = INT32_MAX;
+        for (auto &word : words) {
+          	// 找到长度最短的 word.
+            if (matches(word, plate) && word.size() < len) {
+                res = word;
+                len = word.size();
+            }
+        }
         return res;
     }
 };
@@ -69,12 +87,12 @@ public:
 //};
 
 int main() {
-    TreeNode *root = new TreeNode(1);
+    TreeNode *root = new TreeNode(3);
     root->left = new TreeNode(2);
     root->right = new TreeNode(5);
     root->right->right = new TreeNode(6);
-    root->left->left = new TreeNode(3);
-    root->left->right = new TreeNode(4);
+    root->right->left = new TreeNode(4);
+    root->left->left = new TreeNode(1);
     //root->left->right->left = new TreeNode(7);
     //root->left->right->right = new TreeNode(9);
     //root->right->right = new TreeNode(17);
@@ -93,9 +111,10 @@ int main() {
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     vector<int> nums1 = {2, 4};
     vector<int> nums = {1, 2, 3, 4};
-    //string input = "owoztneoer";
-    auto res = Solution().nextGreaterElement(nums1, nums);
-    //cout << res << endl;
+    string input = "1s3 PSt";
+    vector<string> words = {"step","steps","stripe","stepple"};
+    auto res = Solution().shortestCompletingWord(input, words);
+    cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
@@ -109,7 +128,7 @@ int main() {
     //printLinkedList(res);
     //cout << res << endl;
 
-    for (auto &d : res)
-        cout << d << " ";
-    cout << endl;
+    //for (auto &d : res)
+        //cout << d << " ";
+    //cout << endl;
 }

@@ -2,7 +2,7 @@ CC = clang++
 CFLAGS = -Wall -std=c++0x
 CLINKS =
 
-NAME = main3
+NAME = toutiao2
 SRC = $(NAME).cpp
 TAR = $(NAME).out
 
