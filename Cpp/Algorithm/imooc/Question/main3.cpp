@@ -12,6 +12,7 @@
 #include <sstream>
 #include <cassert>
 #include <algorithm>
+#include <iterator>
 #include <cstdlib>
 #include <climits>
 
@@ -44,39 +45,30 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 private:
-    bool matches(string &word, unordered_map<char, int> &plate) {
-        unordered_map<char, int> record;
-        for (auto &c : word)
-            record[c] ++;
-        
-        // 这里的两个判断条件在思路中解释了.
-        for (auto &iter : plate) {
-            if (!record.count(iter.first) ||
-                (record.count(iter.first) && record[iter.first] < iter.second))
-                return false; 
-        }
-        return true;
+    int distance(vector<int> &A, vector<int> &B) {
+        return (A[0] - B[0]) * (A[0] - B[0]) +
+            (A[1] - B[1]) * (A[1] - B[1]);
+    }
+    bool perpendicular(vector<int> &p1, vector<int> &p2, vector<int> &p3) {
+        vector<int> AB = {p2[0] - p1[0], p2[1] - p1[1]};
+        vector<int> BC = {p3[0] - p2[0], p3[1] - p2[1]};
+
+        return (AB[0] * BC[0] + AB[1] * BC[1]) == 0;
     }
 public:
-    string shortestCompletingWord(string licensePlate, vector<string>& words) {
-      	// 统计 licensePlate 中的字符个数
-        unordered_map<char, int> plate;
-        for (auto &c : licensePlate)
-            if (isalpha(c))
-                plate[tolower(c)] ++;
-        for (auto &iter : plate)
-            cout << iter.first << " " << iter.second << endl;
-		
-        string res;
-        int len = INT32_MAX;
-        for (auto &word : words) {
-          	// 找到长度最短的 word.
-            if (matches(word, plate) && word.size() < len) {
-                res = word;
-                len = word.size();
-            }
-        }
-        return res;
+    bool validSquare(vector<int>& p1, vector<int>& p2, vector<int>& p3, vector<int>& p4) {
+        int d12 = distance(p1, p2);
+        int d23 = distance(p2, p3);
+        int d34 = distance(p3, p4);
+        int d41 = distance(p4, p1);
+        if (d12 == d23 && d23 == d34 && d34 == d41 && d41 == d12 &&
+            perpendicular(p2, p1, p4) &&
+            perpendicular(p1, p2, p3) &&
+            perpendicular(p3, p4, p1) &&
+            perpendicular(p4, p1, p2))
+            return true;
+
+        return false;
     }
 };
 
@@ -111,9 +103,9 @@ int main() {
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     vector<int> nums1 = {2, 4};
     vector<int> nums = {1, 2, 3, 4};
-    string input = "1s3 PSt";
-    vector<string> words = {"step","steps","stripe","stepple"};
-    auto res = Solution().shortestCompletingWord(input, words);
+    string input = "thecattlewasrattledbythebattery";
+    vector<string> words = {"cat","bat","rat"};
+    auto res = Solution().numMatchingSubseq(input, words);
     cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);

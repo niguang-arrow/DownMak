@@ -602,6 +602,29 @@ public:
 };
 ```
 
+根据下面 63. Unique Paths II 中 leetcode 的讨论, 我得到了如下代码也可以求解:
+
+```cpp
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+        dp[0][1] = 1;
+        for (int i = 1; i <= m; ++i)
+            for (int j = 1; j <= n; ++j)
+                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];
+        
+        return dp[m][n];
+    }
+};
+```
+
+可以发现上面的代码非常简洁. 注意两点: 
+
++ dp 设置为 (m+1) * (n+1) 大小, 在原矩阵上方和左方分别增加了一行和一列, 那么原矩阵 (0, 0) 的位置就是 dp 中 (1, 1) 的位置. 因此最终返回的结果是 `dp[m][n]`
++ 注意 dp 初始化为 0, 并且 `dp[0][1]` 设置为 1. 这样的好处是, 在下面的两个循环中, 就不用判断边界条件了. 比如要求 `dp[1][1]`(也就是到达原矩阵 (0, 0) 位置时的方法), 结果就是 1.
+
 看看 leetcode 上关于这道题的精彩讨论:
 
 [0ms, 5-lines DP Solution in C++ with Explanations](https://leetcode.com/problems/unique-paths/discuss/22954/0ms-5-lines-DP-Solution-in-C++-with-Explanations)
@@ -712,6 +735,10 @@ public:
     } 
 };
 ```
+
+好吧, 终于明白了(一部分解释可以看看上面 62 题 Unique Paths, 这道题在原矩阵的左边和上面分别增加了一列和一行). dp 初始化为 0, 并且令 `dp[0][1]` 这个超出原矩阵边界的位置处的值为 1, 使得后面处理边界条件极其方便, 只需要考虑 obstacle 即可. 所以上面的代码能如此简洁.
+
+
 
 
 

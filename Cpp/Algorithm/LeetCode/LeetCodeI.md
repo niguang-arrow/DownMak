@@ -2736,6 +2736,62 @@ return num == 1;
 
 
 
+### 593. **Valid Square
+
+https://leetcode.com/problems/valid-square/description/
+
+给定 2D 平面上的 4 个点, 判断它们能否组成一个正方形.
+
+**Example:**
+
+```bash
+Input: p1 = [0,0], p2 = [1,1], p3 = [1,0], p4 = [0,1]
+Output: True
+```
+
+Note:
+
+1. All the input integers are in the range [-10000, 10000].
+2. A valid square has four equal sides with positive length and four equal angles (90-degree angles).
+3. Input points have no order.
+
+
+
+思路: 参考: [C++ 3 lines (unordered_set)](https://leetcode.com/problems/valid-square/discuss/103442/C++-3-lines-(unordered_set))
+
+If we calculate all distances between 4 points, 4 smaller distances should be equal (sides), and 2 larger distances should be equal too (diagonals). As an optimization, we can compare squares of the distances, so we do not have to deal with the square root and precision loss.
+
+Therefore, our set will only contain 2 unique distances in case of square (beware of the zero distance though).
+
+总之, 即求出 4 条边以及 2 条对角线的长度, 保存到一个 set 中, 如果是正方形的话, set 的大小就是 2, 因为 4 条边都相等, 以及 2 条对角线长度也相等. 但是要注意 set 中不能有 0, 比如 4 个点位置如下:
+
+```bash
+  p1(p2) ---------- p3(p4)
+```
+
+它们只能得到一条直线而不是一个正方形.
+
+```cpp
+class Solution {
+private:
+    int d(vector<int> &A, vector<int> &B) {
+        return (A[0] - B[0]) * (A[0] - B[0]) +
+            (A[1] - B[1]) * (A[1] - B[1]);
+    }
+public:
+    bool validSquare(vector<int>& p1, vector<int>& p2, 
+                     vector<int>& p3, vector<int>& p4) {
+        unordered_set<int> s({ d(p1, p2), d(p1, p3), d(p1, p4), 
+                              d(p2, p3), d(p2, p4), d(p3, p4) });
+        return !s.count(0) && s.size() == 2;
+    }
+};
+```
+
+leetcode 的官方解答:
+
+https://leetcode.com/articles/valid-square/
+
 
 
 ## 二分搜索
