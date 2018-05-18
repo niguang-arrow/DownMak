@@ -557,6 +557,135 @@ How to get maxPro? Just get the larger one between current maxPro and prices[i] 
 
 
 
+### 64. **Minimum Path Sum
+
+https://leetcode.com/problems/minimum-path-sum/description/
+
+给定一个 mxn 的网格, 每个 cell 中都是非负数, 现在要找到一条从左上角到右下角的路径, 使得所有的cell 的和最小. 在任何时候只能向下或者向右移动. 比如:
+
+```bash
+Input:
+[
+  [1,3,1],
+  [1,5,1],
+  [4,2,1]
+]
+Output: 7
+Explanation: Because the path 1→3→1→1→1 minimizes the sum.
+```
+
+
+
+思路: 1. 使用记忆化搜索 2. 动态规划.
+
+思路一的递推式:
+
+```bash
+minSum(x, y) = grid[x][y] + min(minSum(x - 1, y), minSum(x, y - 1))
+```
+
+思路二的转移方程:
+
+```bash
+dp[i][j] := min path sum to (i, j)
+
+dp[i][j] = grid[i][j] + min(dp[i - 1][j], dp[i][j - 1])
+
+dp[0][0] = grid[0][0]
+dp[0][j] = grid[0][j] + dp[0][j - 1]
+dp[i][0] = grid[i][0] + dp[i - 1][0]
+```
+
+思路一:
+
+```cpp
+class Solution {
+private:
+    vector<vector<int>> memo;
+    int PathSum(vector<vector<int>> &grid, int x, int y) {
+        if (x < 0 || y < 0) return INT32_MAX;
+        if (x == 0 && y == 0) return grid[0][0];
+        if (memo[x][y] != -1) return memo[x][y];
+
+        int ans = grid[x][y] + min(PathSum(grid, x - 1, y), PathSum(grid, x, y - 1));
+        return memo[x][y] = ans;
+    }
+public:
+    int minPathSum(vector<vector<int>> &grid) {
+        if (grid.empty())
+            return 0;
+
+        int row = grid.size();
+        int col = grid[0].size();
+
+        memo = vector<vector<int>>(row, vector<int>(col, -1));
+        return PathSum(grid, row - 1, col - 1);
+    }
+};
+```
+
+思路二使用 O(n) 空间复杂度的实现:
+
+```cpp
+class Solution {
+public:
+    int minPathSum(vector<vector<int>> &grid) {
+        if (grid.empty())
+            return 0;
+
+        int row = grid.size();
+        int col = grid[0].size();
+
+        vector<int> dp = vector<int>(col, 0);
+        dp[0] = grid[0][0];
+        for (int i = 1; i < col; ++i)
+            dp[i] = dp[i - 1] + grid[0][i];
+
+        for (int i = 1; i < row; ++i) {
+            dp[0] += grid[i][0];
+            for (int j = 1; j < col; ++j) {
+                dp[j] = min(dp[j - 1], dp[j]) + grid[i][j];
+            }
+        }
+        return dp[col - 1];
+    }
+};
+
+```
+
+思路二使用 O(1) 的空间:
+
+```cpp
+// 覆盖 grid 中的值, 节省空间
+class Solution {
+public:
+    int minPathSum(vector<vector<int>> &grid) {
+        if (grid.empty())
+            return 0;
+
+        int m = grid.size();
+        int n = grid[0].size();
+        
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; ++j) {
+                if (i == 0 && j == 0) continue; // 初始情况
+                if (i == 0) grid[0][j] += grid[0][j - 1];
+                else if (j == 0) grid[i][0] += grid[i - 1][0];
+                else
+                    grid[i][j] += min(grid[i][j - 1], grid[i - 1][j]);
+            }
+        }
+        return grid[m - 1][n - 1];
+    }
+};
+```
+
+
+
+
+
+
+
 ### 62. **Unique Paths
 
 https://leetcode.com/problems/unique-paths/description/

@@ -42,35 +42,51 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-
 class Solution {
-private:
-    int distance(vector<int> &A, vector<int> &B) {
-        return (A[0] - B[0]) * (A[0] - B[0]) +
-            (A[1] - B[1]) * (A[1] - B[1]);
-    }
-    bool perpendicular(vector<int> &p1, vector<int> &p2, vector<int> &p3) {
-        vector<int> AB = {p2[0] - p1[0], p2[1] - p1[1]};
-        vector<int> BC = {p3[0] - p2[0], p3[1] - p2[1]};
-
-        return (AB[0] * BC[0] + AB[1] * BC[1]) == 0;
-    }
 public:
-    bool validSquare(vector<int>& p1, vector<int>& p2, vector<int>& p3, vector<int>& p4) {
-        int d12 = distance(p1, p2);
-        int d23 = distance(p2, p3);
-        int d34 = distance(p3, p4);
-        int d41 = distance(p4, p1);
-        if (d12 == d23 && d23 == d34 && d34 == d41 && d41 == d12 &&
-            perpendicular(p2, p1, p4) &&
-            perpendicular(p1, p2, p3) &&
-            perpendicular(p3, p4, p1) &&
-            perpendicular(p4, p1, p2))
-            return true;
+    int minPathSum(vector<vector<int>> &grid) {
+        if (grid.empty())
+            return 0;
 
-        return false;
+        int m = grid.size();
+        int n = grid[0].size();
+        
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; ++j) {
+                if (i == 0 && j == 0) continue; // 初始情况
+                if (i == 0) grid[0][j] += grid[0][j - 1];
+                else if (j == 0) grid[i][0] += grid[i - 1][0];
+                else
+                    grid[i][j] += min(grid[i][j - 1], grid[i - 1][j]);
+            }
+        }
+        return grid[m - 1][n - 1];
     }
 };
+
+//class Solution {
+//private:
+    //int addTilt(TreeNode *root, vector<int> &tilts) {
+        //if (!root)
+            //return 0;
+        //if (!root->left && !root->right)
+            //return root->val;
+        //int leftTilt = addTilt(root->left, tilts);
+        //int rightTilt = addTilt(root->right, tilts);
+
+        //tilts.push_back(abs(rightTilt - leftTilt));
+        //return abs(rightTilt - leftTilt);
+    //}
+//public:
+    //int findTilt(TreeNode* root) {
+        //if (!root)
+            //return 0;
+        //vector<int> tilts;
+        //addTilt(root, tilts);
+
+        //return std::accumulate(tilts.begin(), tilts.end(), 0);
+    //}
+//};
 
 //class Solution {
 //public:
