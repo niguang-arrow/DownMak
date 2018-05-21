@@ -43,27 +43,24 @@ void preOrder(TreeNode *root) {
 }
 
 class Solution {
+private:
+    int sum = 0;
 public:
-    int minPathSum(vector<vector<int>> &grid) {
-        if (grid.empty())
-            return 0;
-
-        int m = grid.size();
-        int n = grid[0].size();
-        
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; ++j) {
-                if (i == 0 && j == 0) continue; // 初始情况
-                if (i == 0) grid[0][j] += grid[0][j - 1];
-                else if (j == 0) grid[i][0] += grid[i - 1][0];
-                else
-                    grid[i][j] += min(grid[i][j - 1], grid[i - 1][j]);
-            }
-        }
-        return grid[m - 1][n - 1];
+    // 使用中序遍历, 但是先访问右子树, 再访问根节点, 最后访问
+    // 左子树, 这样的话, 元素是从大到小排列, 使用 sum 记录访问
+    // 到当前元素时, 前面已访问过的元素的和是多少, 访问完当前
+    // 根节点的元素后, 不要忘记更新 sum 的值.
+    TreeNode* convertBST(TreeNode* root) {
+        if (!root)
+            return nullptr;
+        convertBST(root->right);
+        root->val += sum;
+        sum = root->val;
+        convertBST(root->left);
+        return root;
     }
 };
-
+//
 //class Solution {
 //private:
     //int addTilt(TreeNode *root, vector<int> &tilts) {
