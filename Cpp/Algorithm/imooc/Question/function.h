@@ -260,4 +260,21 @@ int* generateArray(int n) {
         *(arr + i) = uni(e);
     return arr;
 }
+
+template <typename T>
+void printMatrix(const vector<vector<T>> &matrix) {
+    for (const auto &d : matrix) {
+        for (const auto &data : d)
+            cout << data << " ";
+        cout << endl;
+    }
+}
+
+template <typename T>
+void printVector(const vector<T> &vec) {
+    for (const auto &d : vec)
+        cout << d << " ";
+    cout << endl;
+}
+
 #endif

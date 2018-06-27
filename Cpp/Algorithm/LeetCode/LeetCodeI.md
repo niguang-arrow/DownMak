@@ -1493,6 +1493,33 @@ public:
 };
 ```
 
+另外, 考虑这道题如果数组是已经排好序的, 那么就可以使用 Binary Search 来做, 比如 `[0, 1, 3]`,
+
+由于数组中只包含 0 ~ n, 那么这 0 ~ n 可以用来做数组的索引, 像上面数组中索引为 2 的位置本来应该是 2 的, 但现在却是 3, 所以缺失的元素满足 `nums[idx] > idx`, (数组要排好序).
+
+```cpp
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+      	std::sort(nums.begin(), nums.end());
+        int l = 0, r = nums.size() - 1;
+        while (l <= r) {
+          int mid = l + (r - l) / 2;
+          if (mid >= nums[mid]) l ++;
+          else
+            r --;
+        }
+        return l;
+    }
+};
+```
+
+leetcode 的官方解答: https://leetcode.com/articles/missing-number/
+
+
+
+
+
 
 
 ### 766. *Toeplitz Matrix
