@@ -43,10 +43,14 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
+
 class Solution {
 public:
-    string countAndSay(int n) {
-
+    int lengthOfLastWord(string s) {
+        stringstream ss(s);
+        string word;
+        while (ss >> word);
+        return word.size();
     }
 };
 
@@ -61,28 +65,28 @@ int main() {
     //root->left->right->right = new TreeNode(9);
     //root->right->right = new TreeNode(17);
 
-    int arr[] = {1, 2};
-   //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
-    auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
+    //int arr[] = {1, 2, 3, 4};
+    //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
+    //auto ls = createLinkedList(arr, sizeof(arr)/sizeof(int));
  
     //vector<vector<char>> nums =  {{'A','B','C','E'},{'S','F','E','S'},{'A','D','E','E'}};
     //string word = "ABCESEEEFS";
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     //vector<int> nums1 = {1, 2, 2, 1};
-    //vector<int> nums1 = {2, 2, 2, 0, 1};
+    vector<int> nums1 = {3, 2, 1, 0, 4};
     vector<int> preorder = {9, 3, 15, 20, 7};
     vector<int> inorder = {9, 15, 7, 20, 3};
     vector<vector<int>> nums = {{1, 2, 8}, {2, 4, 5}};
     string input = "thecattlewasrattledbythebattery";
     vector<string> words = {"a", "banana", "app", "appl", "ap", "apply", "apple"};
     //auto res = Solution().permuteUnique(nums1);
-    auto res = Solution().sortedListToBST(ls);
+    auto res = Solution().insert(nums1);
     //cout << res << endl;
-    //cout << std::boolalpha << res << endl;
-    preOrder(res);
+    cout << std::boolalpha << res << endl;
+    //preOrder(res);
     //cout << endl;
 
     //printVector(res);
     //printMatrix(res);
-    //printLinkedList(ls);
+    //printLinkedList(res);
 }

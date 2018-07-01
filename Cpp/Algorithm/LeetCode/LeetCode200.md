@@ -4,6 +4,18 @@
 
 20180625 -- 36 道
 
+20180626 -- 36 道, 在公司写 Youtube 推荐代码, 没有时间练题
+
+20180627 -- 37 道, 和 Mouse 一起去 RNG 主场看 LOL, 回来后只写了一道题.
+
+20180628 -- 47 道, 今天效率还不错.
+
+20180629 -- 55 道, 硬刚了几道难题.
+
+20180630 -- 61 道, 搞定了 N-Queens.
+
+ 
+
 ## 排列和组合
 
 ### 46. **Permutations
@@ -574,7 +586,313 @@ https://leetcode.com/problems/combination-sum-iv/description/
 
 
 
+### 22. **Generate Parentheses
+
+https://leetcode.com/problems/generate-parentheses/description/
+
+Given *n* pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+
+For example, given *n* = 3, a solution set is:
+
+```bash
+[
+  "((()))",
+  "(()())",
+  "(())()",
+  "()(())",
+  "()()()"
+]
+```
+
+
+
+思路: dfs + Backtracking. 这道题和前面那些排列组合的题类似, 但是要注意约束条件.
+
+```cpp
+class Solution {
+public:
+    vector<string> generateParenthesis(int n) {
+        vector<string> res;
+        vector<char> parenthesis{'(', ')'};
+
+        string cur;
+        dfs(parenthesis, cur, res, n, 0, 0);
+        return res;
+    }
+private:
+  	// dfs 最后两个参数分别用来统计左括号和右括号的个数. 如果
+  	// 1. 左括号的个数已经为 n 了, 那么之后只能添加右括号;
+  	// 2. 第一个符号必须是左括号
+  	// 3. 如果右括号的个数大于左括号, 那么也不需要考虑.
+    void dfs(const vector<char> &parenthesis, string &cur, vector<string> &res, int n, int lnum, int rnum) {
+        if (cur.size() == n + n) {
+            res.push_back(cur);
+            return;
+        }
+
+        for (const auto &c : parenthesis) {
+            if ((lnum == n && c == '(') || (lnum == 0 && c != '(') || (rnum > lnum))
+                continue;
+            cur += c;
+            if (c == '(') lnum += 1;
+            if (c == ')') rnum += 1;
+            dfs(parenthesis, cur, res, n, lnum, rnum);
+            if (cur.back() == '(') lnum -= 1;
+            if (cur.back() == ')') rnum -= 1;
+            cur.pop_back();
+        }
+    }
+};
+```
+
+leetcode 官方解答更为简洁: https://leetcode.com/articles/generate-parentheses/
+
+
+
+### 17. **Letter Combinations of a Phone Number
+
+https://leetcode.com/problems/letter-combinations-of-a-phone-number/description/
+
+思路: DFS + Backtracking.
+
+```cpp
+class Solution {
+private:
+    unordered_map<char, vector<string>> phone = {
+        {'2', {"a", "b", "c"}},
+        {'3', {"d", "e", "f"}},
+        {'4', {"g", "h", "i"}},
+        {'5', {"j", "k", "l"}},
+        {'6', {"m", "n", "o"}},
+        {'7', {"p", "q", "r", "s"}},
+        {'8', {"t", "u", "v"}},
+        {'9', {"w", "x", "y", "z"}}
+    };
+public:
+    vector<string> letterCombinations(string digits) {
+        vector<string> res;
+        string cur;
+        combinations(digits, 0, cur, res);
+        return res;
+    }
+private:
+  	// 使用 start 指示使用 digits 中哪个数字.
+    void combinations(const string &digits, int start, string &cur, vector<string> &res) {
+        if (cur.size() == digits.size()) {
+            res.push_back(cur);
+            return;
+        }
+
+        for (const auto &c : phone[digits[start]]) {
+            cur += c;
+            combinations(digits, start + 1, cur, res);
+            cur.pop_back();
+        }
+    }
+};
+```
+
+
+
+### 51. ***N-Queens
+
+https://leetcode.com/problems/n-queens/description/
+
+思路: dfs + Backtracking, 代码中精彩的是如何判断当前要放置的皇后和棋盘上已有的皇后不在同一条对角线上.
+
+```cpp
+class Solution {
+private:
+    // record 用于记录每一行的皇后放置的位置, isValid 中判断皇后是否在对角线上的代码和精彩,
+    // 假设当前行是 row, 那么 [0... row-1] 行的皇后放置的列都在 record 中, 即 (i, record[i]),
+    // 代码判断 (row, col) 与 (i, record[i]) 的关系, 如果在对角线上, 那么有
+    // abs(row - i) == abs(col - record[i]); 另外, col 不能等于 record[i]
+    bool isValid(vector<int> &record, int row, int col) {
+        // 判断放置的位置是否有效, 不能放在 record 中已存在 Queen 的所在
+        // 列和对角线上
+        for (int i = 0; i < row; ++i)
+            if ((record[i] == col)|| abs(row - i) == abs(col - record[i]))
+                return false;
+        return true;
+    }
+    
+    // dfs 回溯找到所有可能的结果.
+    void putQueens(vector<vector<string>> &res, vector<string> &cur, vector<int> &record, int n, int row) {
+        if (row >= n) {
+            res.push_back(cur);
+            return;
+        }
+
+        for (int col = 0; col < n; ++col) {
+            if (!isValid(record, row, col))
+                continue;
+            record[row] = col;
+            cur[row][col] = 'Q';
+            putQueens(res, cur, record, n, row + 1);
+            record[row] = -1;
+            cur[row][col] = '.';
+        }
+    }
+public:
+    vector<vector<string>> solveNQueens(int n) {
+        vector<vector<string>> res;
+        vector<int> record(n, -1);
+        vector<string> cur(n, string(n, '.'));
+        putQueens(res, cur, record, n, 0);
+        return res;
+    }
+};
+```
+
+
+
+### 52. ***N-Queens II
+
+https://leetcode.com/problems/n-queens-ii/description/
+
+不需要求出具体的放置方法, 统计总数.
+
+思路: 稍稍修改 51 题 N-Queens 的代码即可.
+
+```cpp
+class Solution {
+private:
+  	// 复用 51 的代码.
+    bool isValid(vector<int> &record, int row, int col) {
+        for (int i = 0; i < row; ++i)
+            if ((col == record[i]) || (abs(row - i) == abs(col - record[i])))
+                return false;
+        return true;
+    }
+    void dfs(vector<int> &record, int &count, int n, int row) {
+        if (row >= n) {
+            count ++;
+            return;
+        }
+        for (int col = 0; col < n; ++col) {
+            if (!isValid(record, row, col))
+                continue;
+            record[row] = col;
+            dfs(record, count, n, row + 1);
+            record[row] = -1;
+        }
+    }
+public:
+    int totalNQueens(int n) {
+        vector<int> record(n, -1); // 记录每行皇后放置的位置
+        int count = 0;
+        dfs(record, count, n, 0);
+        return count;
+    }
+};
+```
+
+
+
+
+
+
+
 ## 字符串
+
+### 3. **Longest Substring Without Repeating Characters
+
+https://leetcode.com/problems/longest-substring-without-repeating-characters/description/
+
+给定一个字符串, 返回其中最长的无重复字符的子串的长度.
+
+**Examples:**
+
+Given `"abcabcbb"`, the answer is `"abc"`, which the length is 3.
+
+Given `"bbbbb"`, the answer is `"b"`, with the length of 1.
+
+Given `"pwwkew"`, the answer is `"wke"`, with the length of 3. Note that the answer must be a **substring**, `"pwke"` is a *subsequence* and not a substring.
+
+
+
+思路: 第一种思路: 假设 `s[i...j]` 内的字符是不重复的, 使用 `unordered_map<char, int> record` 记录字符与索引的关系, 但是这里有一个陷阱: 由于 record 中的索引不会被 erase, 因此, 如果当前访问的元素 `s[j + 1]` 在 `s[i...j]` 的范围之外(比如 "abcda", 假设现在 `s[i...j] = "bcd"`, 由于 `record` 中的记录不会被删除, 所以 `s[0] = 'a'` 仍然在 `record` 中, 此时若访问 `s[4] = 'a'`, 应该只要在 `s[i...j] = "bcd"` 中判断是否存在 `'a'`), 则需要加上判断条件 `record[s[j + 1]] >= i`.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        unordered_map<char, int> record;
+        int res = 0;
+        // 假设 s[i...j] 内的字符是不重复的
+        int i = 0, j = -1;
+        while (i < s.size() && (j + 1) < s.size()) {
+            // 需要加上判断条件 record[s[j + 1]] >= i
+            if(record.count(s[j + 1]) && record[s[j + 1]] >= i) {
+                i = record[s[j + 1]] + 1;
+            }
+            
+            record[s[j + 1]] = ++ j;
+            res = max(res, j - i + 1);
+        }
+        return res;
+    }
+};
+```
+
+
+
+更简洁的写法: 与上一种方法的区别是, 这里每次循环一次移动一步, 左边界不是直接跳到目标位置.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        if (s.empty())
+            return 0;
+
+        // s[l...r) 是滑动窗口
+        int l = 0, r = 0;
+        int res = 0;
+        unordered_set<int> record;
+        while (r < s.size()) {
+            if (record.count(s[r]))
+                record.erase(s[l++]);
+            else
+                record.insert(s[r++]);
+            res = max(res, r - l);
+        }
+
+        return res;
+    }
+};
+```
+
+
+
+第二种思路: 类似于第二种写法, 右边界不需要一次性跳那么远, 而是一次移动一步. 慢慢移动, 不易出错.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int record[256] = {0};
+        int res = 0;
+        int l = 0, r = -1;
+        while (l < s.size() && (r + 1) < s.size()) {
+            if (record[s[r + 1]] == 0)
+                record[s[++r]] ++;
+            else
+                record[s[l++]] --;
+            
+            res = max(res, r - l + 1);
+        }
+        
+        return res;
+    }
+};
+```
+
+
+
+
+
+
 
 ### 14. *Longest Common Prefix
 
@@ -766,6 +1084,222 @@ public:
 
 
 
+### 38. *Count and Say
+
+https://leetcode.com/problems/count-and-say/description/
+
+The count-and-say sequence is the sequence of integers with the first five terms as following:
+
+```bash
+1.     1
+2.     11
+3.     21
+4.     1211
+5.     111221
+```
+
+`1` is read off as `"one 1"` or `11`.
+`11` is read off as `"two 1s"` or `21`.
+`21` is read off as `"one 2`, then `one 1"` or `1211`.
+
+这个游戏的内容如上, 现在给定整数 n, 问对应的序列是什么?
+
+
+
+思路: 现在问第 6 个序列是什么? 注意这个游戏是 count and say, 也就是要对相同的字符进行计数, 然后把它说出来就可以了. 那么对第 5 个序列计数, 就是 3 个 1, 两个 2, 一个 1, 所以第 6 个序列就是 `312211`. 那么代码其实非常好写:
+
+```cpp
+class Solution {
+public:
+    string countAndSay(int n) {
+      	// if (n <=0 ) return "";
+        string prev = "1";
+      	// 使用 while(--n) 的方式, 似乎比 num = 1, while (num < n) {...}
+      	// 最后在 while 中 num ++ 更快一些.
+      	// 最外层就是第 n 个序列
+        while (--n) {
+            string res = "";
+          	// count and say 前一个序列 prev, while 中就是计数, prev[i...j] 
+          	// 内的字符是相同的.
+            for (int i = 0; i < prev.size();) {
+                int j = i;
+                while (j + 1 < prev.size() && prev[j + 1] == prev[i])
+                    ++ j;
+                res += to_string(j - i + 1) + prev[i];
+                i = j + 1;
+            }
+            prev = res;
+        }
+        return prev;
+    }
+};
+```
+
+
+
+### 6. **ZigZag Conversion
+
+https://leetcode.com/problems/zigzag-conversion/description/
+
+将给定字符串中的字符以 ZigZag 的方式排成 numRows 行, 然后将每一行的字符拼接起来, 返回新的字符串. 比如:
+
+The string `"PAYPALISHIRING"` is written in a zigzag pattern on a given number of rows like this: (you may want to display this pattern in a fixed font for better legibility) (也就是 "PAYPALISHIRING" 中的字符要排成 3 行, 从 P 开始, 先向下排 `PAY`, 然后向上排 `P A`, 再向下排 `ALI`... 就是 ZigZag 的行进方式, 然后将下面矩阵中的字符, 从左向右, 从上向下依次拼接起来)
+
+```bash
+P   A   H   N
+A P L S I I G
+Y   I   R
+```
+
+And then read line by line: `"PAHNAPLSIIGYIR"`.
+
+
+
+思路: 参考 leetcode 的官方解答: https://leetcode.com/problems/zigzag-conversion/solution/
+
+一个长度为 a 的字符串最多可以排成 a 行, 所以需要 numRows 小于 a. 关键使用了 `goDown` 这个 bool 值, 当 `curRow` 是第一行或者最后一行时, 将 `goDown` 进行翻转, 以达到 zigzag 的目的.
+
+```cpp
+class Solution {
+public:
+    string convert(string s, int numRows) {
+        if (numRows == 1) return s;
+      	// 最多排成 s.size() 行.
+        vector<string> zigzag(min(numRows, int(s.size())));
+        bool goDown = false;
+        int curRow = 0;
+        string res;
+    
+        for (const auto &c : s) {
+            zigzag[curRow] += c;
+            if (curRow == 0 || curRow == zigzag.size() - 1) goDown = !goDown;
+            curRow += goDown ? 1 : -1;
+        }
+        
+        for (auto &row : zigzag)
+            res += row;
+        
+        return res;
+    }
+};
+```
+
+
+
+### 13. *Roman to Integer
+
+https://leetcode.com/problems/roman-to-integer/description/
+
+将罗马数字转换为数字.
+
+有的罗马数字要两个连起来读, 所以, 需要判断字符串中是否有 `s.substr(i, 2)` 出现在 symbols 中.
+
+```cpp
+class Solution {
+private:
+    unordered_map<string, int> symbols = {
+        {"I", 1},
+        {"IV", 4},
+        {"V", 5},
+        {"IX", 9},
+        {"X", 10},
+        {"XL", 40},
+        {"L", 50},
+        {"XC", 90},
+        {"C", 100},
+        {"CD", 400},
+        {"D", 500},
+        {"CM", 900},
+        {"M", 1000},
+    };
+public:
+    int romanToInt(string s) {
+        int res = 0;
+        for (int i = 0; i < s.size(); ) {
+            // s.substr(pos, len), 如果 len 超过了剩余的字符串的长度,
+            // 那么就返回剩余的字符串, 所以这里不需要对 i 的范围做检查
+            // 但注意 i 的变化, 如果使用了两个字符, 那么 i += 2
+            if (!symbols.count(s.substr(i, 2))) {
+                res += symbols[s.substr(i, 1)];
+                ++ i;
+            }
+            else {
+                res += symbols[s.substr(i, 2)];
+                i += 2;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 12. **Integer to Roman
+
+https://leetcode.com/problems/integer-to-roman/description/
+
+将整数转换为罗马数字.
+
+
+
+思路: 一种思路是将罗马数字对应的整数按从大到小排列:
+
+```cpp
+1000,900, 500,400, 100, 90, 50, 40,  10,  9,   5,   4,  1
+```
+
+每次让 num 去减去其中的某些数.
+
+另一种思路是将整数从小到大排列, 这样的话, 只要从中寻找 num 的 `upper_bound` 即可(`upper_bound` 是数组中第一个大于 num 的数), 但这种方式要慢一些.
+
+思路一:
+
+```cpp
+class Solution {
+public:
+    string intToRoman(int num) {
+        vector<int> values =  {1000,900, 500,400, 100, 90, 50, 40,  10,  9, 5, 4, 1};
+        vector<string> strs = {"M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"};
+        
+        
+        string res = "";
+        for (int i=0; i<values.size(); i++) {
+          	// 这就是从大到小排列的好处.
+            while (num >= values[i]) {
+                num -= values[i];
+                res.append(strs[i]);
+            }
+        } 
+        return res;
+    }
+};
+```
+
+思路二:
+
+```cpp
+class Solution {
+public:
+    string intToRoman(int num) {
+        vector<int> choices = {1, 4, 5, 9, 10, 40, 50, 90, 100, 400, 500, 900, 1000};
+        vector<string> symbols = {"I", "IV", "V", "IX", "X", "XL", "L", "XC", "C", "CD", "D", "CM", "M"};
+        string res;
+        while (num > 0) {
+            // 找到 choices 中第一个大于 num 的数
+            auto idx = std::upper_bound(choices.begin(), choices.end(), num);
+            num -= choices[idx - choices.begin() - 1];
+            res += symbols[idx - choices.begin() - 1];
+        }
+        return res;
+    }
+};
+```
+
+
+
+
+
 
 
 
@@ -858,6 +1392,326 @@ public:
         ptr->next = l1 ? l1 : l2;
         
         return dummy->next;
+    }
+};
+```
+
+
+
+### 24. **Swap Nodes in Pairs
+
+https://leetcode.com/problems/swap-nodes-in-pairs/description/
+
+将链表中每两个相邻的节点交换.
+
+**Example:**
+
+```bash
+Given 1->2->3->4, you should return the list as 2->1->4->3.
+```
+
+
+
+思路: 两种思路. 使用迭代, 或者使用递归. 先记录第三个节点, 然后让第一个和第二个节点分别接到新链表 虚拟头结点 dummy 后面.
+
+思路一: 迭代.
+
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        auto path = dummy;
+        auto ptr = head;
+      	// 要交换两个节点, 先要判断 ptr 以及 ptr->next 均存在,
+      	// 之后用 post 记录第三个节点, 也就是下一次交换的开始.
+        while (ptr && ptr->next) {
+          	// 记录第三个节点
+            auto post = ptr->next->next;
+          	// ptr->next 和 ptr 分别加到新链表上
+            path->next = ptr->next;
+            path->next->next = ptr;
+          	// 新链表和旧链表上的指针都需要移动.
+            path = path->next->next;
+            ptr = post;
+        }
+      	// 跳出循环后还需要处理.
+      	// 不管最后 ptr 是不是为空, 使用 path->next 指向它就可以了.
+        path->next = ptr;
+        ListNode *res = dummy->next;
+        delete dummy;
+        return res;
+    }
+};
+```
+
+
+
+思路二: 递归.
+
+```cpp
+class Solution {
+public:
+    ListNode* swapPairs(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+        
+        ListNode *dummy = new ListNode(0);
+        
+        // 记录第三个节点
+        auto post = head->next->next;
+        // 交换第一个和第二个节点, dummy 的后面先接上 head->next,
+        // 然后再接上 head 本身.
+        dummy->next = head->next;
+        dummy->next->next = head;
+        dummy->next->next->next = swapPairs(post);
+        
+        return dummy->next;
+    }
+};
+```
+
+
+
+### 19. **Remove Nth Node From End of List
+
+https://leetcode.com/problems/remove-nth-node-from-end-of-list/description/
+
+Given a linked list, remove the *n*-th node from the end of list and return its head.
+
+**Example:**
+
+```bash
+Given linked list: 1->2->3->4->5, and n = 2.
+
+After removing the second node from the end, the linked list becomes 1->2->3->5.
+```
+
+**Note:**
+
+Given *n* will always be valid.
+
+思路: 下面的代码其实处理了 n 大于链表节点个数的情况. 使用 p 先移动 n 位, (使用 p 的目的是为了最终使其指向要删除的节点), 之后再同时移动 ptr 和 p, 最终 ptr 会指向要删除节点的前一个节点.
+
+```cpp
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        if (!head)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy, p = dummy;
+        p->next = head;
+        // p 最终指向要删除的节点
+        while (n-- && p->next)
+            p = p->next;
+
+        while (p->next) {
+            p = p->next;
+            ptr = ptr->next;
+        }
+
+        // 注意, 只有 n 的值比链表的节点个数小的时候, 才需要删去节点
+        // 如果链表的节点个数比 n 多, 那么上面第一个循环结束的原因是 n == 0
+        // 但是由于 n 还要 --, 因此, 最终 n 的结果为 -1
+        if (n == -1) {
+            auto tmp = ptr->next;
+            ptr->next = tmp->next;
+            tmp->next = nullptr;
+        }
+
+        return dummy->next;
+    }
+};
+```
+
+leetcode 的官方解答: https://leetcode.com/articles/remove-nth-node-from-end-of-list/
+
+
+
+### 25. ***Reverse Nodes in k-Group
+
+https://leetcode.com/problems/reverse-nodes-in-k-group/description/
+
+终于又搞定一道 hard 的题. 我很久以前写的时候使用了栈, 这是犯规的, 这次没有使用.
+
+Given a linked list, reverse the nodes of a linked list *k* at a time and return its modified list.
+
+*k* is a positive integer and is less than or equal to the length of the linked list. If the number of nodes is not a multiple of *k* then left-out nodes in the end should remain as it is.
+
+
+**Example:**
+
+Given this linked list: `1->2->3->4->5`
+
+For *k* = 2, you should return: `2->1->4->3->5`
+
+For *k* = 3, you should return: `3->2->1->4->5`
+
+
+
+思路: 分步处理.
+
+```cpp
+class Solution {
+private:
+  	// 将 [root, tail) 之间的节点进行翻转.
+  	// prev 最后指向 tail 的前一个节点
+    pair<ListNode*, ListNode*> reverse(ListNode *root, ListNode *tail) {
+        if (root == tail)
+            return {root, root};
+
+        ListNode *head = tail;
+        ListNode *prev = root;
+        while (root != tail) {
+            auto tmp = root->next;
+            root->next = head;
+            head = root;
+            root = tmp;
+            if (head->next == tail)
+                prev = head;
+        }
+        return {head, prev};
+    }
+	// 处理 root 以及之后的 k - 1 节点, 假设表示为 [root ... root + k - 1],
+  	// 那么 prev 指向 (root + k - 1).
+    pair<ListNode*, ListNode*> traverse(ListNode *root, int k) {
+        if (!root)
+            return {nullptr, nullptr};
+
+        auto ptr = root, prev = root;
+        while (k-- && ptr) {
+            prev = ptr;
+            ptr = ptr->next;
+        }
+
+        pair<ListNode*, ListNode*> res;
+        if (k > -1)  res = {root, prev};
+        else  res = reverse(root, ptr);
+        
+        //cout << "res.first: " << res.first->val << " res.second: " << res.second->val << endl;
+        return res;
+    }
+	//// 调试代码, 用于输出 [p1...p2] 之间的节点.
+    //void print(ListNode *p1, ListNode *p2) {
+        //auto ptr = p1;
+        //cout << "p1 -> p2: ";
+        //while (ptr != nullptr) {
+            //cout << ptr->val << " -> ";
+            //ptr = ptr->next;
+        //}
+        //cout << endl;
+    //}
+public:
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        if (!head)
+            return nullptr;
+
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+      	// 每次 [p1...p2] 范围内的节点都是一个 Group.
+        while (head) {
+            auto p = traverse(head, k);
+            auto p1 = p.first, p2 = p.second;
+            // print(p1, p2);
+            ptr->next = p1;
+            ptr = p2;
+            head = p2->next;
+        }
+        return dummy->next;
+    }
+};
+
+```
+
+
+
+### 61. **Rotate List
+
+https://leetcode.com/problems/rotate-list/description/
+
+将链表旋转 k 次. 比如:
+
+**Example 1:**
+
+```bash
+Input: 1->2->3->4->5->NULL, k = 2
+Output: 4->5->1->2->3->NULL
+Explanation:
+rotate 1 steps to the right: 5->1->2->3->4->NULL
+rotate 2 steps to the right: 4->5->1->2->3->NULL
+```
+
+
+
+思路: 第一次循环找到尾节点, 同时统计节点个数. 找到尾节点之后, 将链表弄成环状. 本来需要逆时针移动 k 步的, 但由于有了节点的总个数 n, 那么就可以顺时针移动 n - k 步. 最后只要开环即可. 注意 k 可能很大, 使用 `k %= n` 减少移动的次数.
+
+```cpp
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        if (!head || !head->next)
+            return head;
+
+        int n = 1; // 统计节点个数, 注意初始的时候是 1
+        auto tail = head;
+        while (tail->next) {
+            n ++;
+            tail = tail->next;
+        }
+        tail->next = head;
+        if (k %= n) {
+            for (int i = 0; i < n - k; ++i)
+                tail = tail->next;
+        }
+        head = tail->next;
+        tail->next = nullptr;
+        return head;
+    }
+};
+```
+
+还一种写法, 先翻转, 再移动, 再翻转:
+
+```cpp
+class Solution {
+private:
+    ListNode* reverse(ListNode *head, int &n) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *prev = nullptr;
+        while (head) {
+            n ++;
+            auto tmp = head->next;
+            head->next = prev;
+            prev = head;
+            head = tmp;
+        }
+        return prev;
+    }
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        if (!head || !head->next)
+            return head;
+        
+        int n = 0;
+        auto tmp = head;
+      	// 先翻转
+        auto tail = reverse(head, n);
+        tmp->next = tail;
+        k %= n;
+      	// 再移动
+        while (k--)
+            tmp = tmp->next;
+        head = tmp->next;
+        tmp->next = nullptr;
+      	// 再翻转
+        return reverse(head, n);
     }
 };
 ```
@@ -1057,6 +1911,64 @@ public:
 
 
 
+### 16. **3Sum Closest
+
+https://leetcode.com/problems/3sum-closest/description/
+
+在一个数组中找到三个数的和最接近 target. 比如:
+
+**Example:**
+
+```bash
+Given array nums = [-1, 2, 1, -4], and target = 1.
+
+The sum that is closest to the target is 2. (-1 + 2 + 1 = 2).
+```
+
+
+
+思路: 如果这道题只是判断是否存在 3 个数之和等于 target, 那么就是固定 `nums[i]` 并用双指针搜索剩余的两个数. 如果这 3 个数之和刚好等于 target, 那么 3Sum Closest 就是 target, 因为此时 `abs(target - sum) == 0`. 如果不是刚好等于 target, 就需要使用 `res` 记录下最为接近 target 的和, 当得到新的 sum, 就需要使用 `abs(target - sum) < abs(target - res)` 判断是否需要更新 `res`. 
+
+注意 `res` 的初始化也是非常重要的, `res` 不能初始化为 0, 否则在某些测试用例下会报错.
+
+```cpp
+class Solution {
+public:
+    int threeSumClosest(vector<int>& nums, int target) {
+        if (nums.size() < 3)
+            return 0;
+		// 注意 res 的初始化非常重要, 这里也可以初始化 num[0]+nums[1]+nums[2]
+      	// 总之设置为数组中 3 个数相加的和即可.
+        int res = nums[0] + nums[1] + nums[nums.size() - 1];
+      
+      	// 先对 nums 进行排序
+        std::sort(nums.begin(), nums.end());
+        for (int i = 0; i < nums.size() - 2; ++i) {
+          	// 下面一大段是 two sum 的流程, 关键是最下面的 if 语句, 判断最接近
+          	// target 的值.
+            int lo = i + 1, hi = nums.size() - 1;
+            while (lo < hi) {
+                int sum = nums[lo] + nums[hi] + nums[i];
+                if (sum == target)
+                    return sum;
+                if (sum > target)
+                    hi --;
+                else {
+                    lo ++;
+                }
+                if (std::abs(target - sum) < std::abs(target - res))
+                    res = sum;
+            }
+          	// 和前面的 3Sum, 4Sum 类似, 跳过相等的值.
+            while (i + 1 < nums.size() - 2 && nums[i + 1] == nums[i]) ++ i;
+        }
+        return res;
+    }
+};
+```
+
+
+
 
 
 ### 48. **Rotate Image
@@ -1160,6 +2072,166 @@ void anti_rotate(vector<vector<int> > &matrix) {
             swap(matrix[i][j], matrix[j][i]);
     }
 }
+```
+
+
+
+### 11. **Container With Most Water
+
+https://leetcode.com/problems/container-with-most-water/description/
+
+Given *n* non-negative integers *a1*, *a2*, ..., *an*, where each represents a point at coordinate (*i*, *ai*). *n* vertical lines are drawn such that the two endpoints of line *i* is at (*i*, *ai*) and (*i*, 0). Find two lines, which together with x-axis forms a container, such that the container contains the most water.
+
+Note: You may not slant the container and *n* is at least 2.
+
+
+
+思路: 使用双指针, 关键是如何移动指针? 为了获得很多的水, 会希望 (ai, aj) 都尽量高, 但是如果 `ai <= aj`, 那么就希望一定 i 以保证 aj 这一边依然保持高的趋势, 而只要 `a[i+1]` 比 `a[i]` 更高, 那么就有可能获得更多的水. 总之, 就是 ai 和 aj, 哪边矮就移动哪一边.
+
+```cpp
+class Solution {
+private:
+    int area(vector<int> &height, int i, int j) {
+        return (j - i) * min(height[i], height[j]);
+    }
+public:
+    int maxArea(vector<int>& height) {
+        int i = 0, j = height.size() - 1;
+        int volume = 0;
+        while (i < j) {
+            volume = max(volume, area(height, i, j));
+            if (height[i] <= height[j]) ++i;
+            else --j;
+        }
+        return volume;
+    }
+};
+```
+
+
+
+### 27. *Remove Element
+
+https://leetcode.com/problems/remove-element/description/
+
+给定一个数组和 val, 将数组中等于 val 的值给删除, 返回删除 val 后的数组的长度. 注意不能分配新的空间, 只能 in-place 操作.
+
+**Example 1:**
+
+```bash
+Given nums = [3,2,2,3], val = 3,
+
+Your function should return length = 2, with the first two elements of nums being 2.
+
+It doesn't matter what you leave beyond the returned length.
+```
+
+
+
+思路: 设置 `nums[0, k)` 中的元素均不等于 val. 如果 `nums[i] == val` 那就不管, 但是当 `nums[i] != val` 时, 就用 `nums[i]` 覆盖 k 此时指向的值.
+
+```cpp
+class Solution {
+public:
+    int removeElement(vector<int>& nums, int val) {
+        if (nums.empty())
+            return 0;
+
+        // 将 nums[0...k) 内的元素设置为不等于 val 的
+        int k = 0;
+        for (int i = 0; i < nums.size(); ++i)
+            if (nums[i] != val)
+                nums[k++] = nums[i];
+        return k;
+    }
+};
+```
+
+
+
+### 26. *Remove Duplicates from Sorted Array
+
+https://leetcode.com/problems/remove-duplicates-from-sorted-array/description/
+
+给定一个已排序的数组, 将其中的重复数字给删除, 使得每个数字只出现一次.
+
+**Example 1:**
+
+```bash
+Given nums = [1,1,2],
+
+Your function should return length = 2, with the first two elements of nums being 1 and 2 respectively.
+
+It doesn't matter what you leave beyond the returned length.
+```
+
+
+
+思路: 就是上题 27. remove element 的变形. 设 `nums[0...k]` 内的元素是不重复的, 并让 `nums[i]` 和不重复区间中的最后一个元素比较.
+
+```cpp
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        if (nums.empty())
+            return 0;
+
+        // nums[0...k] 中的元素是不重复的, 注意 i 从 1 开始
+        int k = 0;
+        for (int i = 1; i < nums.size(); ++i)
+            if (nums[i] != nums[k])
+                nums[++k] = nums[i];
+        return k + 1;
+    }
+};
+```
+
+
+
+### 58. *Length of Last Word
+
+https://leetcode.com/problems/length-of-last-word/description/
+
+只包含字母和空格的字符串, 求最后一个 word 的长度.
+
+**Example:**
+
+```bash
+Input: "Hello World"
+Output: 5
+```
+
+
+
+思路: 使用 stringstream 很好做.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLastWord(string s) {
+        stringstream ss(s);
+        string word;
+        while (ss >> word);
+        return word.size();
+    }
+};
+```
+
+如果不用 stringstream, 那么从字符串末尾开始考虑问题:
+
+```cpp
+class Solution {
+public:
+    int lengthOfLastWord(string s) {
+        int count = 0, j = s.size() - 1;
+        while (j >= 0 && s[j] == ' ') j --;
+        while (j >= 0 && s[j] != ' ') {
+            count ++;
+            j --;
+        }
+        return count;
+    }
+};
 ```
 
 
@@ -1418,9 +2490,9 @@ public:
 };
 ```
 
+ 
 
-
-###103. **Binary Tree Zigzag Level Order Traversal
+### 103. **Binary Tree Zigzag Level Order Traversal
 
 https://leetcode.com/problems/binary-tree-zigzag-level-order-traversal/description/
 
@@ -2354,8 +3426,6 @@ public:
 
 
 
-
-
 ## 栈
 
 ### 20. *Valid Parentheses
@@ -2402,9 +3472,186 @@ public:
 
 
 
+## 优先队列
+
+### 23. ***Merge k Sorted Lists
+
+https://leetcode.com/problems/merge-k-sorted-lists/description/
+
+合并 k 个链表.
+
+**Example:**
+
+```bash
+Input:
+[
+  1->4->5,
+  1->3->4,
+  2->6
+]
+Output: 1->1->2->3->4->4->5->6
+```
 
 
-## Bit Manipulation
+
+思路: 使用最小堆, 将 vector 中的链表的头结点都放入到最小堆中, 堆顶放值最小的头结点, 然后不断的出堆, 入堆.
+
+```cpp
+class Solution {
+private:
+    // 优先队列默认是最大堆, 使用 less<T>, 因此最小堆需要使用 >
+    struct Comp {
+        bool operator()(ListNode *p1, ListNode *p2) {
+            return p1->val > p2->val;
+        }
+    };
+public:
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        priority_queue<ListNode*, vector<ListNode*>, Comp> q;
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy;
+        // 把 lists 中的每一个头结点加入到优先队列中.
+        for (auto &l : lists)
+            if (l)
+                q.push(l);
+
+        while (!q.empty()) {
+            auto l = q.top();
+            q.pop();
+            ptr->next = l;
+            ptr = ptr->next;
+            if (l->next) q.push(l->next);
+        }
+
+        return dummy->next;
+    }
+};
+```
+
+
+
+### 56. **Merge Intervals
+
+https://leetcode.com/problems/merge-intervals/description/
+
+将给定一个区间合并.
+
+**Example 1:**
+
+```bash
+Input: [[1,3],[2,6],[8,10],[15,18]]
+Output: [[1,6],[8,10],[15,18]]
+Explanation: Since intervals [1,3] and [2,6] overlaps, merge them into [1,6].
+```
+
+
+
+思路: 可以使用最大堆, 根据区间 `[start, end]` 的 end 的大小来放进堆中. 初始有一个 end 最大的区间 large, 每次从堆中获取 end 较小的区间 small, 比较 small 的 end 是否要比 large 的 start 大, 如果是的话, 那么它们就能合并, 否则, 将 large 存入 res 中, 处理下一个区间. 
+
+**注意: 跳出循环之后还要将最后一个区间保存到 res 中**.
+
+```cpp
+class Solution {
+private:
+    struct Comp {
+        bool operator()(const Interval &lhs, const Interval &rhs) {
+            return lhs.end < rhs.end;
+        }
+    };
+public:
+    vector<Interval> merge(vector<Interval>& intervals) {
+        if (intervals.empty())
+            return {};
+        priority_queue<Interval, vector<Interval>, Comp> Queue(intervals.begin(), intervals.end());
+        vector<Interval> res;
+        Interval large = Queue.top();
+        Queue.pop();
+        while (!Queue.empty()) {
+            Interval small = Queue.top();
+            Queue.pop();
+          	// 如果 small 的end >= large 的 start, 那么它们就可以合并.
+            if (small.end >= large.start)
+                large.start = small.start < large.start ? small.start : large.start;
+            else {
+                res.push_back(large);
+                large = small;
+            }
+        }
+        res.push_back(large); // 最后一个不要忘了
+        return res;
+    }
+};
+```
+
+
+
+
+
+### 57. ***Insert Interval
+
+https://leetcode.com/problems/insert-interval/description/
+
+给定一系列区间, 将新加入的区间和这些区间合并. 注意结果中以区间的 start 排序.
+
+**Example 2:**
+
+```bash
+Input: intervals = [[1,2],[3,5],[6,7],[8,10],[12,16]], newInterval = [4,8]
+Output: [[1,2],[3,10],[12,16]]
+Explanation: Because the new interval [4,8] overlaps with [3,5],[6,7],[8,10].
+```
+
+
+
+思路: 使用 56 题提供的最大堆的思路可以轻松解决.
+
+```cpp
+class Solution {
+private:
+    struct Comp {
+        bool operator()(const Interval &i1, const Interval &i2) {
+            return i1.end < i2.end;
+        }
+    };
+public:
+    vector<Interval> insert(vector<Interval>& intervals, Interval newInterval) {
+      	// 注意 intervals 为空的时候, 不是返回空集.
+        if (intervals.empty()) return {newInterval};
+        vector<Interval> res;
+      	
+        priority_queue<Interval, vector<Interval>, Comp> q(intervals.begin(), intervals.end());
+        q.push(newInterval);
+        auto large = q.top();
+        q.pop();
+        while (!q.empty()) {
+            auto small = q.top();
+            q.pop();
+            if (small.end >= large.start)
+                large.start = small.start < large.start ? small.start : large.start;
+            else {
+                res.push_back(large);
+                large = small;
+            }
+        }
+        res.push_back(large);
+      	// 上面的代码和 56 题基本一致, 最后要对res 中的结果排序.
+        std::sort(res.begin(), res.end(), 
+                  [](const Interval &i1, const Interval &i2)
+                  {
+                      return i1.start < i2.start;
+                  });
+        return res;
+    }
+};
+```
+
+
+
+
+
+
+
+## 位操作
 
 ### 136. *Single Number
 
@@ -2482,6 +3729,315 @@ public:
 
 
 
+## 动态规划
+
+### 5. **Longest Palindromic Substring(未完)
+
+https://leetcode.com/problems/longest-palindromic-substring/description/
+
+
+
+### 198. *House Robber
+
+https://leetcode.com/problems/house-robber/description/
+
+你是一个专业的盗贼并想盗窃一条街上的房子. 每个房子中有固定数量的财物, 你唯一的限制是不能盗窃相邻的两家, 否则会触发警报. 那么要怎样盗窃才能使所获得的金额最大, 返回最大金额. 给定一个含非负整数的数组, 表示每家的财物数额, 返回能盗窃的最大数额.
+
+
+
+分析: 题中要求是不能盗窃相邻的两家, 也就是盗窃了第 0 家, 那么就不能盗窃第 1 家了, 另外, 也不一定会盗窃第二家. 设状态 `f(index)` 表示盗窃 `[index, ... n - 1]` 范围内的屋子所获得的最大财物, 那么我们要求 `f(0)`, 状态转移方程为: 
+
+```bash
+f(0) = max(v(0) + f(2), v(1) + f(3), ... 
+			v(n - 3) + f(n - 1), v(n - 2), v(n - 1))
+```
+
+如果只盗窃第 n - 2 家的话, 那么第 n - 1 家就不能盗窃了, 所得到的财物数额就是 `v(n - 2)`. 下面使用动态规划求解. 其实我突然发现动态规划的思路不是那么难, 类似于斐波拉切数列:
+
+- 首先要确认初始化的条件
+- 然后是确定状态的转移, 也就是递推式.
+
+```cpp
+class Solution {
+public:
+    int rob(vector<int>& nums) {
+        if (nums.empty())
+            return 0;
+        
+        int n = nums.size();
+        if (n == 1) return nums[0];
+        if (n == 2) return max(nums[0], nums[1]);
+        vector<int> f(n, 0);
+        f[n - 1] = nums[n - 1];
+        f[n - 2] = max(nums[n - 2], nums[n - 1]);
+        for (int i = n - 3; i >= 0; i--) {
+        	f[i] = max(f[i + 1], f[i + 2] + nums[i]);
+        }
+        return f[0];
+    }
+};
+```
+
+使用两层循环:
+
+```cpp
+class Solution {
+public:
+    // 返回抢劫 nums[index ... n - 1] 范围内的房子所获得
+    // 的最大收益(设为 f(index)), 那么状态转移方程为:
+    // f(0) = max(v(0) + f(2), v(1) + f(3), ...
+    //           v(n - 3) + f(n - 1), v(n - 2), v(n - 1))
+    int rob(vector<int>& nums) {
+        if (nums.empty())
+            return 0;
+
+        int n = nums.size();
+        // memo 用于记录 f(index)
+        vector<int> memo(n, -1);
+        memo[n - 1] = nums[n - 1]; // 初始的时候
+        for (int i = n - 2; i >= 0; --i) {
+            for (int j = i; j < n; ++j) {
+                // 本来是 memo[i] = max(memo[i], nums[j] + memo[j + 2]);
+                // 但注意 i = n - 2 的情况
+                memo[i] = max(memo[i], ( j + 2 < n ? nums[j] + memo[j + 2] : nums[j]));
+            }
+        }
+
+        return memo[0];
+    }
+};
+```
+
+如果使用递归的方式求解:(很直观.)
+
+```cpp
+class Solution {
+private:
+    vector<int> memo;
+    // tryRob 返回抢劫 nums[index ... n - 1] 范围内的房子所获得
+    // 的最大收益(设为 f(index)), 那么状态转移方程为:
+    // f(0) = max(v(0) + f(2), v(1) + f(3), ...
+    //           v(n - 3) + f(n - 1), v(n - 2), v(n - 1))
+    int tryRob(vector<int> &nums, int index) {
+        if (index >= nums.size())
+            return 0;
+
+        if (memo[index] != -1)
+            return memo[index];
+
+        int res = -1;
+        for (int i = index; i < nums.size(); ++i) {
+            res = max(res, nums[i] + tryRob(nums, i + 2));
+        }
+        memo[index] = res;
+        return res;
+    }
+public:
+    int rob(vector<int>& nums) {
+        memo = vector<int>(nums.size(), - 1);
+        return tryRob(nums, 0);
+    }
+};
+```
+
+
+
+### 70. *Climbing Stairs
+
+https://leetcode.com/problems/climbing-stairs/description/
+
+如果一次只能上 1 或 2 级台阶, 那么上 n 级台阶总共有多少种方法?
+
+
+
+分析: 不可否认... 这题被做烂了...假设上 n 级台阶总过有 `f(n)` 种方法, 那么上到第 n - 1 级台阶时, 只要再上 1 级台阶就能到第 n 级台阶了, 方法就有 `f(n - 1)` 种; 如果上到第 n - 2 级台阶, 那么只要再一次跨上 2 级台阶就能到第 n 级台阶了, 方法有 `f(n - 2)` 种. 所以总共有 `f(n) = f(n - 1) + f(n - 2)`, 刚好是斐波拉切数列的递推式.
+
+首先使用自底向上的递推方法, 确定初始条件. 不妨令 `f(0) = 1` 表示如果没有台阶, 不上去也是一种方法, 这样的话通过 `f(2) = f(1) + f(0)` 也能正确得到 f(2) = 2.
+
+```cpp
+class Solution {
+public:
+    int climbStairs(int n) {
+        if (n <= 0)
+            return 0;
+        vector<int> memo(n + 1, -1);
+        memo[0] = 1;
+        memo[1] = 1;
+
+        for (int i = 2; i <= n; ++i)
+            memo[i] = memo[i - 1] + memo[i - 2];
+        return memo[n];
+    }
+};
+```
+
+如果采用自顶向下的递归的方式, 那么需要确定递归的终止条件, 就是 n <= 1 时, 都返回 1. 同时用 memo 记录重复子结构.
+
+```cpp
+class Solution {
+private:
+    vector<int> memo;
+    int stairs(int n) {
+        if (n <= 1)
+            return 1;
+
+        if (memo[n] != -1)
+            return memo[n];
+
+        memo[n] = stairs(n - 1) + stairs(n - 2);
+        return memo[n];
+    }
+
+public:
+    int climbStairs(int n) {
+        memo = vector<int>(n + 1, -1);
+        return stairs(n);
+    }
+};
+```
+
+ 
+
+### 53. *Maximum Subarray
+
+https://leetcode.com/problems/maximum-subarray/description/
+
+经典动态规划题目, 求一个数组中的连续子数组的最大和, 比如:
+
+For example, given the array `[-2,1,-3,4,-1,2,1,-5,4]`, the contiguous subarray `[4,-1,2,1]` has the largest sum = `6`.
+
+
+
+思路: 当访问元素 nums[i] 时, 由于要求的子数组是连续的, 那么就需要判断包含 nums[i - 1] 元素的最大和 prev 与 nums[i] 相加之后结果会如何? 如果 nums[i] 为正数, 而 prev 为负数, 那么显然可以放弃 prev 而重新从 nums[i] 开始寻找连续子数组的最大和. 使用 `prev = max(prev + nums[i], nums[i]);` 就可以保证这一点. 之后, 使用 res 保存当前最大的和.
+
+另外要注意的是初始化, 比如 `[-1]`, 结果应该是返回 -1 的, 不要把 res 初始化为 0.
+
+```cpp
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        if (nums.empty())
+            return 0;
+      
+		// prev[i] = prev[i - 1] < 0 ? nums[i] : nums[i] + prev[i - 1];
+        // prev 为包含前一个nums[i-1]元素的最大和
+        // res 用于记录已经找到的最大和
+        // 初始化非常重要.
+        int res = nums[0], prev = nums[0];
+        for (int i = 1; i < nums.size(); ++i) {
+            prev = max(prev + nums[i], nums[i]);
+            res = max(res, prev);
+        }
+        return res;
+    }
+};
+```
+
+关于这道题, leetcode 上有精彩的讨论, 比如:
+
+[DP solution & some thoughts](https://leetcode.com/problems/maximum-subarray/discuss/20193/DP-solution-and-some-thoughts)
+
+将原问题分解成可以帮助原问题被解决的子问题. 比如, 假设一开始将子问题设置为求解 `maxSubarraySum(nums, int i, int j)` 表示求解 `nums[i...j]` 范围内的子数组的最大和, 这样设置的子问题无法对原问题的解决带来任何益处, 而将子问题设置为 `maxSubarraySum(nums, int i)` 表示以 nums[i] 结尾的连续子数组的最大和, 将子数组的范围缩小了, 有益于原问题的解决, 同时还需要一个变量记录已经得到的最大和.
+
+
+
+### 121. *Best Time to Buy and Sell Stock
+
+https://leetcode.com/problems/best-time-to-buy-and-sell-stock/description/
+
+给定一个数组, 其中第 i 个元素表示第 i 天股票的价格. 现在你被允许只能完成一次交易(买入再卖出一支股票), 试求出最大收益. 比如:
+
+**Example 1:**
+
+```bash
+Input: [7, 1, 5, 3, 6, 4]
+Output: 5
+
+max. difference = 6-1 = 5 (not 7-1 = 6, as selling price needs to be larger than buying price)
+```
+
+**Example 2:**
+
+```bash
+Input: [7, 6, 4, 3, 1]
+Output: 0
+
+In this case, no transaction is done, i.e. max profit = 0.
+```
+
+
+
+思路: 使用 `imin` 来记录序列中的最小值, 使用 `res` 记录最大的 profit. 只有当当前的价格 `prices[i] >= imin` 时, 才会有收益.
+
+```cpp
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        if (prices.size() < 2)
+            return 0;
+
+        int res = 0, imin = prices[0];
+        for (int i = 1; i < prices.size(); ++i) {
+            if (prices[i] < imin)
+                imin = prices[i];
+            else {
+                res = max(res, prices[i] - imin);
+            }
+        }
+        return res;
+    }
+};
+```
+
+或者: [Sharing my simple and clear C++ solution](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/discuss/39039/Sharing-my-simple-and-clear-C++-solution)
+
+```cpp
+int maxProfit(vector<int> &prices) {
+    int maxPro = 0;
+    int minPrice = INT_MAX;
+    for(int i = 0; i < prices.size(); i++){
+        minPrice = min(minPrice, prices[i]);
+        maxPro = max(maxPro, prices[i] - minPrice);
+    }
+    return maxPro;
+}
+```
+
+
+
+### 746. *Min Cost Climbing Stairs
+
+https://leetcode.com/problems/min-cost-climbing-stairs/description/
+
+题目太长, 看原文. 
+
+
+
+思路: 设 `f(i)` 表示跳到第 `i` 个阶梯时的 cost, 那么有状态转移方程为:
+
+```cpp
+f(i) = min(f[i - 1] + cost[i - 1], f[i - 2] + cost[i - 2]);
+```
+
+初始值 `f(0) = 0, f(1) = 0`, 而要跳出这些阶梯, 我们需要求 `f(n)` 的值.
+
+```cpp
+class Solution {
+public:
+    int minCostClimbingStairs(vector<int>& cost) {
+        if (cost.empty())
+            return 0;
+        vector<int> f(cost.size() + 1, 0);
+        f[0] = 0;
+        f[1] = 0;
+
+        for (int i = 2; i < cost.size() + 1; ++i)
+            f[i] = min(f[i - 1] + cost[i - 1], f[i - 2] + cost[i - 2]);
+
+        return f.back();
+    }
+};
+```
 
 
 
@@ -2489,10 +4045,73 @@ public:
 
 
 
+## 深度与广度优先
+
+### 200. **Number of Islands
+
+https://leetcode.com/problems/number-of-islands/description/
+
+同样是计算岛屿的题. 给定一个 2D 的 0-1 数组, 1 表示岛屿, 岛屿间可以以垂直或水平相连. 计算岛上有多少个岛屿? 如果某岛屿周围全是水, 那么计数加 1. 比如:
+
+**\*Example 1:***
+
+```bash
+11110
+11010
+11000
+00000
+```
+
+Answer: 1
+
+**\*Example 2:***
+
+```bash
+11000
+11000
+00100
+00011
+```
+
+Answer: 3
 
 
 
+思路: 使用深度优先搜索, 实际上这道题就是求一张图中的联通分量. 当找到某个小岛屿时, 不断递归遍历和它相连的其他岛屿, 将访问过的岛屿设置为 0. 联通的岛屿就算一个大岛屿.
 
+```cpp
+class Solution {
+public:
+    int numIslands(vector<vector<char>>& grid) {
+        if (grid.empty() || grid[0].empty())
+            return 0;
+
+        int res = 0;
+        for (int i = 0; i < grid.size(); ++i) {
+            for (int j = 0; j < grid[0].size(); ++j) {
+                if (grid[i][j] == '1') {
+                    res ++;
+                    dfs(grid, i, j);
+                }
+            }
+        }
+        return res;
+    }
+
+    void dfs(vector<vector<char>> &grid, int i, int j) {
+        if (i < 0 || i >= grid.size() ||
+            j < 0 || j >= grid[0].size() ||
+            grid[i][j] == '0')
+            return;
+
+        grid[i][j] = '0';
+        dfs(grid, i - 1, j);
+        dfs(grid, i + 1, j);
+        dfs(grid, i, j - 1);
+        dfs(grid, i, j + 1);
+    }
+};
+```
 
 
 
