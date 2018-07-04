@@ -1,4 +1,4 @@
-# LeetCode 前 200 题
+# LeetCode 前 200 题(上)
 
 2018 年 6 月 21 日
 
@@ -13,6 +13,12 @@
 20180629 -- 55 道, 硬刚了几道难题.
 
 20180630 -- 61 道, 搞定了 N-Queens.
+
+20180701 -- 65 道, Intervals, Subsets, 今天堕落了...
+
+20180702 -- 70 道, 螺旋矩阵, 链表的插入排序, 三路快排(sort colors)
+
+20180703 -- 75 道, 卡塔兰数, 独一无二的BST, 格雷码, 二分查找与牛顿法求sqrt(x)
 
  
 
@@ -788,6 +794,173 @@ public:
 ```
 
 
+
+## 排序
+
+### 75. **Sort Colors
+
+https://leetcode.com/problems/sort-colors/description/
+
+将 0, 1, 2 表示的三种颜色排序.
+
+思路: 使用 3 路快排.
+
+```cpp
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+
+        int lt = -1, gt = nums.size(), i = 0;
+        // nums[0...lt] 保存 0
+        // nums[lt+1...gt) 保存 1
+        // nums[gt...end] 保存 2
+        while (i < gt) {
+            if (nums[i] == 1)
+                i ++;
+            else if (nums[i] == 0)
+                std::swap(nums[++lt], nums[i++]);
+            else
+                std::swap(nums[--gt], nums[i]);
+        }
+    }
+};
+```
+
+
+
+### 147. **Insertion Sort List
+
+https://leetcode.com/problems/insertion-sort-list/description/
+
+对链表使用插入排序.
+
+思路: 想象两个链表, 初始: 原链表 `l1`, 空链表 dummy, 
+
+```cpp
+l1: 1 -> 3 -> 2 -> 4 -> nullptr
+dummy -> nullptr
+```
+
+首先将 l1 的头节点加到空链表中:
+
+```cpp
+3 -> 2 -> 4 -> nullptr
+dummy -> 1 -> nullptr
+```
+
+然后 ptr 从 3 开始遍历, p 从 `dummy->next` 开始遍历. 最后要对 `dummy->next` 这个链表翻转.
+
+```cpp
+class Solution {
+private:
+    ListNode* reverse(ListNode *root) {
+        if (!root || !root->next)
+            return root;
+
+        ListNode *prev = nullptr;
+        while (root) {
+            auto tmp = root->next;
+            root->next = prev;
+            prev = root;
+            root = tmp;
+        }
+        return prev;
+    }
+public:
+    ListNode* insertionSortList(ListNode* head) {
+        if (!head || !head->next)
+            return head;
+
+        ListNode *dummy = new ListNode(0);
+      	// 将头结点加在 dummy 后面
+        dummy->next = head;
+        auto ptr = head->next;
+        head->next = nullptr;
+        auto p = dummy;
+      	// 插入排序
+        while (ptr) {
+            auto tmp = ptr->next;
+          	// p 最后指向 dummy 链表中第一个小于 ptr->val 的节点的前一个节点.
+            while (p->next && ptr->val < p->next->val)
+                p = p->next;
+            ptr->next = p->next;
+            p->next = ptr;
+            ptr = tmp;
+            p = dummy;
+        }
+        return reverse(dummy->next);
+    }
+};
+```
+
+
+
+
+
+
+
+## 回溯
+
+### 78. **Subsets
+
+https://leetcode.com/problems/subsets/description/
+
+给定一个数组, 其中的元素都不相同, 返回这个数组所有的子集. 比如:
+
+If **nums** = `[1,2,3]`, a solution is:
+
+```bash
+[
+  [3],
+  [1],
+  [2],
+  [1,2,3],
+  [1,3],
+  [2,3],
+  [1,2],
+  []
+]
+```
+
+
+
+思路: 给定一个长度为 n 的数组, 那么总共有 2 的 n 次方个子集. 如果使用 res 来保存这些子集的话, 
+
+假设 A 表示 res 中的所有子集, 当访问元素 `nums[i]` 时, 将 `nums[i]` 加入到 A 的每个元素中, 就形成了新的子集 B, 然后更新 res 为 `A + B`. 即可.
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> subsets(vector<int>& nums) {
+        int n = nums.size();
+        int i = 0;
+        vector<vector<int>> res;
+        vector<int> cur;
+        res.push_back(cur); // 初始时保存空子集
+        while (i < n) {
+          	// start 来遍历 res 中的每个子集.
+          	// 下面注释看不懂那就不用管, 记录我曾写的一个 bug.
+          	// 注意不要使用迭代器, 因为会在 res 中插入新的元素,
+          	// 尾部迭代器 end 会失效. 所以这里使用索引 end.
+            int start = 0;
+            int end = res.size();
+			// 依次访问 res 中的每个子集, 并将 nums[i] 加入到这些子集中
+            while (start < end) { 
+                cur = res[start];
+                cur.push_back(nums[i]);
+                ++start;
+                res.push_back(cur);
+            }
+            ++i;
+        }
+        return res;
+    }
+};
+```
+
+leetcode 上给出了特别详细的讨论和总结:
+
+[C++ Recursive/Iterative/Bit-Manipulation Solutions with Explanations](https://leetcode.com/problems/subsets/discuss/27278/C++-RecursiveIterativeBit-Manipulation-Solutions-with-Explanations)
 
 
 
@@ -1720,6 +1893,10 @@ public:
 
 
 
+
+
+
+
 ## 数组
 
 ### 1. *Two Sum
@@ -2235,6 +2412,305 @@ public:
 ```
 
 
+
+### 73. **Set Matrix Zeroes
+
+https://leetcode.com/problems/set-matrix-zeroes/description/
+
+矩阵赋零, 某 `matrix[i][j] == 0`, 那么设置一整行和一整列为 0. 
+
+**Example 1:**
+
+```bash
+Input: 
+[
+  [1,1,1],
+  [1,0,1],
+  [1,1,1]
+]
+Output: 
+[
+  [1,0,1],
+  [0,0,0],
+  [1,0,1]
+]
+```
+
+
+
+思路: 来自 [Any shorter O(1) space solution?](https://leetcode.com/problems/set-matrix-zeroes/discuss/26014/Any-shorter-O(1)-space-solution)
+
+题目要求不要用 O(mn) 的空间. 如果设置另外的矩阵, 那这道题很好做. 下面给出一个使用 O(1) 空间的方法. 如果当前 `matrix[i][j] == 0 ` 的话, 那么就将当前行的第一个元素 `matrix[i][0]` 以及当前列的第一个元素 `matrix[0][j]` 都设置为 0, 相当于标记一个 flag. 然而要注意 `matrix[0][0]` 此时就有两层含义了, 如果它为 0 就表示第 0 行和第 0 列是存在 0 的, 这样不好, 因此增加一个新的变量 `col0` 表示如果第 0 列存在 0 元素, 那么就将 `col0` 设置为 0. 那么 `matrix[0][0] == 0` 表示第 0 行存在 0 元素.
+
+下面代码中分为两次遍历, 第一次遍历从上到下, 从左向右, 判断矩阵中的 0 元素, 并设置 flag.
+
+第二次遍历从下往上, 从右往左, 根据 flag, 设置矩阵中的元素为 0. 为什么要从下往上呢? 比如:
+
+```cpp
+0 2
+3 4
+```
+
+正确结果应该是 :
+
+```cpp
+0 0
+0 4
+```
+
+但如果第二次遍历是从上往下的话, 结果就成了
+
+```cpp
+0 0
+0 0
+```
+
+因此当访问 4 时, 它判断当前列的第一个元素已经成了 0, 就将自身赋值为 0.
+
+```cpp
+class Solution {
+public:
+    void setZeroes(vector<vector<int> > &matrix) {
+        int m = matrix.size(), n = matrix[0].size(), col0 = 1;
+      	// 第一次遍历从上往下.
+        for (int i = 0; i < m; ++i) {
+            if (matrix[i][0] == 0) col0 = 0;
+            for (int j = 1; j < n; ++j) {
+                if (matrix[i][j] == 0)
+                    matrix[i][0] = matrix[0][j] = 0;
+            }
+        }
+		// 第二次遍历从下往上, 从右往左, 因为如果从上往下的话,
+      	// 如果设置了第一行的元素为 0, 那么会影响后面所有元素的设置.
+        for (int i = m - 1; i >= 0; --i) {
+            for (int j = n - 1; j >= 1; --j) {
+                if (matrix[i][0] == 0 || matrix[0][j] == 0)
+                    matrix[i][j] = 0;
+            }
+            if (col0 == 0) matrix[i][0] = 0;
+        }
+    }
+};
+```
+
+
+
+### 54. **Spiral Matrix
+
+https://leetcode.com/problems/spiral-matrix/description/
+
+螺旋矩阵, 将矩阵以螺旋的顺序打印.
+
+**Example 1:**
+
+```bash
+Input:
+[
+ [ 1, 2, 3 ],
+ [ 4, 5, 6 ],
+ [ 7, 8, 9 ]
+]
+Output: [1,2,3,6,9,8,7,4,5]
+```
+
+
+
+思路: 参考:
+
++ http://www.cnblogs.com/grandyang/p/4362675.html
++ https://github.com/pezy/LeetCode/tree/master/053.%20Spiral%20Matrix
+
+第一篇博客中思路说得极为透彻, 首先要确定一个矩阵的螺旋的环数, 如矩阵的行数为 m, 列数为 n, 那么环数就是 `c = min((m + 1), (n + 1)) / 2`. 螺旋的变化是: 首先列数递增, 之后行数递增, 然后列数递减, 最后行数递减, 即:
+
+```cpp
+ 	i -------------------> (i, i + q - 1)
+ 	|							|
+ 	| 							|
+ (i + p - 1, i) <-------(i + p - 1, i + q - 1)
+```
+
+其中 p 和 q 分别是当前环的高度和宽度(比如第一个环的高度是行数 m, 宽度是列数 n).
+
+注意当 p 或 q 有一个为 1 时, 说明最后一个环只有一行或者一列, 那么此时就需要跳出循环, 即需要显式地写:
+
+```cpp
+if (p == 1 || q == 1) break;
+```
+
+因为根据下面的代码, 如果没有这行命令, 假设最后 `p == 1`, 当进行列数递增后, 已经将这一行给遍历完了, 之后在没有进行行数递增的情况下, 直接进行了列数递减, 就会造成元素的重复访问.(重复访问当前环(一行)中除了最后一个元素的其他所有元素.)
+
+```cpp
+class Solution {
+public:
+    vector<int> spiralOrder(vector<vector<int>>& matrix) {
+        if (matrix.empty() || matrix[0].empty()) return {};
+        int m = matrix.size(), n = matrix[0].size();
+        int c = min((m + 1), (n + 1)) / 2; // 环的数量
+        int p = m, q = n; // 当前环的高度和宽度
+        vector<int> res;
+        for (int i = 0; i < c; ++i, p -= 2, q -= 2) {
+            for (int col = i; col < i + q; ++col) // 先列增
+                res.push_back(matrix[i][col]);
+            for (int row = i + 1; row < i + p; ++row) // 再行增
+                res.push_back(matrix[row][i + q - 1]);
+            if (p == 1 || q == 1) break; // 如果出现当前环只有一行或者一列, 可以跳出循环
+            for (int col = i + q - 2; col >= i; --col) // 再列减
+                res.push_back(matrix[i + p - 1][col]);
+            for (int row = i + p - 2; row > i; --row) // 最后行减.
+                res.push_back(matrix[row][i]);
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 59. **Spiral Matrix II
+
+https://leetcode.com/problems/spiral-matrix-ii/description/
+
+这道题是 54 题的延生, 给定一个正整数 n, 产生一个 `n x n` 的方阵, 其中数据的排列是螺旋进行的.
+
+```cpp
+Input: 3
+Output:
+[
+ [ 1, 2, 3 ],
+ [ 8, 9, 4 ],
+ [ 7, 6, 5 ]
+]
+```
+
+
+
+思路: 和 54 题的道理是一样的, 首先要确定环数 `c = (n + 1) / 2`, 然后环的高度和宽度都定下来了, 为 n, 当 `n == 1` 时, 说明只有一行或者一列, 这时候需要 break, 否则会出现问题.
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> generateMatrix(int n) {
+        vector<vector<int>> matrix(n, vector<int>(n));
+        int c = (n + 1) / 2;
+        int num = 1;
+        for (int i = 0; i < c; ++i, n -= 2) {
+            for (int col = i; col < i + n; ++col) // 先列增
+                matrix[i][col] = num++;
+            for (int row = i + 1; row < i + n; ++row) // 再行增
+                matrix[row][i + n - 1] = num++;
+            if (n == 1) break;
+            for (int col = i + n - 2; col >= i; --col) // 再列减
+                matrix[i + n - 1][col] = num++;
+            for (int row = i + n - 2; row > i; --row) // 最后行减.
+                matrix[row][i] = num++;
+        }
+        return matrix;
+    }
+};
+
+```
+
+
+
+### 66. *Plus One
+
+https://leetcode.com/problems/plus-one/description/
+
+给数组的最后一位加一.
+
+**Example 1:**
+
+```bash
+Input: [1,2,3]
+Output: [1,2,4]
+Explanation: The array represents the integer 123.
+```
+
+
+
+思路: http://www.cnblogs.com/grandyang/p/4079357.html 主要注意进位的问题. 如果最后一位是 9, 那么就要将该位置为 0, 并向下一位进 1, 如果下一位仍然是 9, 那么继续向下进位. 而如果遇到哪一位不是 9, 则直接将结果返回. 注意最后如果第一位是 9 的话, 那么就要在数组首位 `insert` 一个位置插入 1.
+
+```cpp
+class Solution {
+public:
+    vector<int> plusOne(vector<int> &digits) {
+        int n = digits.size();
+        for (int i = n - 1; i >= 0; --i) {
+          	// 如果当前位是 9, 那么直接置为 0, 否则, 加 1之后返回.
+            if (digits[i] == 9)
+              	digits[i] = 0;
+            else {
+                digits[i] += 1;
+                return digits;
+            }
+        }
+      	// 最后要判断首位是不是已经进位了.
+        if (digits.front() == 0) digits.insert(digits.begin(), 1);
+        return digits;
+    }
+};
+```
+
+解法二:
+
+初始化 `carry == 1`, 之后只要 i 还在数组的范围内且 carry 为 0, 那么可以直接返回结果, 否则在数组起始位置插入 1.
+
+```cpp
+class Solution {
+public:
+    vector<int> plusOne(vector<int>& digits) {
+        if (digits.empty()) return digits;
+        int carry = 1, n = digits.size();
+        for (int i = n - 1; i >= 0; --i) {
+            if (carry == 0) return digits;
+            int sum = digits[i] + carry;
+            digits[i] = sum % 10;
+            carry = sum / 10;
+        }
+        if (carry == 1) digits.insert(digits.begin(), 1);
+        return digits;
+    }
+};
+```
+
+
+
+### 67. *Add Binary
+
+https://leetcode.com/problems/add-binary/description/
+
+二进制数相加. 给定两个字符串, 它们表示二进制数, 将它们相加起来.
+
+**Example 1:**
+
+```bash
+Input: a = "11", b = "1"
+Output: "100"
+```
+
+代码如下:
+
+```cpp
+class Solution {
+public:
+    string addBinary(string a, string b) {
+        string res;
+        int i = a.size() - 1, j = b.size() - 1, carry_over = 0;
+        while (i >= 0 || j >= 0 || carry_over) {
+            int part1 = i >= 0 ? a[i] - '0' : 0;
+            int part2 = j >= 0 ? b[j] - '0' : 0;
+            
+            int sum = part1 + part2 + carry_over;
+            res = to_string(sum % 2) + res;
+            carry_over = sum / 2;
+            
+            i --;
+            j --;
+        }
+        return res;
+    }
+};
+```
 
 
 
@@ -3154,6 +3630,154 @@ public:
 
 
 
+### 95. **Unique Binary Search Trees II
+
+https://leetcode.com/problems/unique-binary-search-trees-ii/description/
+
+独一无二的二叉搜索树之二.
+
+给定整数 n, 求出所有不同的二叉搜索树的个数. 
+
+**Example:**
+
+```
+Input: 3
+Output:
+[
+  [1,null,3,2],
+  [3,2,null,1],
+  [3,1,null,null,2],
+  [2,1,3],
+  [1,null,2,null,3]
+]
+Explanation:
+The above output corresponds to the 5 unique BST's shown below:
+
+   1         3     3      2      1
+    \       /     /      / \      \
+     3     2     1      1   3      2
+    /     /       \                 \
+   2     1         2                 3
+```
+
+思路: 如果我们知道了保存 1 ~ n - 1 的所有 BST, 假设为 `f(n - 1)`, 那么当考虑 n 时, 就要判断怎样将 n 插入到 f(n - 1) 中的每棵 BST 中, 这样就能得到 f(n) 了. 举个例子, 比如 n = 3 时, 上面可以产生 5 棵 BST, 那这 5 棵 BST 是怎么得到的呢? 先考虑 f(2). 
+
+如果 n = 2 时, 我们可以如下的 BST:
+
+```bash
+   1         2       
+   	\        /
+   	 2      1
+```
+
+即 f(2) 时产生了两棵 BST. 
+
+- 情况 1: 那么当要插入 n = 3 时, 由于 n 总比 f(n - 1) 中每棵 BST 中的最大值(即 n-1) 都要大, 那么可以将那些 BST 作为 n 的左子树, 即:
+
+```bash
+     3       3
+    /       /
+   1       2
+    \      /
+     2     1
+```
+
+- 情况二: 可以将 n 作为 f(n - 1) 中每棵 BST 的右子树, **但这里有个问题要注意**, 先看例子:
+
+```bash
+ 1          2
+  \        / \
+   2      1   3
+    \
+     3
+```
+
+但是如何得到下面这个呢?
+
+```bash
+   1
+    \
+     3
+    /
+   2
+```
+
+这时, 我们就知道了, 如果将 3 沿着根节点的右子节点一直走, 如果右子节点为空, 那么就将 3 插入进去; 如果右子节点不为空, 那么就需要将 3 插入到右子节点的上面(所谓"上面"自己体会), 并将右子节点以及后面的内容作为 3 的左子树. 根据这个思路, 我们从根节点开始, 依次判断右子节点是否为空, 然后插入节点 3. 按照顺序画图如下:
+
+```bash
+   1	   1          2
+  	\       \        / \
+     3       2      1   3
+     /        \
+    2          3
+```
+
+这样就得到了 5 个不同的 BST.
+
+具体代码如下:
+
+```cpp
+class Solution {
+private:
+  	// 由于最后的结果是返回所有的不同子树, 那么在求 f(n) 的
+  	// 时候, 需要拷贝 f(n - 1) 中的树, 再进行操作. 拷贝使用
+  	// 前向遍历即可.
+    TreeNode* copyTree(TreeNode *root) {
+        if (!root)
+            return nullptr;
+        
+        TreeNode *newroot = new TreeNode(root->val);
+        newroot->left = copyTree(root->left);
+        newroot->right = copyTree(root->right);
+        return newroot;
+    }
+
+public:
+    vector<TreeNode*> generateTrees(int n) {
+        if (n < 1)
+            return vector<TreeNode*>{};
+        if (n == 1)
+            return vector<TreeNode*>{new TreeNode(n)};
+		
+        auto treeSet = generateTrees(n - 1);
+        vector<TreeNode*> res;
+        for (auto &subroot : treeSet) {
+            TreeNode *root = new TreeNode(n);
+          	// 情况 1: 将 f(n - 1) 中的所有BST 作为 root 的左子树
+            root->left = subroot;
+            res.push_back(root);
+          	// 情况 2: 
+          	// 使用 ptr2 来记录 root 应插入的位置
+          	// 另一方面还要用 ptr 来记录产生下一棵BST时, ptr2 要移动的位置
+          	// 这个可以画图体会.
+            auto ptr = subroot;
+            while (ptr) {
+                TreeNode *node = new TreeNode(n);
+                TreeNode *root = copyTree(subroot);
+                auto ptr2 = root;
+                while (ptr2->val != ptr->val)// 使ptr2移动到和 ptr 对应的位置
+                    ptr2 = ptr2->right;
+                auto temp = ptr2->right;
+                ptr2->right = node;
+              	// 将 temp 作为 n 的左子树.
+                node->left = temp;
+                res.push_back(root);
+                ptr = ptr->right;
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+
+
+
+
+
+
 
 
 ## 数学
@@ -3423,6 +4047,68 @@ public:
     }
 };
 ```
+
+
+
+### 69. *Sqrt(x)
+
+https://leetcode.com/problems/sqrtx/description/
+
+求平方根. 实现: `int sqrt(int x)`
+
+由于最后返回的是整数, 比如若求 `sqrt(8)`, 那么结果为 2.
+
+思路: 使用二分查找可解. 但有个地方必须注意:
+
+判断条件不要写成 
+
+```cpp
+if (mid * mid <= x)
+```
+
+而是要写成 `if (mid <= x/mid)`, 因为当 mid 足够大时, `mid * mid` 超出了 int 能表示的范围.
+
+```cpp
+class Solution {
+public:
+    int mySqrt(int x) {
+        int l = 1, r = x;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (mid <= x/mid)
+                l = mid + 1; // 注意 l 不是 l++ 变化!!!
+            else
+                r = mid - 1;
+        }
+        return (l - 1); // 最后 l 找到的是第一个满足 mid * mid > x 的值.
+    }
+};
+```
+
+思路二: 可以使用牛顿法求解:
+
+关于牛顿法, 参见: http://www.cnblogs.com/AnnieKim/archive/2013/04/18/3028607.html 以及 Wikipedia: https://en.wikipedia.org/wiki/Newton%27s_method
+
+公式是: $x_{i+1} = \frac{1}{2}(x_i + \frac{n}{x_i})$ (n 就是这里的 x)
+
+注意下面代码中, `res` 设置为 long 是为了防止越界, 因为 `res + res / 2` 在初始化 `res = x` 的情况下, 如果 x 刚好为 `INT32_MAX`, 那么就越界了.
+
+```cpp
+class Solution {
+public:
+    int mySqrt(int x) {
+        if (x < 1) return 0; 
+        long res = x;
+        while (res > x / res)
+            res = (res + x / res) / 2;
+        return res;
+    }
+};
+```
+
+
+
+
 
 
 
@@ -3721,6 +4407,33 @@ public:
             a = (a ^ i) & ~b;
         }
         return b;
+    }
+};
+```
+
+
+
+
+
+### 89. **Gray Code
+
+https://leetcode.com/problems/gray-code/description/
+
+格雷码. 不多说, 看大佬的解答.
+
+http://www.cnblogs.com/grandyang/p/4315649.html
+
+下面这个方法利用的是格雷码的性质.
+
+```cpp
+class Solution {
+public:
+    vector<int> grayCode(int n) {
+        vector<int> res;
+        for (int i = 0; i < std::pow(2, n); ++i) {
+            res.push_back((i >> 1) ^ i);
+        }
+        return res;
     }
 };
 ```
@@ -4040,6 +4753,46 @@ public:
 ```
 
 
+
+### 96. **Unique Binary Search Trees
+
+https://leetcode.com/problems/unique-binary-search-trees/description/
+
+独一无二的二叉树. 给定 n, 问可以使用 1 ~ n 构建多少个独一无二的二叉树? 这道题与 95 题 Unique Binary Search Trees II 的区别是, 这道题只需要求出有多少个符合要求的树即可.
+
+
+
+思路: 使用动态规划, 参照:
+
++ [DP Solution in 6 lines with explanation. F(i, n) = G(i-1) * G(n-i)](https://leetcode.com/problems/unique-binary-search-trees/discuss/31666/DP-Solution-in-6-lines-with-explanation.-F(i-n)-G(i-1)-*-G(n-i))
++ http://www.cnblogs.com/grandyang/p/4299608.html
+
+第二个链接指出结果为卡塔兰数. 设 `G(n)` 为给定 n 时可以生成的 BST 的个数, 那么, 如果以数 `i` 为根节点, 那么可以递归的以 `[1...i - 1]` 中的数生成左子树, 以 `[i+1...n]` 中的数生成右子树, 注意 `G(n)` 的定义是给定 n 个数可以生成的 BST 的个数, 那么 `[1...i-1]` 中有 `i - 1` 个数, 就可以生成 `G(i - 1)` 个 BST, 而 `[i+1...n]` 中有 `n - i` 个数, 因此可以生成 `G(n - i)` 个 BST. 
+
+由于 i 可以从 1 变化到 n, 因此:(考虑 0 的话, 有 `G(0) == 1`, 因为空树也相当于一棵 BST)
+$$
+C_0 = 1 \quad C_{n+1} = \sum_{i=0}^{n} C_iC_{n - i}  \quad (n \geq 0)
+$$
+代码如下:
+
+```cpp
+class Solution {
+public:
+    int numTrees(int n) {
+        vector<int> G(n + 1, 0);
+        G[0] = 1;
+        G[1] = 1;
+      	// 此处的 i 就相当于公式中的 n + 1
+        for (int i = 2; i < n + 1; ++i) {
+          	// 使用下面这个for 循环进行求和.
+            for (int j = 0; j < i; ++j) {
+                G[i] += G[j] * G[i - 1 - j];
+            }
+        }
+        return G[n];
+    }
+};
+```
 
 
 

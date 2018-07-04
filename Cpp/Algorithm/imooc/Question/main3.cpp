@@ -43,14 +43,13 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-
 class Solution {
 public:
-    int lengthOfLastWord(string s) {
-        stringstream ss(s);
-        string word;
-        while (ss >> word);
-        return word.size();
+    int numTrees(int n) {
+        if (n <= 0) return 0;
+        if (n == 1) return 1;
+
+        int num = numTrees(n - 1);
     }
 };
 
@@ -73,16 +72,16 @@ int main() {
     //string word = "ABCESEEEFS";
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     //vector<int> nums1 = {1, 2, 2, 1};
-    vector<int> nums1 = {3, 2, 1, 0, 4};
+    vector<int> nums1 = {1, 2, 4};
     vector<int> preorder = {9, 3, 15, 20, 7};
     vector<int> inorder = {9, 15, 7, 20, 3};
-    vector<vector<int>> nums = {{1, 2, 8}, {2, 4, 5}};
+    vector<vector<int>> nums = {{1,2,3,4}, {5,6,7,8}, {9,10,11,12}};
     string input = "thecattlewasrattledbythebattery";
     vector<string> words = {"a", "banana", "app", "appl", "ap", "apply", "apple"};
     //auto res = Solution().permuteUnique(nums1);
-    auto res = Solution().insert(nums1);
-    //cout << res << endl;
-    cout << std::boolalpha << res << endl;
+    auto res = Solution().mySqrt(2147395599);
+    cout << res << endl;
+    //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
 

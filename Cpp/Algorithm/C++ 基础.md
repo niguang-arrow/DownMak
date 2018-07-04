@@ -2,6 +2,32 @@
 
 2018 年 6 月 26 日
 
+## C++ 11 新特性
+
+c11 的新特性:
+
+```bash
+operator type() const;  # 类型转换
+explicit complex(...) : initialization list {} # 初始值列表
+pointer-like object
+function-like object
+namespace
+template specialization
+Standard Library
+
+# 下面是 C11 新特性
+variadic template
+move constuctor
+Rvalue reference 
+auto
+lambda
+range-base for loop
+unordered containers
+Object Model
+```
+
+
+
 
 
 ## 三大函数
@@ -52,6 +78,45 @@ class Rectangle : public Shape { ... };
 + Template Method
 + Composite : 委托 + 继承
 + Prototype : 委托 + 继承 (Design Pattern Explained Simply)
+
+
+
+
+### 虚继承
+
++ "菱形"继承的问题:
+  + 数据冗余
+  + 二义性
+
+解决方法: 使用虚继承.
+
+```cpp
+class B : virtual public A {}; // 也可以写成 class B : public virtual A {};
+class C : virtual public A {};
+class D : public A, public B {}; 
+```
+
+
+
+#### 问题
+
+1. 虚继承是如何实现的?
+
+
+
+### 虚函数与多态
+
++ 多态:
+  + 静态多态/静态绑定: 其实就是函数重载(在同一作用域内), 利用函数在编译时重命名标识符来实现.
+  + 动态多态/动态绑定: override, 使用基类的指针或引用来调用 override 的虚成员函数.(不同的作用域)
++ ​
+
+
+
+
+
+
+
 
 
 
@@ -126,7 +191,33 @@ public:
 
 
 
+## 引用
 
+引用一定要有初值.
+
+```cpp
+int x = 0;
+int &r = x;
+
+/*
+1. sizeof(r) == sizeof(x)
+2. &r = &x
+
+object 和其 reference 的大小相同, 地址也相同(全都是假象)
+Java 里头的所有变量都是 reference.
+*/
+```
+
++ 函数声明:
+
+以下被视为相同的 `signature`, 所以两者不能同时存在.
+
+```cpp
+double imag(const double &im) {...}
+double imag(const double im) {...} // Ambiguity
+```
+
+另外, 在参数后面还可以加 const, 在类中只有 const 对象才能调用的方法.
 
 
 
