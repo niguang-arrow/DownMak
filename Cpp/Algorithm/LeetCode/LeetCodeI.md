@@ -1276,7 +1276,7 @@ https://leetcode.com/problems/permutation-in-string/solution/
 
 其中需要注意的是解法一 Approach #1 Brute Force [Time Limit Exceeded], 虽然这个方法超时了, 但是其中用于求 permutation 的方法可以借鉴. (这种解法的思路是求出 s1 的所有 permutation, 
 
-然后判断 s2 是否含有这个 permutation). permutation 使用递归求解, 下面是根据上面的解答写的对字符串进行排列的代码, 可能会有 bug, 但目前我使用了几个测试用例均能得到正确解答. (当然, 世家你复杂度是非常高的... (O(n!)))
+然后判断 s2 是否含有这个 permutation). permutation 使用递归求解, 下面是根据上面的解答写的对字符串进行排列的代码, 可能会有 bug, 但目前我使用了几个测试用例均能得到正确解答. (当然, 时间复杂度是非常高的... (O(n!)))
 
 ```cpp
 class Solution {
