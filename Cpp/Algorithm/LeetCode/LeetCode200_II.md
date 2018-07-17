@@ -12,9 +12,21 @@
 
 20180708 -- 我懒得数了, 后面有的题目已经不是前 200 题了, 最近也在牛客上把剑指 Offer 搞定.
 
-20180709 -- 牛客剑指 offer 37 题.
+20180709 -- 牛客剑指 offer 37 题. BST转双向指针,栈的压入弹出序列
 
 20180710 -- 序列化二叉树, 子树判断, power 计算.
+
+20180711 -- 剑指 offer 51 题. 旋转字符串,和为S的序列,链表第一个公共节点.
+
+20180712 -- 剑指 offer 57 题. 1出现的次数,逆序对的个数,字符流中的第一个只出现一次的字符. 机器人的运动范围, 矩阵中的路径, 表示数值的字符串.
+
+20180713 -- 剑指 Offer 63 题, 数组中的重复数字(leetcode 上的 287 题和牛客上的不同.),构建乘积数组, 二叉树的下一个节点, 扑克牌的顺子, 圆圈中最后剩下的数, 数组中只出现一次的数字.
+
+20180714 -- 在公司准备图嵌入模型的 PPT, 没有时间练题... 罪过罪过... 晚上回来后不想干活, 就放纵自己看动漫... 罪过罪过. 可悲啊.
+
+20180715 -- 剑指 Offer 65 题, 滑动窗口的最大数，数据流中的中位数．（今天和子昂去外面玩）
+
+20180716 -- 剑指 Offer 66 题, 正则表达式匹配, 终于写完了最后一题.
 
 
 
@@ -387,6 +399,84 @@ public:
 
 ## 数组
 
+### 287. **Find the Duplicate Number
+
+https://leetcode.com/problems/find-the-duplicate-number/description/
+
+长度为 n + 1 的数组中只含有 `[1, n]` 区间内的元素, 现在判断其中是否有重复值, 有的话找出这个重复值. 
+
+思路: 首先有重复值, 根据鸽巢原理, 某两个位置上必然放置同样的数值. 而要找到这个重复数值, 可以转换为找链表入口环的问题. 具体分析请看: 
+
+http://bookshadow.com/weblog/2015/09/28/leetcode-find-duplicate-number/
+
+里面有必要的证明. 我在这里简要说一下:
+
++ **首先证明一定存在环**
+
+首先可以设置一个从 `[1...n] -> [1...n]` 的映射 f, 那么我们就是希望找到 `i != j`, 使得 `f(i) = f(j)`. 由于数组中存在重复数字, 那么 f 的这种映射必然会访问某个元素两次, 因此一定有环. 比如:
+
+```cpp
+idx : 0  1  2  3
+num : 1  2  2  3
+```
+
+上面四个位置, 只保存 `[1..3]` 之间的元素, 所以存在重复元素 2. 定义映射 f: `[1, 2, 3] -> [1, 2, 3]`, 由于 `f[num[0]] = f[1] = 2`, 而 `f[num[1]] = f[2] = 2`, 说明存在 `(i, j) = (1, 2)` 使得 `f(1) == f(2) == 2`, 即 2 被访问了两次, 所以肯定存在环. ****
+
++ **其次证明环的形状是 P 型, 而不是完全的闭合环.**
+
+```bash
+1 -> 2 -> 3 -> 4 -> 5        1 -> 2 -> 3
+     |               |       |         | 
+     6 <- 7 <- 8 <- 10       6 <- 4 <- 5
+```
+
+左边是 P 型, 右边是完全闭合的.
+
+由于数组中的元素是 `[1...n]` 而不存在 0, 因此肯定不存在 `f(0)`, 那么 `num[0]` 肯定不是环的入口(因为不存在 `f(0)` 可以访问到 `num[0]`), 所以环的形状是 P 型.
+
+明确以上两点之后, 就可以将问题转换为寻找链表环的入口点问题. 这里盗一张图:
+
+来自 : https://blog.csdn.net/happyhuidi/article/details/80199887
+
+**数组的值nums[i]为：2 3 5 6 1 7 8 1 4 1 **
+
+**对应的索引i为    ：0 1 2 3 4 5 6 7 8 9**
+
+则转换为链表后如下图所示：
+
+![](http://opoddugn5.bkt.clouddn.com/DownMak/Algorithm/LeetCode_II/cycle.png)
+
+首先明确 `nums[0] = 2` 不会是环的入口节点, 链表本来是从 `2` 开始的, 但是上面图示中用索引 `0` 指向 2 是有好处的, 见下面的代码就清楚了. 因此为此可以将 0 视为一个链表中的虚拟头结点. 之后使用快慢指针查找入口点的时候, fast 指针可以从 0 开始出发.
+
+```cpp
+class Solution {
+public:
+    int findDuplicate(vector<int>& nums) {
+      	// 起始的时候, slow 和 fast 都指向虚拟头结点 0,
+      	// 但由于 while (fast != slow) 这个判断条件是要求 slow != fast,
+      	// 因此初始的时候 fast 需要先移动两步, 而 slow 移动一步.
+        int slow = nums[0], fast = nums[nums[0]];
+        while (fast != slow) {
+            fast = nums[nums[fast]];
+            slow = nums[slow];
+        }
+		
+      	// 由于 slow 和 fast 都是从虚拟头结点开始出发的, 为了相遇在入口点,
+      	// fast 需要重新回到虚拟头结点 0 处.
+        fast = 0;
+        while (fast != slow) {
+            fast = nums[fast];
+            slow = nums[slow];
+        }
+        return fast;
+    }
+};
+```
+
+
+
+
+
 ### 27. *Remove Element
 
 https://leetcode.com/problems/remove-element/description/
@@ -651,6 +741,35 @@ public:
 
 
 
+## 查找表
+
+### 49. **Group Anagrams(群组错位词)
+
+https://leetcode.com/problems/group-anagrams/description/
+
+思路参阅: http://www.cnblogs.com/grandyang/p/4385822.html
+
+判断两个单词是不是错位词: 将错位词中的字符进行排序后会得到相同的字符串.
+
+```cpp
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        vector<vector<string>> res;
+        unordered_map<string, vector<string>> record;
+        for (auto &s : strs) {
+            string t = s;
+            std::sort(t.begin(), t.end());
+            record[t].push_back(s);
+        }
+        for (auto &m : record) res.push_back(m.second);
+        return res;
+    }
+};
+```
+
+
+
 
 
 
@@ -874,6 +993,149 @@ public:
 
 
 ## 二叉树
+
+### 236. **Lowest Common Ancestor of a Binary Tree(二叉树的最低公共祖先)
+
+https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/description/
+
+```bash
+        _______3______
+       /              \
+    ___5__          ___1__
+   /      \        /      \
+   6      _2       0       8
+         /  \
+         7   4
+```
+
+思路: 需要注意到一点: `lowestCommonAncestor(root, p, q)`, 如果 root 刚好等于 p 或者 q 中的任意一个节点, 那么 p 和 q 的最低公共祖先就是 root. 比如上面 p = 5 和 q
+
+ = 2 两个节点, 当遍历到以 5 为 root 的子树时, 由于 root 刚好等于 p, 那么最低公共祖先就是 root 本身.
+
+如果两个节点分别在左右子树, 那么最低公共祖先就是 root.
+
+这道题使用后序遍历:
+
+```cpp
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if (!root || root == p || root == q) return root;
+        auto left = lowestCommonAncestor(root->left, p, q);
+        auto right = lowestCommonAncestor(root->right, p, q);
+        // 根据 left 和 right 是否为空, 可以判断两个节点 p 和 q 是否在同一棵子树下
+        if (left && right) return root;
+        // left 和 right 中有一个为空的情况, 说明肯定在某棵子树上没有搜索到 p 或 q,
+        // 而在另外的子树上的 root' 等于 p 或 q 中的一个, 此时将其返回即可.
+        return left ? left : right;
+    }
+};
+```
+
+
+
+### 530. *Minimum Absolute Difference in BST(在 BST 中查找两个节点之差的最小绝对值)
+
+https://leetcode.com/problems/minimum-absolute-difference-in-bst/description/
+
+```bash
+Input:
+
+   1
+    \
+     3
+    /
+   2
+
+Output:
+1
+
+Explanation:
+The minimum absolute difference is 1, which is the difference between 2 and 1 (or between 2 and 3).
+```
+
+给定一个只包含非负数的 BST, 查找任意两个节点的绝对值差的最小值.
+
+
+
+思路: https://github.com/CyC2018/Interview-Notebook/blob/master/notes/Leetcode%20%E9%A2%98%E8%A7%A3.md#bst
+
+利用二叉查找树的中序遍历为有序的性质，计算中序遍历中临近的两个节点之差的绝对值，取最小值。
+
+**做有关 BST 的题, 回忆中序遍历是有序的这个性质**,下面代码中使用`prev`记录中序遍历时的前一个节点.
+
+```cpp
+class Solution {
+public:
+    int getMinimumDifference(TreeNode* root) {
+        inorder(root);
+        return res;
+    }
+    void inorder(TreeNode *root) {
+        if (!root) return;
+        inorder(root->left);
+      	// 当 prev 不为空时, 计算差值.
+        if (prev) res = min(res, root->val - prev->val);
+        prev = root;
+        inorder(root->right);
+    }
+private:
+    TreeNode *prev; // 记录中序遍历的前一个节点
+    int res = INT32_MAX;
+};
+```
+
+
+
+### 501. *Find Mode in Binary Search Tree(寻找 BST 中出现次数最多的值)
+
+https://leetcode.com/problems/find-mode-in-binary-search-tree/description/
+
+类似 530 题 Minimum Absolute Difference in BST, 利用 BST 的中序遍历是有序的性质, 使用 `prev` 记录前一个节点.
+
+该题的难点见注释.
+
+```cpp
+class Solution {
+public:
+    vector<int> findMode(TreeNode* root) {
+        inorder(root);
+        return res;
+    }
+private:
+    void inorder(TreeNode *root) {
+        if (!root) return;
+        inorder(root->left);
+        if (prev) {
+            if (root->val == prev->val) count ++;
+            else count = 1;
+        }
+      	// res 中保存的是当前访问的节点 root 的值.
+        if (count == maxCount) {
+            res.push_back(root->val);
+        }
+        else if (count > maxCount) {
+            res.clear();
+            res.push_back(root->val);
+            maxCount = count;
+        }
+        prev = root;
+        inorder(root->right);
+    }
+private:
+    TreeNode *prev;
+    vector<int> res;
+    int count = 1;
+    int maxCount = 0;
+};
+
+```
+
+
+
+
+
+
 
 ### 98. **Validate Binary Search Tree(验证二叉搜索树)
 
@@ -1670,6 +1932,139 @@ public:
 ```
 
 参阅: https://leetcode.com/problems/implement-stack-using-queues/discuss/62527/A-simple-C++-solution
+
+
+
+## 贪婪算法
+
+### 455. *Assign Cookies
+
+https://leetcode.com/problems/assign-cookies/description/
+
+```
+Input: [1,2], [1,2,3]
+Output: 2
+
+Explanation: You have 2 children and 3 cookies. The greed factors of 2 children are 1, 2.
+You have 3 cookies and their sizes are big enough to gratify all of the children,
+You need to output 2.
+```
+
+题目描述：每个孩子都有一个满足度，每个饼干都有一个大小，只有饼干的大小大于等于一个孩子的满足度，该孩子才会获得满足。求解最多可以获得满足的孩子数量。
+
+因为最小的孩子最容易得到满足，因此先满足最小孩子。给一个孩子的饼干应当尽量小又能满足该孩子，这样大饼干就能拿来给满足度比较大的孩子。因此贪心策略
+
+```cpp
+class Solution {
+public:
+    int findContentChildren(vector<int>& g, vector<int>& s) {
+        std::sort(g.begin(), g.end());
+        std::sort(s.begin(), s.end());
+        int i = 0, j = 0;
+        while (i < g.size() && j < s.size()) {
+            if (s[j] >= g[i]) i ++;
+            j ++;
+        }
+        return i;
+    }
+};
+```
+
+
+
+
+
+## 其他
+
+### 295. ***Find Median from Data Stream
+
+https://leetcode.com/problems/find-median-from-data-stream/description/
+
+思路: 这道题牛客上的剑指 Offer 有, 笔记在 "剑指 Offer.md" 中, 这里不多说了. 主要使用最大堆和最小堆进行处理.
+
+```cpp
+class MedianFinder {
+public:
+    /** initialize your data structure here. */
+    MedianFinder() {
+        
+    }
+    
+    void addNum(int num) {
+        if (((qmax.size() + qmin.size()) & 1) == 0) { // 偶数个, 将新元素插入最小堆
+            if (!qmax.empty() && num < qmax.top()) {
+                qmax.push(num);
+                qmin.push(qmax.top());
+                qmax.pop();
+            }
+            else qmin.push(num);
+        }
+        else {
+            if (!qmin.empty() && num > qmin.top()) {
+                qmin.push(num);
+                qmax.push(qmin.top());
+                qmin.pop();
+            }
+            else qmax.push(num);
+        }
+    }
+    
+    double findMedian() {
+        if (qmax.empty() && qmin.empty()) return 0.0;
+        if (((qmax.size() + qmin.size()) & 1) == 0)
+            return (qmax.top() + qmin.top()) / 2.0;
+        else
+            return qmin.top();
+        
+    }
+private:
+    priority_queue<int, vector<int>, less<int>> qmax;
+    priority_queue<int, vector<int>, greater<int>> qmin;
+};
+```
+
+LeetCode 的官方解答更为简洁:
+
+https://leetcode.com/problems/find-median-from-data-stream/solution/
+
+下面代码在个数为偶数时, 将元素插入到最大堆中. 注意 lo 是最大堆.
+
+Adding a number `num`:
+
+- Add `num` to max-heap `lo`. Since `lo` received a new element, we must do a balancing step for `hi`. So remove the largest element from `lo` and offer it to `hi`.
+- The min-heap `hi` might end holding more elements than the max-heap `lo`, after the previous operation. We fix that by removing the smallest element from `hi` and offering it to `lo`.
+
+The above step ensures that we do not disturb the nice little size property we just mentioned.
+
+```cpp
+class MedianFinder {
+    priority_queue<int> lo;                              // max heap
+    priority_queue<int, vector<int>, greater<int>> hi;   // min heap
+
+public:
+    // Adds a number into the data structure.
+    void addNum(int num)
+    {
+        lo.push(num);                                    // Add to max heap
+
+        hi.push(lo.top());                               // balancing step
+        lo.pop();
+
+        if (lo.size() < hi.size()) {                     // maintain size property
+            lo.push(hi.top());
+            hi.pop();
+        }
+    }
+
+    // Returns the median of current data stream
+    double findMedian()
+    {
+        return lo.size() > hi.size() ? (double) lo.top() : (lo.top() + hi.top()) * 0.5;
+    }
+};
+```
+
+
 
 
 

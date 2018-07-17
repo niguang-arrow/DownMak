@@ -13,6 +13,7 @@
 #include <cassert>
 #include <algorithm>
 #include <iterator>
+#include <list>
 #include <cstdlib>
 #include <cstring>
 #include <climits>
@@ -46,117 +47,47 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    TreeNode* KthNode(TreeNode* root, int k) {
-        int idx = 0;
-        TreeNode *res = nullptr;
-        KthNode(root, res, k, idx);
+    vector<int> findMode(TreeNode* root) {
+        inorder(root);
         return res;
     }
 private:
-    void KthNode(TreeNode *root, TreeNode* &res, int k, int &idx) {
-        if (!root || k <= 0) return;
-        KthNode(root->left, res, k, idx);
-        idx ++;
-        cout << "1idx: " << idx << endl;
-        if (idx == k) {
-            cout << "idx: " << idx << endl;
-            res = root;
-            cout << "res: " << res << endl;
-            return;
+    void inorder(TreeNode *root) {
+        if (!root) return;
+        inorder(root->left);
+        if (prev) {
+            if (root->val == prev->val) count ++;
+            else count = 1;
+            if (count == maxCount) {
+                res.push_back(prev->val);
+            }
+            else if (count > maxCount) {
+                res.clear();
+                res.push_back(prev->val);
+                maxCount = count;
+            }
         }
-        KthNode(root->right, res, k, idx);
+        prev = root;
+        inorder(root->right);
     }
+private:
+    TreeNode *prev;
+    vector<int> res;
+    int count = 1;
+    int maxCount = 0;
 };
 
-class Codec {
-public:
-    // Encodes a tree to a single string.
-    string serialize(TreeNode* root) {
-        if (!root) return "";
-        ostringstream os;
-        queue<TreeNode*> q;
-        q.push(root);
-        while (!q.empty()) {
-            TreeNode *t = q.front(); q.pop();
-            if (t) {
-            os << t->val << " ";
-            q.push(t->left);
-            q.push(t->right);
-            } else {
-                os << "# ";
-            }
-            cout << os.str() << endl;
-        }
-        return os.str();
-    }
-
-    // Decodes your encoded data to tree.
-    TreeNode* deserialize(string data) {
-        istringstream in(data);
-        return deserialize(in);
-    }
-    
-    // 前序遍历
-    void serialize(TreeNode *root, ostringstream &out) {
-        if (!root) {
-            out << "# ";
-            return;
-        }
-        queue<TreeNode*> q;
-        q.push(root);
-        while (!q.empty()) {
-            auto r = q.front();
-            q.pop();
-            if (!r) {
-                out << "# ";
-                continue;
-            }
-            out << r->val << " ";
-            q.push(r->left);
-            q.push(r->right);
-            cout << out.str() << endl;
-        }
-    }
-
-    TreeNode* deserialize(istringstream &in) {
-        string val;
-        in >> val;
-        if (val == "#") return nullptr;
-        TreeNode *root = new TreeNode(stoi(val));
-        auto ptr = root;
-        queue<TreeNode*> q;
-        q.push(ptr);
-        while (!q.empty()) {
-            auto r = q.front();
-            q.pop();
-            if (!(in >> val)) break;
-            if (val != "#") {
-                ptr = new TreeNode(stoi(val));
-                q.push(ptr);
-                r->left = ptr;
-            }
-            if (!(in >> val)) break;
-            if (val != "#") {
-                ptr = new TreeNode(stoi(val));
-                q.push(ptr);
-                r->right = ptr;
-            }
-        }
-        return root;
-    } 
-};
 
 int main() {
-    TreeNode *root = new TreeNode(2);
-    root->left = new TreeNode(1);
-    root->right = new TreeNode(4);
+    TreeNode *root = new TreeNode(1);
+    //root->left = new TreeNode(1);
+    root->right = new TreeNode(2);
     //root->left->left = new TreeNode(1);
-    root->right->left = new TreeNode(3);
-    root->right->right = new TreeNode(6);
+    root->right->left = new TreeNode(2);
+    //root->right->right = new TreeNode(6);
     //root->left->right->left = new TreeNode(7);
     //root->left->right->right = new TreeNode(9);
     //root->right->right = new TreeNode(17);
-
 
     //int arr[] = {1, 2,3,  4, 5};
     //vector<int> nums(arr, arr + sizeof(arr)/sizeof(int));
@@ -168,27 +99,20 @@ int main() {
     string word = "ABCESEEEFS";
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     //vector<int> nums1 = {1, 2, 2, 1};
-    vector<int> nums1 = {5, 7, 6, 9, 11, 10,};
-    //vector<int> nums1 = {3, 2};
+    vector<int> nums1 = {1,2,3,4,5,6,7,0};
+    //vector<int> nums2 = {4, 3, 5, 1, 2};
     vector<int> preorder = {9, 3, 15, 20, 7};
     vector<int> inorder = {9, 15, 7, 20, 3};
     vector<vector<int>> nums = {{1,2,3,4}, {5,6,7,8}, {9,10,11,12}};
     string input = "thecattlewasrattledbythebattery";
     vector<string> words = {"a", "banana", "app", "appl", "ap", "apply", "apple"};
-    //auto res = Solution().permuteUnique(nums1);
-    //auto res = Solution().KthNode(root, 1);
+    auto res = Solution().findMode(root);
     //cout << res << endl;
-    Codec a;
-    auto str = a.serialize(root);
-    cout << str << endl;
-    ostringstream os;
-    a.serialize(root, os);
-    cout << os.str() << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
 
-    //printVector(res);
+    printVector(res);
     //printMatrix(res);
     //printLinkedList(res);
 }

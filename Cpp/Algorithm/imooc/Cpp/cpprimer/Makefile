@@ -2,12 +2,12 @@ CC = clang++
 CFLAGS = -Wall -std=c++0x
 CLINKS =
 
-NAME = inherit
+NAME = vtable
 SRC = $(NAME).cpp
 TAR = $(NAME).out
 
 $(TAR) : $(SRC)
-	$(CC) $(CFLAGS) -o $@ $^ $(CLINKS)
+	$(CC) $(CFLAGS) -g -o $@ $^ $(CLINKS)
 
 
 .PHONY : run clean
