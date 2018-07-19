@@ -2,21 +2,16 @@
 
 using namespace std;
 
-class A{
+class Uncopyable {
 public:
-    A() { cout << "A()" << endl; }
-    virtual ~A() { cout << "~A()" << endl; }
+    Uncopyable() {} // 允许 derived 对象构造和析构
+    ~Uncopyable() {}
+private:
+    Uncopyable(const Uncopyable&); // 但是阻止 copying
+    Uncopyable& operator=(const Uncopyable&);
 };
 
-class B: public A{
-public:
-    int *pb;
-    B() : pb(new int(100)) { cout << "B()" << endl; }
-    virtual ~B() { delete pb; cout << "~B()" << endl; }
-};
-
-int main() {
-    B b;
-    A *pb = &b;
-    return 0;
+int main(){
+    A a1;
+    A a2(a1);
 }

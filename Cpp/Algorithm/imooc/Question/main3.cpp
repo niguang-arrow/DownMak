@@ -47,34 +47,8 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    vector<int> findMode(TreeNode* root) {
-        inorder(root);
-        return res;
+    int ladderLength(string beginWord, string endWord, vector<string>& wordList) {
     }
-private:
-    void inorder(TreeNode *root) {
-        if (!root) return;
-        inorder(root->left);
-        if (prev) {
-            if (root->val == prev->val) count ++;
-            else count = 1;
-            if (count == maxCount) {
-                res.push_back(prev->val);
-            }
-            else if (count > maxCount) {
-                res.clear();
-                res.push_back(prev->val);
-                maxCount = count;
-            }
-        }
-        prev = root;
-        inorder(root->right);
-    }
-private:
-    TreeNode *prev;
-    vector<int> res;
-    int count = 1;
-    int maxCount = 0;
 };
 
 

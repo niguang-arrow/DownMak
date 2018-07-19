@@ -173,6 +173,264 @@ public:
 
 
 
+### 279. **Perfect Squares
+
+https://leetcode.com/problems/perfect-squares/description/
+
+对于一个正整数, 求最少的完全平方数的和等于它.
+
+思路: 将整个问题转化为一个图论问题. **从 n 到 0, 每一个数字表示一个节点; 如果两个数字 x 到 y 相差一个完全平方数, 则连接一条边.** 我们得到一个无权图, 原问题转化为求这个无权图从 n 到 0 的最短路径.
+
+```cpp
+class Solution {
+public:
+    int numSquares(int n) {
+        assert(n > 0);
+        queue<pair<int, int>> q;
+        vector<bool> visited(n + 1, false);
+        q.push({n, 0});
+        visited[n] = true;
+        while (!q.empty()) {
+            int num = q.front().first;
+            int step = q.front().second;
+            q.pop();
+            if (num == 0) return step;
+            
+            for (int i = 1; i * i <= num; ++i) {
+                int a = num - i * i;
+                if (a < 0) break;
+                if (a == 0) return step + 1;
+                if (!visited[a]) {
+                    q.push({a, step + 1});
+                    visited[a] = true;
+                }
+            }
+        }
+        throw invalid_argument("No solution");
+    }
+};
+```
+
+
+
+### 547. **Friend Circles(朋友圈)
+
+https://leetcode.com/problems/friend-circles/description/
+
+There are **N** students in a class. Some of them are friends, while some are not. Their friendship is transitive in nature. For example, if A is a **direct** friend of B, and B is a **direct** friend of C, then A is an **indirect** friend of C. And we defined a friend circle is a group of students who are direct or indirect friends.
+
+Given a **N\*N** matrix **M** representing the friend relationship between students in the class. If M[i][j] = 1, then the ith and jth students are **direct** friends with each other, otherwise not. And you have to output the total number of friend circles among all the students.
+
+**Example 1:**
+
+```bash
+Input: 
+[[1,1,0],
+ [1,1,0],
+ [0,0,1]]
+Output: 2
+Explanation:The 0th and 1st students are direct friends, so they are in a friend circle. 
+The 2nd student himself is in a friend circle. So return 2.
+```
+
+**Example 2:**
+
+```bash
+Input: 
+[[1,1,0],
+ [1,1,1],
+ [0,1,1]]
+Output: 1
+Explanation:The 0th and 1st students are direct friends, the 1st and 2nd students are direct friends, 
+so the 0th and 2nd students are indirect friends. All of them are in the same friend circle, so return 1.
+```
+
+
+
+思路: 参考: 
+
++ https://github.com/CyC2018/Interview-Notebook/blob/master/notes/Leetcode%20%E9%A2%98%E8%A7%A3.md#bfs
++ http://www.cnblogs.com/grandyang/p/6686983.html 给出了三种解法.
+
+朋友之间的关系可以看成一个无向图, 如果第 i 个人与第 j 个人是好友, 那么 `M[i][j]` 与 `M[j][i]` 的值都是 1. 使用 DFS 进行搜索, 对于某个人, 我们先遍历其好友, 再遍历其好友的好友, 这样我们就能将属于同一个朋友圈的人都遍历一遍. 同时我们要标记出已经遍历过的人, 然后积累朋友圈的个数.
+
+方法1: 使用 DFS.
+
+```cpp
+class Solution {
+public:
+    int findCircleNum(vector<vector<int>>& M) {
+        if (M.empty() || M[0].empty()) return 0;
+        n = M.size();
+        int res = 0;
+        visited = vector<bool>(n, false);
+        for (int i = 0; i < n; ++i) {
+            if (!visited[i]) {
+                dfs(M, i);
+                ++res;
+            }
+        }
+        return res;
+    }
+private:
+    int n;
+    vector<bool> visited;
+    void dfs(vector<vector<int>> &matrix, int i) {
+        visited[i] = true;
+        for (int k = 0; k < n; ++k)
+            if (matrix[i][k] && !visited[k])
+                dfs(matrix, k);
+    }
+};
+```
+
+解法2: 使用 BFS 来遍历所有人.
+
+```cpp
+class Solution {
+public:
+    int findCircleNum(vector<vector<int>>& M) {
+        int n = M.size(), res = 0;
+        vector<bool> visited(n, false);
+        queue<int> q;
+        for (int i = 0; i < n; ++i) {
+            if (visited[i]) continue;
+            q.push(i);
+            while (!q.empty()) {
+                int t = q.front(); q.pop();
+                visited[t] = true;
+                for (int j = 0; j < n; ++j) {
+                    if (!M[t][j] || visited[j]) continue;
+                    q.push(j);
+                }
+            }
+            ++res;
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 130. **Surrounded Regions(包围区域)
+
+https://leetcode.com/problems/surrounded-regions/description/
+
+思路: 参考: http://www.cnblogs.com/grandyang/p/4555831.html
+
+扫面矩阵的四条边，如果有O，则用DFS遍历，将所有连着的O都变成另一个字符，比如，这样剩下的O都是被包围的，然后将这些O变成X, 这样剩下的O都是被包围的，然后将这些O变成X，把变回O就行了。
+
+```cpp
+class Solution {
+public:
+    void solve(vector<vector<char>>& board) {
+        if (board.empty() || board[0].empty()) return;
+		// 注意, 我写代码时曾犯了一个错误, 将下面这一行代码写成了:
+      	// int m = board.size(), n = board[0].size();
+      	// 之后总是得不到正确的结果, 要小心, 因为这相当于类的成员变量 m 和 n
+      	// 被 solve 的局部变量隐藏了, 而成员变量 m 和 n 没有正常的初始化.
+        m = board.size(), n = board[0].size();
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < n; ++j)
+                if (i == 0 || i == m - 1 || j == 0 || j == n - 1 )
+                    if (board[i][j] == 'O') dfs(board, i, j);
+        
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < n; ++j) {
+                if (board[i][j] == 'O') board[i][j] = 'X';
+                if (board[i][j] == '$') board[i][j] = 'O';
+            }
+    }
+private:
+        int m, n;
+    
+        void dfs(vector<vector<char>> &board, int x, int y) {
+            vector<vector<int>> dirs{{0,-1},{-1,0},{0,1},{1,0}};
+            board[x][y] = '$';
+            for (auto &d : dirs) {
+                int dx = x + d[0], dy = y + d[1];
+                if (dx >= 0 && dx < m && dy > 0 && dy < n && board[dx][dy] == 'O') {
+                    dfs(board, dx, dy);
+                }
+            }
+        }
+};
+```
+
+
+
+### 417. **Pacific Atlantic Water Flow(太平洋大西洋水流)
+
+https://leetcode.com/problems/pacific-atlantic-water-flow/description/
+
+**Example:**
+
+```bash
+Given the following 5x5 matrix:
+
+  Pacific ~   ~   ~   ~   ~ 
+       ~  1   2   2   3  (5) *
+       ~  3   2   3  (4) (4) *
+       ~  2   4  (5)  3   1  *
+       ~ (6) (7)  1   4   5  *
+       ~ (5)  1   1   2   4  *
+          *   *   *   *   * Atlantic
+
+Return:
+
+[[0, 4], [1, 3], [1, 4], [2, 2], [3, 0], [3, 1], [4, 0]] (positions with parentheses in above matrix).
+```
+
+思路: 参考: http://www.cnblogs.com/grandyang/p/5962508.html
+
+这道题给了我们一个二维数组，说是数组的左边和上边是太平洋，右边和下边是大西洋，假设水能从高处向低处流，问我们所有能流向两大洋的点的集合。
+
+
+
+```cpp
+class Solution {
+public:
+    // 和 130题 Surrounded Regions 类似, 如果从中间到四周考虑问题比较复杂的话, 可以从
+    // 四周向两边扩展, 该题需要 pacific 和 atlantic 两个数组来标记, 从太平洋的边缘以及
+    // 大西洋的边缘向中间扩展能达到的点, 能达到就标记为 true, 而两个数组中同一位置
+    // 能到达的点则为能同时到达两大洋的点
+    vector<pair<int, int>> pacificAtlantic(vector<vector<int>>& matrix) {
+        if (matrix.empty() || matrix[0].empty()) return {};
+        m = matrix.size(), n = matrix[0].size();
+        vector<vector<bool>> pacific, atlantic;
+        pacific = atlantic = vector<vector<bool>>(m, vector<bool>(n, false));
+        for (int i = 0; i < m; ++i) {
+            dfs(matrix, pacific, INT32_MIN, i, 0); // 访问太平洋的左边界
+            dfs(matrix, atlantic, INT32_MIN, i, n - 1); // 访问大西洋的右边界
+        }
+        for (int j = 0; j < n; ++j) {
+            dfs(matrix, pacific, INT32_MIN, 0, j); // 访问太平洋的上边界
+            dfs(matrix, atlantic, INT32_MIN, m - 1, j); // 访问大西洋的下边界
+        }
+        vector<pair<int, int>> res;
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < n; ++j)
+                if (pacific[i][j] && atlantic[i][j])
+                    res.push_back({i, j});
+        return res;
+    }
+private:
+    int m, n;
+    void dfs(vector<vector<int>> &matrix, vector<vector<bool>> &visited, int pre, int i, int j) {
+        // 注意如果 matrix[i][j] 小于前一次访问的元素, 说明 matrix[i][j] 向四周扩散无法扩展到 pre 的位置
+        if (i < 0 || i >= m || j < 0 || j >= n || visited[i][j] || matrix[i][j] < pre) return;
+        visited[i][j] = true;
+        vector<vector<int>> dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        for (auto &d : dirs) {
+            dfs(matrix, visited, matrix[i][j], i + d[0], j + d[1]);
+        }
+    }
+};
+```
+
+
+
 
 
 ## 字典树

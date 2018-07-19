@@ -364,6 +364,217 @@ private:
 
 
 
+## Effective C++ 阅读
+
+2018 年 7 月 17 日
+
+### 第 2 章 构造/析构/赋值运算
+
+#### 条款 05: 了解 C++ 默默编写并调用哪些函数
+
++ 即使是一个空类, 被 C++ 编译器处理之后, 会自动声明编译器版本的一个 copy 构造函数, 一个拷贝赋值运算符以及一个析构函数, 此外, 如果你没有声明任何构造函数, 编译器也会自动声明一个 default 构造函数. 所有这些函数都是 public 且 inline 的.
+
+```cpp
+class Empty {};
+// 等价于
+class Empty {
+public:
+    Empty() { ... }
+    Empty(const Empty &rhs) { ... }
+    ~Empty() { ... }
+
+    Empty& operator=(const Empty &rhs) { ... }
+};
+```
+
++ **注意编译器产生出来的析构函数是 non-virtual 的, 除非这个 class 的基类自身声明了 virtual 的析构函数, 这种情况下编译器产生的析构函数的虚属性主要来自基类.**
++ default 构造函数和析构函数主要是给编译器一个地方用来放置 "藏身幕后" 的代码, 比如调用基类和 non-static 成员变量的构造函数和析构函数.
++ 而 copy 构造函数与 copy assignment 操作符, 编译器创建的版本只是将源对象的每一个 non-static 成员变量拷贝到目标对象. 但如果这个类包含 `reference` 或者 `const` 成员, 编译器就不会自动生成 copy assignment 操作符(拒绝对引用成员或 const 成员的赋值操作.)
++ 如果你声明了类的构造函数, 那么编译器就不会创建 default 构造函数.
+
+
+
+#### 条款 06: 若不想使用编译器自动生成的函数, 就该明确拒绝
+
++ 比如希望 copy 构造函数与 copy assignment 操作符失效(不能使用), 那么只能声明为 private 的(声明使得编译器不会创建默认的版本, 而令这些函数为 private 的, 可以防止人们调用它们; 只要不去定义这些函数, 那么虽然成员函数与友元函数可以访问它们, 由于只有声明而没有定义, 会得到连接错误(linkage error)). "将成员函数声明为 private 而且故意不实现它们" 这一伎俩是如此为大家接受, 因而被用在 C++ iostream 库中阻止 copying 行为.
++ 为了驳回编译器自动提供的功能, 可以将相应的成员函数声明为 private 并且不予实现:
+
+之后还可以让派生类继承 Uncopyable 这个类阻止 copying.
+
+```cpp
+class Uncopyable {
+public:
+    Uncopyable() {} // 允许 derived 对象构造和析构
+    ~Uncopyable() {}
+private:
+    Uncopyable(const Uncopyable&); // 但是阻止 copying
+    Uncopyable& operator=(const Uncopyable&);
+};
+```
+
++ 这部分内容书上没有说明, C++11 提供了 delete 关键字:
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class A {
+private:
+    int data;
+public:
+    A(int x = 100) : data(x) {}
+    A(const A &a) = delete;
+
+    A& operator=(const A &a) = delete;
+};
+
+int main(){
+    A a1;
+    A a2(a1); // error: call to deleted constructor of 'A'
+}
+```
+
+
+
+#### 条款 07: 为多态基类声明 virtual 析构函数
+
++ 任何一个 class 只要带有 virtual 函数都几乎确定应该也要有一个 virtual 析构函数. 
+
++ **如果 class 不含 virutal 函数, 通常表示它并不意图被用作一个 base class**. 当 class 不企图被当做 base class, 令其析构函数为 virtual 往往是个馊主意.(书上列举的例子是, 当 class 不企图作为 base class, 而胡乱设置析构函数为 virtual 会增加对象占用的空间大小, 因为要增加一个 vptr 指针! 在某些情况下, 使代码不能被移植(和 C 或 Fortran 相互移植, 具体看书))
+
+  > 欲实现出 virtual 函数, 对象必须携带某些信息, 主要用来在运行期决定哪一个 virtual 函数该被调用. 这份信息通常是由一个 vptr(virtual table pointer) 指针指出. vptr 指向一个由函数指针构成的数组, 称为 vtbl(virtual table); 每一个带有 virtual 函数的 class 都有一个相应的 vtbl. 当对象调用某一虚函数, 实际被调用的函数取决于该对象的 vptr 指针所指的那个 vtbl, -- 编译器在其中寻找适当的函数指针.
+
++ 因此: **只有当 class 内含至少一个 virtual 函数, 才为它声明 virtual 析构函数**.
+
++ 另外, **不要企图继承标准容器或任何其他带有 non-virtual 析构函数的 class.** 比如 string 类是没有 virtual 析构函数的, 若:
+
+  ```cpp
+  class MyStr : public string {
+  	... 
+  };
+
+  string *ps = new MyStr("abc");
+
+  delete ps; // 未有定义! 此时 MyStr 的析构函数没有被调用, 
+  		// 因为 string 中的析构函数不是虚函数.
+  ```
+
+  从上面这个例子可以看出, 对于继承, 要记住前面的一个结论: 不含有 virutal 函数的类通常表示它并不意图被用作一个 base class.
+
++ 总结:
+
+  + polymorphic (带多态性质的) base classes 应该声明一个 virtual 析构函数. 如果 class 带有任何 virutal 函数, 它就应该拥有一个 virtual 函数.
+  + classes 的设计目的如果不是作为 base class 使用, 或不是为了具备多态性, 就不该声明为 virtual 析构函数.
+
+
+
+
+
+### 第 6 章 继承与面向对象
+
+#### 前言
+
+本章将解释 C++ 不同特性的真正意义, 例如 "public 继承" 意味着 "is-a"; virtual 函数意味着 "接口必须被继承", non-virtual 函数意味着 "接口和实现都必须被继承".
+
+#### 条款 32: 确定你得 public 继承塑模出 is-a 关系
+
++ "public 继承" 意味着 **is-a**, 使用于 base 类对象的任何操作都能使用于 derived 类的任何对象. 因为每个 derived 对象都是一个 base 类对象.
++ **is-a** 并非唯一存在于 classes 之间的关系, 另外两种常见的关系是 **has-a**(有一个) 以及 **is-implemented-in-terms-of**(根据某物实现出).
++ 虽然 **is-a** 这种继承关系指明任何施加在 base 类对象上的操作都能作用于 derived 类, 但实际得小心, 因为有很多操作并不能对派生类对象使用.
+
+
+
+#### 条款 33: 避免遮掩继承而来的名称
+
++ derived classes 内的名称会遮掩 base classes 内的名称. 在 public 继承下从来没有人希望如此.
++ 为了让这样的名称再见天日, 可以使用 `using` 声明式或转交函数 (forwarding function)
+  + using 声明式可以将被掩盖的 base class 名称带入一个 derived class 作用域内.
+  + 使用转交函数: 下面的例子只是为了说明什么是转交函数, 可能例子不太好. 使用转交函数的原因是有的时候你不想继承 base classes 中的所有函数, 特别是在你使用 private 的方式继承 Base 类时.
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+class Base {
+public:
+    virtual void f() { cout << "Base::f()" << endl; }
+    virtual void f(int x) { cout << "Base::f(int)" << endl; }
+    virtual ~Base() {}
+};
+
+class Derived : public Base {
+public:
+    virtual void f() { cout << "D::f()" << endl; }
+};
+
+int main() {
+    Derived d;
+    d.f(); // 正确
+    d.f(1); // 错误! Base::f(int) 被 hide 了.
+}
+
+// 处理方法1: 使用 using 声明式
+class Derived : public Base {
+public:
+    using Base::f;
+    virtual void f() { cout << "D::f()" << endl; }
+};
+
+// 处理方法2: 使用 forwarding 函数
+class Derived : public Base {
+public:
+    virtual void f() { cout << "D::f()" << endl; }
+ 	virtual void f(int x) { Base::f(x); } // 转交函数, inline
+};
+```
+
+
+
+### 第 7 章 模板与泛型编程
+
+#### 条款 43: 学习处理模板化基类内的名称
+
+可在派生类模板中通过 `this->` 去引用基类模板中的成员, 或者直接使用 `base::` 资格修饰符.
+
+比如下面的代码, 是会编译错误的, 原因是 C++ 知道 base class templates 有可能会被特化, 而那个特化的版本中可能不会提供和一般性的 template 相同的接口(比如下面代码中, 我也可以写一个没有定义 `f()` 的 Base 类的特化版本). 因此它**往往拒绝在模板化的基类中寻找继承而来的名称**. (就某种意义而言, 当我们从 Object Oriented C++ 跨进 Template C++(条款 1), 继承就不像以前那样畅行无阻了.)
+
+解决的方法就是条款中说的, 在 `g()` 中 `f()` 的前面加上 `this->`. 
+
+```cpp
+#include <iostream>
+
+using namespace std;
+
+template<typename T>
+class Base {
+public:
+    void f() { cout << "Base::f()" << endl; }
+    void f(int x) { cout << "Base::f(int)" << endl; }
+    ~Base() {}
+};
+
+template<typename T>
+class Derived : public Base<T> {
+public:
+    void g() {
+        f(); // 这一行, 编译时会报 error: use of undeclared identifier 'f'
+      	// 解决方法是:
+      	// 1. this->f(); 让编译器去模板化的基类中查找 f(),
+      	// 2. 使用 using 声明, 在 Derived 中使用 using Base<T>::f;
+      	// 3. 使用明确的资格修饰符, Base<T>::f(); 但问题在于, 如果 f() 是虚函数,
+      	// 那么就会关闭 `virtual 绑定行为`. 这往往是最不让人满意的一种解法.
+      	// 所以还是用 this-> 吧.
+    }
+};
+
+int main() {
+    Derived<int> d;
+    d.g();
+}
+
+```
+
 
 
 
