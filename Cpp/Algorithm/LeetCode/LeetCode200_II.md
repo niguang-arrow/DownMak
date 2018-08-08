@@ -28,7 +28,19 @@
 
 20180716 -- 剑指 Offer 66 题, 正则表达式匹配, 终于写完了最后一题.
 
+20180723 -- 还是坚持刷题并记录, 写了的题都应该有记录的. 今日: 4.两个有序数组的中位数, 438. 找到所有的变形词. 560. 子数组的和为 K.
 
+
+
+## 注意要点
+
++ `res.size()` 的类型为 `size_t`, 无法用于 `min` 等函数中, 需要先转换为 int, 否则编译错误; 另外, 和负数进行比较前, 也要转换为 int.
+
+  ```cpp
+  min(10, int(res.size()));
+  ```
+
+  ​
 
 
 
@@ -870,6 +882,94 @@ public:
 
 
 
+### 4. ***Median of Two Sorted Arrays
+
+https://leetcode.com/problems/median-of-two-sorted-arrays/description/
+
+找两个有序数组的中位数.
+
+思路: 参考 http://www.cnblogs.com/grandyang/p/4465932.html 
+
+> 这道题让我们求两个有序数组的中位数，而且限制了时间复杂度为O(log (m+n))，看到这个时间复杂度，自然而然的想到了应该使用二分查找法来求解。但是这道题被定义为Hard也是有其原因的，难就难在要在两个未合并的有序数组之间使用二分法，这里我们需要定义一个函数来找到第K个元素，由于两个数组长度之和的奇偶不确定，因此需要分情况来讨论，对于奇数的情况，直接找到最中间的数即可，偶数的话需要求最中间两个数的平均值。下面重点来看如何实现找到第K个元素，首先我们需要让数组1的长度小于或等于数组2的长度，那么我们只需判断如果数组1的长度大于数组2的长度的话，交换两个数组即可，然后我们要判断小的数组是否为空，为空的话，直接在另一个数组找第K个即可。还有一种情况是当K = 1时，表示我们要找第一个元素，只要比较两个数组的第一个元素，返回较小的那个即可。
+
+```cpp
+class Solution {
+public:
+    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+        if (nums1.empty() && nums2.empty()) return 0.;
+        int n = nums1.size() + nums2.size();
+        if (n % 2) return findKthNumber(nums1, 0, nums2, 0, n / 2 + 1);
+        else return (findKthNumber(nums1, 0, nums2, 0, n / 2) + findKthNumber(nums1, 0, nums2, 0, n / 2 + 1)) / 2.;
+    }
+private:
+    // 在排序数组 nums1[i....] 与 nums2[j....] 中查找第 k 个元素, 其中注意 nums1 的大小要小于或等于 num2 的大小
+    // 终止条件为: 1. 如果 nums1 为空, 那么在 nums2 中查找第 k 大的值; 
+    // 2. 如果 k 为 1, 那么就比较 nums1[0] 与 nums2[0] 中的最小值;
+    double findKthNumber(vector<int> &nums1, int i, vector<int> &nums2, int j, int k) {
+        if (nums1.size() - i > nums2.size() - j)
+          	return findKthNumber(nums2, j, nums1, i, k);
+      	
+      	// 注意 nums1[i...] 为空的条件
+        if (nums1.size() == i) return nums2[j + k - 1]; 
+      
+        // 大佬, 这里千万不要写成 nums1[0] 与 nums2[0]
+        if (k == 1) return min(nums1[i], nums2[j]);
+      
+        // pa 和 pb 分别指向 nums1 和 nums2 中第 k/2 个元素的下一个位置, 但是由于考虑了范围,
+        // 因此, 做了一些限制.
+        int pa = min(i + k/2, int(nums1.size())), pb = j + k - (pa - i);
+      
+        // 如果 nums1[pa - 1] 比 nums2[pb - 1] 小, 那么之后就要在 nums1[pa....] 
+      	// 与 num2[j...] 中寻找第 (k - (pa - i)) 个元素(为了说明清楚, 不妨假设
+        //  nums1[i...] 和 nums2[j...] 都有很多元素, 个数大于 k/2), 那么当 
+      	// nums1[i+k/2-1] < nums2[j+k/2-1] 时, 说明第 k 大的元素 
+        // 比如在 nums[i+k/2...] 与 nums2[j...] 内, 反正肯定不在 nums1[i...i+k/2) 中,
+      	// 之后只要在那两个范围内查找剩下的第 k/2 个元素即可.
+        if (nums1[pa - 1] < nums2[pb - 1])
+            return findKthNumber(nums1, pa, nums2, j, k - pa + i);
+        else if (nums1[pa - 1] > nums2[pb - 1])
+            return findKthNumber(nums1, i, nums2, pb, k - pb + j);
+        return nums1[pa - 1];
+    }
+};
+```
+
+
+
+### 560. **Subarray Sum Equals K(子数组的和为 K)
+
+https://leetcode.com/problems/subarray-sum-equals-k/description/
+
+给定一个数组和一个整数 k, 判断里面有多少个子数组的和刚好为 K.
+
+思路: 参考: https://leetcode.com/problems/subarray-sum-equals-k/solution/
+
+这道题首先获得一个累加和 `sum(n)`, 其中 `sum[i]` 是 `nums[0...i]` 的累加和, 那么需要注意到如果 `sum[i] - sum[j] == k` 的话, 那么 nums 中的 i 与 j 之间的元素和就是 k. 这里使用一个哈希表来统计同一个累加和 `sum[m]` 出现的次数, 如果当前访问到 `sum[i]`, 并且 `sum[i] - k` 存在于哈希表中, 比如 `sum[j] = sum[i] - k` 刚好出现在哈希表中, 而 `sum[j]` 出现的次数为 c, 那么 count 便 `count += c`, 因为此时说明有 c 个子串的和刚好是 `sum[j]`, 而这些子串到 `sum[i]` 的和刚好是 k.
+
+```cpp
+class Solution {
+public:
+    int subarraySum(vector<int>& nums, int k) {
+        int count = 0;
+      	// 如果 sum[i] - k == 0, 那么 count += 1;
+      	// record 记录 sum[i] 出现的次数, 为了节省空间, 这里直接在 nums 上求和.
+        unordered_map<int, int> record{{0, 1}}; 
+        for (int i = 1; i < nums.size(); ++i) nums[i] += nums[i - 1]; // 累加和
+        for (int i = 0; i < nums.size(); ++i) {
+            count += record[nums[i] - k];
+            record[nums[i]] ++; // 记录 sum[i] 出现的次数.
+        }
+        return count;
+    }
+};
+```
+
+
+
+
+
+
+
 ## 字符串
 
 ### 449. **Serialize and Deserialize BST(序列化与去序列化 BST)
@@ -996,6 +1096,87 @@ public:
     } 
 };
 ```
+
+
+
+### 242. *Valid Anagram
+
+https://leetcode.com/problems/valid-anagram/description/
+
+判断两个字符串是否为变形词.
+
+使用排序:
+
+```cpp
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        std::sort(s.begin(), s.end());
+        std::sort(t.begin(), t.end());
+        return s == t;
+    }
+};
+```
+
+使用哈希表:
+
+```cpp
+class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        if (s.size() != t.size()) return false;
+        int record[256] = {0};
+        for (int i = 0; i < s.size(); ++i) {
+            record[s[i]] ++;
+            record[t[i]] --;
+        }
+        for (int i = 0; i < 256; ++i)
+            if (record[i] != 0)
+                return false;
+        return true;
+    }
+};
+```
+
+
+
+### 438. *Find All Anagrams in a String(找到字符串中的所有变形词)
+
+https://leetcode.com/problems/find-all-anagrams-in-a-string/description/
+
+Given a string **s** and a **non-empty** string **p**, find all the start indices of **p**'s anagrams in **s**.
+
+思路: 使用 sv 和 pv 分别统计 s 中大小为 `p.size()` 的字符串与 `p` 的字符个数. 两个 vector 是否相同可以用于判断是否为变形词.
+
+```cpp
+class Solution {
+public:
+    vector<int> findAnagrams(string s, string p) {
+        vector<int> res, pv(256, 0), sv(256, 0);
+        if (s.empty() || p.empty() || (s.size() < p.size()))
+            return res;
+        
+        for (int i = 0; i < p.size(); ++i) {
+            ++pv[p[i]];
+            ++sv[s[i]];
+        }
+        
+        if (sv == pv) res.push_back(0);
+        
+        for (int i = p.size(); i < s.size(); ++i) {
+            ++sv[s[i]];
+            --sv[s[i - p.size()]];
+          	// 注意最后返回的是字符串开始的索引.
+            if (pv == sv) res.push_back(i - p.size() + 1);
+        }
+        return res;
+    }
+};
+```
+
+
+
+
 
 
 
@@ -1955,6 +2136,67 @@ public:
 
 
 
+### 378. **Kth Smallest Element in a Sorted Matrix(有序矩阵中第 k 小的值)
+
+https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/description/
+
+思路1: 使用最大堆.
+
+```cpp
+class Solution {
+public:
+    int kthSmallest(vector<vector<int>>& matrix, int k) {
+        priority_queue<int> q;
+        for (int i = 0; i < matrix.size(); ++i) {
+            for (int j = 0; j < matrix[0].size(); ++j) {
+                q.push(matrix[i][j]);
+                if (q.size() > k) q.pop();
+            }
+        }
+        return q.top();
+    }
+};
+```
+
+参考: http://www.cnblogs.com/grandyang/p/5727892.html 使用二分查找求解:
+
+>这题我们也可以用二分查找法来做，我们由于是有序矩阵，那么左上角的数字一定是最小的，而右下角的数字一定是最大的，所以这个是我们搜索的范围，然后我们算出中间数字mid，由于矩阵中不同行之间的元素并不是严格有序的，所以我们要在每一行都查找一下mid，我们使用upper_bound，这个函数是查找第一个大于目标数的元素，如果目标数在比该行的尾元素大，则upper_bound返回该行元素的个数，如果目标数比该行首元素小，则upper_bound返回0, 我们遍历完所有的行可以找出中间数是第几小的数，然后k比较，进行二分查找，left和right最终会相等，并且会变成数组中第k小的数字。举个例子来说吧，比如数组为:
+>
+>[1 2
+>12 100]
+>k = 3
+>那么刚开始left = 1, right = 100, mid = 50, 遍历完 cnt = 3，此时right更新为50
+>此时left = 1, right = 50, mid = 25, 遍历完之后 cnt = 3, 此时right更新为25
+>此时left = 1, right = 25, mid = 13, 遍历完之后 cnt = 3, 此时right更新为13
+>此时left = 1, right = 13, mid = 7, 遍历完之后 cnt = 2, 此时left更新为8
+>此时left = 8, right = 13, mid = 10, 遍历完之后 cnt = 2, 此时left更新为11
+>此时left = 11, right = 12, mid = 11, 遍历完之后 cnt = 2, 此时left更新为12
+>循环结束，left和right均为12，任意返回一个即可。
+>
+>本解法的整体时间复杂度为O(nlgn*lgX)，其中X为最大值和最小值的差值.
+
+参见代码如下：
+
+```cpp
+class Solution {
+public:
+    int kthSmallest(vector<vector<int>>& matrix, int k) {
+        int left = matrix[0][0], right = matrix.back().back();
+        while (left < right) {
+            int mid = left + (right - left) / 2, cnt = 0;
+            for (int i = 0; i < matrix.size(); ++i) {
+                cnt += upper_bound(matrix[i].begin(), matrix[i].end(), mid) - matrix[i].begin();
+            }
+            if (cnt < k) left = mid + 1;
+            else right = mid;
+        }
+        return left;
+    }
+};
+```
+
+
+
 
 
 
@@ -2323,6 +2565,12 @@ public:
 ```
 
 
+
+### 60. **Permutation Sequence
+
+https://leetcode.com/problems/permutation-sequence/description/
+
+思路参考: http://www.cnblogs.com/grandyang/p/4358678.html
 
 
 

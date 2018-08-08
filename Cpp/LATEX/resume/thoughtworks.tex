@@ -1,0 +1,172 @@
+\documentclass[paper=a4,fontsize=11pt,svgnames]{temp} % KOMA-article class
+
+\newcommand{\name}{张梦磊}
+%\newcommand{\job}{算法研发工程师} % 讯飞 大疆
+\newcommand{\job}{算法工程师} % ThoughtWorks
+%\newcommand{\job}{算法工程师-图像图形}
+%\newcommand{\job}{算法工程师-计算机视觉}
+%\newcommand{\job}{算法研发工程师}
+%\newcommand{\job}{人工智能工程师}
+%\newcommand{\job}{算法实习生}
+\newcommand{\email}{mlzhang.wd@foxmail.com}
+\newcommand{\phone}{130-0637-7386}
+\newcommand{\github}{https://github.com/zmlhome}
+\newcommand{\blog}{https://zmlhome.github.io/}
+\newcommand{\Address}{湖北省武汉市武汉大学电子信息学院}
+\newcommand{\photo}{me.jpg}
+
+\usepackage{fontspec}
+%\setmainfont{Sauce Code Powerline Black} %{SourceCodePro-Bold}
+\setmainfont{Source Code Pro}
+\setsansfont{Source Code Pro}
+\setmonofont{Source Code Pro}
+\setCJKmainfont{微软雅黑}
+
+\newcommand{\ftsize}{\zihao{5}}
+\newcommand{\myfaEnvelope}{\textcolor{headings}{\faEnvelope}}
+\newcommand{\myfaPhone}{\textcolor{headings}{\faPhone}}
+\newcommand{\myGithub}{\textcolor{headings}{\faGithub}}
+\newcommand{\myfaGlobe}{\textcolor{headings}{\faGlobe}}
+\newcommand{\myfaHome}{\textcolor{headings}{\faHome}}
+
+\newcommand{\MyJob}[1]{ % Job 
+	\zihao{-2} \usefont{OT1}{phv}{b}{n} \hfill \textcolor{headings}{#1}
+	\par \normalsize \normalfont}
+\newcommand{\MyEmail}[1]{ % Job 
+	\ftsize\myfaEnvelope\,  {#1}}
+\newcommand{\MyPhone}[1]{ % Job 
+	\ftsize\myfaPhone\,\,  {#1}}
+\newcommand{\MyGithub}[1]{ % Job 
+	\ftsize\myGithub\,\,  \href{#1}{#1}}
+\newcommand{\MyBlog}[1]{ % Job 
+	\ftsize\myfaGlobe\,\, \href{#1}{#1}}
+\newcommand{\MyAddress}[1]{%
+	\ftsize\myfaHome\,\,   {\parbox[t]{4cm}{#1}}}
+
+\newcommand{\mtNodeWithoutFig}[4]{
+	\begin{tikzpicture}
+	\node[textNodeStyle={text width=#2}]
+	(#1) at #3 {#4};
+%	\figNodePos{f1}{#5}{#6}{right}{#1}{#7};
+	\end{tikzpicture}
+}
+\newcommand{\ExperienceEntry}[5]{%
+	\noindent%
+	\hspace*{1em}%	                    
+	\begin{minipage}{0.96\linewidth}  
+		\noindent {\color{subheadings}\bfseries {#1}}， {\color{subheadings}\textit{#3}}  
+		\hfill  {\color{headings}\fontsize{10pt}{12pt}#2}   
+		\par\vspace*{.5em} 	
+		\noindent\hangindent=2em\hangafter=0 \normalsize
+		\hspace*{-1.3em}
+		\mtNodeWithoutFig{t1}{.98\textwidth}{(0, 0)}{%
+			#4 % Description
+			\par
+			\small\keyword #5
+		}%
+		\normalsize\par\vspace*{-.4em}         
+	\end{minipage}         
+}
+							
+\begin{document}
+
+\newcommand{\namey}{-1.43}
+\newcommand{\joby}{\namey - 1.1}
+\newcommand{\photoy}{\namey - 1.17}
+\newcommand{\emaily}{\namey + 0.23}
+\newcommand{\phoney}{\emaily - 0.55}
+\newcommand{\githuby}{\phoney - 0.55}
+\newcommand{\blogy}{\githuby - 0.55}
+\newcommand{\addressy}{\blogy - 0.8}
+
+
+\begin{tikzpicture}[remember picture,overlay]
+	\tNode{name}{([shift={(2.7, \namey)}]current page.north west)}{\MyName{\name}};
+	\node[textNodeStyle,anchor=west] (job) at ([shift={(1.15, \joby)}]current page.north west) {\MyJob{\job}};
+	\node(photo) at ([shift={(-2.7, \photoy)}]current page.north east)			
+	{\includegraphics[width=2.2cm,height=3.2cm]{\photo}};
+	\node[fit=(photo),draw=headings,rectangle,inner sep=-2pt,shift={(-.005, .01)}] {};
+	\node(email) at ([shift={(-7.0, \emaily)}]current page.north east) {\MyEmail{\email}};
+	\node(phone) at ([shift={(-7.9, \phoney)}]current page.north east) {\MyPhone{\phone}};
+	\node(github) at ([shift={(-6.75, \githuby)}]current page.north east) {\MyGithub{\github}};
+	\node(blog) at ([shift={(-6.9, \blogy)}]current page.north east) {\MyBlog{\blog}};
+%	\node(address) at ([shift={(-7.53, -3.85)}]current page.north east) {\MyAddress{\Address}}; %% without parbox
+	\node(address) at ([shift={(-7.09, \addressy)}]current page.north east) {\MyAddress{\Address}};
+\end{tikzpicture}
+
+\vspace*{2.2cm}
+
+\NewPart{教育背景}{}
+\noindent
+
+
+\EducationEntry{硕士 / 武汉大学 }{2016/09 -- 2019/06}{%
+\begin{itemize}
+\item 学院：电子信息学院 \hspace*{.8cm} 专业：信号与信息处理 \hspace*{.6cm} 工学硕士\hspace*{.6cm} 平均分：88.68 (GPA：3.66/4.0)
+\item 研究方向：图像去噪与超分辨率，深度学习
+\end{itemize}%
+}
+
+\sepspace
+
+\EducationEntry{本科 / 武汉大学 }{2012/09 -- 2016/06}{%
+\begin{itemize}
+\item 学院：电子信息学院 \hspace*{.90cm}专业：通信工程  \hspace*{1.73cm} 工学学士\hspace*{.6cm} 平均分：84.08 (GPA：3.32/4.0)
+\end{itemize}%
+}
+
+\NewPart{项目经验}{}
+\noindent
+
+
+\projectEntry{基于 DCNN 的图像去噪算法}{2017/07 -- 2018/03}{第一作者}{%
+构建深度卷积神经网络对带噪图像进行残差学习，再从带噪图像中减去残差以获得去噪后的图像。算法使用 PyTorch 深度学习框架实现，利用残差网络、ReLU 等技术加速算法收敛并提升去噪效果，在标准测试图像上的峰值信噪比达到 state-of-the-art 的结果。关于该算法的报告可查看：\href{https://github.com/zmlhome/Amaze/blob/master/Layer/zml-annual-meeting-20180125.pdf}{2018 年会报告}。
+}{\textbf{PyTorch}\quad \textbf{深度学习}\quad\textbf{残差网络}\quad 图像去噪}{network.pdf}{3.2cm}{(-1.15, .4)}
+
+\sepspace
+
+\projectEntry{源码阅读}{2017/10 -- 2018/01}{个人项目}{
+	%\textbullet\hspace*{.3em}
+	 \href{https://github.com/zmlhome/DownMak/tree/master/Python/pytorch}{Github：PyTorch 源码详解}\\
+	\quad 针对 PyTorch v0.1.1 源码进行分析，主要探究卷积层、ReLU 层等反向传播的底层 C 实现，以及 PyTorch 的自动求导机制，提升对 PyTorch 框架的整体认识。\\
+%	\textbullet\hspace*{.3em}
+%	\href{https://www.kancloud.cn/ieric_1993/tiny_dnn}{看云文档：TinyDnn 源码阅读}\\
+%	\quad 针对 TinyDnn v0.0.1 源码进行分析，重点理解网络的构建以及反向传播机制。
+}{\textbf{PyTorch}\quad\textbf{Caffe}\quad\textbf{反向传播}\quad\textbf{自动求导}}{autograd.pdf}{2.0cm}{(-.6, 0)}
+
+\sepspace
+
+\projectEntry{同伦方法在图像稀疏去噪中的应用}{2016/10 -- 2017/06}{第一作者}{在稀疏表示和字典学习理论的基础上，本文算法利用同伦方法学习字典并结合稀疏去噪模型实现对图像的去噪，充分展示了同伦方法收敛速度快以及对信号的恢复准确度高等优势。 成果发表在\href{http://www.signal.org.cn/CN/volumn/current.shtml\#89}{《信号处理》2018 Vol.34(1): 89-97}。}{\textbf{Matlab}\quad 同伦方法\quad 字典学习\quad 稀疏表示}{denoise.pdf}{3cm}{(-1, 0)}
+
+\NewPart{实习经历}{}
+\noindent
+
+
+\ExperienceEntry{京东集团 \quad 广告质量部}{2018/05 -- 2018/07}{算法工程师}{%
+	前期主要从事素材生成方面的工作，采用泊松图像编辑算法实现背景与装饰图像的无缝融合，生成大量的广告素材；目前在接触推荐系统，基于 PyTorch 深度学习框架实现 YouTube 推荐系统模型，并用于京东的用户数据，实现对用户的商品推荐。
+}{\textbf{素材生成}\quad \textbf{泊松图像编辑}\quad \textbf{推荐系统}}
+
+
+
+\NewPart{外语与技能}{}
+\noindent
+\vspace*{-.9cm}
+\hspace*{0cm}
+%\begin{minipage}{1em}
+%\rule{1em}{0pt}
+%\end{minipage}
+\begin{minipage}{.96\textwidth}
+\begin{itemize}
+	\item 英语水平：CET4 (成绩: \textbf{607}) \hspace*{1cm} CET6 (成绩： \textbf{551})
+	\item 编程语言与环境： Python > C++ > C；常在 Linux 下开发，编程环境为 vim + tmux + ctags；
+	\item 深度学习框架：了解 \textbf{PyTorch}，\textbf{Caffe} 等常用深度学习框架，掌握网络构建、\textbf{反向传播机制}、常用\textbf{优化算法}，熟悉深度学习常用的网络结构，如 \textbf{ResNet}，\textbf{VGG}等；熟悉目标检测算法 \textbf{Faster-RCNN}。
+	\item 理论知识：扎实的计算机基础，了解\textbf{操作系统}、常用\textbf{数据结构}，掌握 C++ 面向对象程序设计思想，掌握 C++ 对象模型的内存布局、虚函数、多态的实现机制，熟悉 STL 中各种容器和算法的使用。
+	\item 排版系统：熟悉 \LaTeX{} 排版系统，有较强的\textbf{文档撰写能力} （作品：
+	\href{http://www.latexstudio.net/archives/4200}{2015年全国大学生数学建模LaTeX模板}）
+\end{itemize}
+\end{minipage}
+
+%%% References
+%%% ------------------------------------------------------------
+
+\end{document}

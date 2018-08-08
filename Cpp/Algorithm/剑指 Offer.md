@@ -29,8 +29,398 @@
   ​
 
 
-
 ## 第四章 解决面试题的思路
+
+### 面试题 1: 二维数组中的查找
+
+在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
+
+思路: 首先选取数组中右上角的数字。如果该数字等于要查找的数字，查找过程结束；如果该数字大于要查找的数组，剔除这个数字所在的列；如果该数字小于要查找的数字，剔除这个数字所在的行。也就是说如果要查找的数字不在数组的右上角，则每一次都在数组的查找范围中剔除一行或者一列，这样每一步都可以缩小查找的范围，直到找到要查找的数字，或者查找范围为空。
+
+```cpp
+class Solution {
+public:
+    bool Find(int target, vector<vector<int> > array) {
+        if (array.empty() || array[0].empty()) return false;
+        int m = array.size(), n = array[0].size();
+        int i = 0, j = n - 1;
+        while (i < m && j >= 0) {
+            if (array[i][j] == target) return true;
+            if (array[i][j] < target) ++ i;
+            else -- j;
+        }
+        return false;
+    }
+};
+```
+
+
+
+### 面试题 2: 替换空格
+
+请实现一个函数，将一个[字符串](http://cuijiahua.com/blog/tag/%e5%ad%97%e7%ac%a6%e4%b8%b2/)中的空格替换成“%20”。例如，当[字符串](http://cuijiahua.com/blog/tag/%e5%ad%97%e7%ac%a6%e4%b8%b2/)为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。
+
+思路: 我们可以先遍历一次字符串，这样就可以统计出字符串空格的总数，并可以由此计算出替换之后的字符串的总长度。每替换一个空格，长度增加2，因此替换以后字符串的长度等于原来的长度加上2乘以空格数目。以"We are happy"为例，"We are happy"这个字符串的长度为14（包括结尾符号"\n"），里面有两个空格，因此替换之后字符串的长度是18。
+
+我们从字符串的尾部开始复制和替换。首先准备两个指针，P1和P2，P1指向原始字符串的末尾，而P2指向替换之后的字符串的末尾。接下来我们向前移动指针P1，逐个把它指向的字符复制到P2指向的位置，直到碰到第一个空格为止。碰到第一个空格之后，把P1向前移动1格，在P2之前插入字符串"%20"。由于"%20"的长度为3，同时也要把P2向前移动3格。
+
+```cpp
+class Solution {
+public:
+    // length 为字符数组的总容量
+	void replaceSpace(char *str,int length) {
+        if (!str || length <= 0) return;
+        int len = 0, i = 0, numOfSpace = 0;
+      	// 第一次遍历统计字符串的长度,
+        while (str[i] != '\0') {
+            ++ len; // 原字符串的真正长度
+            if (str[i] == ' ')
+                ++ numOfSpace;
+            i ++;
+        }
+        // 注意 newlen 不要写成了 len + 1 + 2 * numOfSpace, 因为 len 已经是指向了'\0'
+        int newlen = len + 2 * numOfSpace;
+        if (newlen > length) return; // 如果新的字符串长度大于字符数组容量...
+        while (i >= 0) {
+            if (str[i] == ' ') {
+                str[newlen --] = '0';
+                str[newlen --] = '2';
+                str[newlen --] = '%';
+                i --;
+            }
+            else
+                str[newlen --] = str[i --];
+        }
+	}
+};
+```
+
+
+
+### 面试题 3: 从尾到头打印链表
+
+输入一个链表，返回一个反序的链表。
+
+思路 1: 将链表翻转后, 再重新遍历一遍.
+
+```cpp
+class Solution {
+private:
+    ListNode* reverse(ListNode *root) {
+        ListNode *prev = nullptr;
+        while (root) {
+            auto tmp = root->next;
+            root->next = prev;
+            prev = root;
+            root = tmp;
+        }
+        return prev;
+    }
+public:
+    vector<int> printListFromTailToHead(ListNode* head) {
+        vector<int> res;
+        head = reverse(head);
+        auto ptr = head;
+        while (ptr) {
+            res.push_back(ptr->val);
+            ptr = ptr->next;
+        }
+        return res;
+    }
+};
+```
+
+思路 2: 如果不想改变链表的结构, 还可以使用栈.
+
+```cpp
+class Solution {
+public:
+    vector<int> printListFromTailToHead(ListNode* head) {
+        stack<int> nodes;
+        vector<int> result;
+        ListNode* node = head;
+        while(node != NULL){
+            nodes.push(node->val);
+            node = node->next;
+        }
+        
+        while(!nodes.empty()){
+            result.push_back(nodes.top());
+            nodes.pop();
+        }
+        return result;
+    }
+};
+```
+
+
+
+### 面试题 4: 重建二叉树
+
+输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。
+
+思路: 递归来做, 前向遍历第一个节点为根节点, 然后从中序遍历中找到根节点, 计算左右子树的节点个数. 本来在 leetcode 上使用 `unordered_map` 可以加快在中序遍历中查找根节点的速度, 然而在牛客上使用这种方法会影响空间的使用导致通不过, 所以这里就使用顺序查找.
+
+```cpp
+class Solution {
+public:
+    TreeNode* reConstructBinaryTree(vector<int> pre,vector<int> vin) {
+        return constructBT(pre, 0, pre.size() - 1, vin, 0, vin.size() - 1);
+    }
+private:
+    TreeNode* constructBT(vector<int> &pre, int pi, int pj, vector<int> &vin, int vi, int vj) {
+        if (pi > pj || vi > vj) return nullptr;
+        TreeNode *root = new TreeNode(pre[pi]);
+        int idx = 0;
+      	// 在中序遍历中查找根节点.
+        for (int i = vi; i <= vj; ++i)
+            if (vin[i] == pre[pi]) {
+                idx = i;
+                break;
+            }
+      	// 左子树的大小
+        int size = idx - vi;
+        root->left = constructBT(pre, pi + 1, pi + size, vin, vi, idx - 1);
+        root->right = constructBT(pre, pi + size + 1, pj, vin, idx + 1, vj);
+        return root;
+    }
+};
+```
+
+
+
+### 面试题 5: 用两个栈实现队列
+
+用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
+
+思路: push 时将元素插入 s1 中, 而 pop 时将 s2 中的元素进行 pop; 如果 s2 为空, 那就先将 s1 中的元素全部 push 到 s2 中.
+
+```cpp
+class Solution
+{
+public:
+    void push(int node) {
+        stack1.push(node);
+    }
+
+    int pop() {
+        if (stack2.empty()) {
+            while (!stack1.empty()) {
+                stack2.push(stack1.top());
+                stack1.pop();
+            }
+        }
+        int res = stack2.top();
+        stack2.pop();
+        return res;
+    }
+
+private:
+    stack<int> stack1;
+    stack<int> stack2;
+};
+```
+
+
+
+### 面试题 6: 旋转数组的最小数字
+
+把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。 输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。 例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。 NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
+
+思路 1: `search` 函数查找无重复数字的旋转数组中的最小数字, 而 `minNumberInRotateArray` 中的 while 循环是为了处理末尾的重复数字, 比如 `4 5 6 1 2 3 4 4 4`.
+
+```cpp
+class Solution {
+private:
+  	// 比如查找 4 5 6 1 2 3 中的 1
+    int search(vector<int> &nums, int l, int r) {
+        if (nums.empty()) return 0;
+        int end = r;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[0] <= nums[mid]) l = mid + 1;
+            else r = mid - 1;
+        }
+        return l > end ? nums[0] : nums[l];
+    }
+public:
+    int minNumberInRotateArray(vector<int> rotateArray) {
+        if (rotateArray.empty()) return 0;
+        int r = rotateArray.size() - 1;
+        while (r >= 0 && rotateArray[r] == rotateArray[0]) r --;
+        return search(rotateArray, 0, r);
+    }
+};
+```
+
+http://cuijiahua.com/blog/2017/11/basis_6.html 还给出了一种思路.
+
+
+
+### 面试题 7: 斐波拉切数列
+
+大家都知道斐波那契数列，现在要求输入一个整数n，请你输出斐波那契数列的第n项（从0开始，第0项为0）。 n<=39
+
+```cpp
+class Solution {
+public:
+    int Fibonacci(int n) {
+        if (n <= 0) return 0;
+        int a = 0;
+        int b = 1;
+        while (n--) {
+            b += a;
+            a = b - a;
+        } 
+        return a; // 注意最后返回 a
+    }
+};
+```
+
+
+
+### 面试题 8: 跳台阶 
+
+一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法（先后次序不同算不同的结果）。
+
+```cpp
+class Solution {
+public:
+    int jumpFloor(int number) {
+        if (number < 0) return 0;
+        int a = 0;
+        int b = 1;
+        while (number --) {
+            b += a;
+            a = b - a;
+        }
+        return b; // 这里返回 b 因为 number 为 0 的时候, 结果是 1
+    }
+};
+```
+
+
+
+### 面试题 9: 变态跳台阶
+
+一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
+
+先确认递推式是: $f(n) = 2f(n - 1) = 2^{(n - 1)}f(1) = 2^{(n - 1)}$.
+
+```cpp
+class Solution {
+public:
+    int jumpFloorII(int number) {
+        if (number < 0) return 0;
+        return std::pow(2, number - 1);
+    }
+};
+```
+
+
+
+### 面试题 10: 矩形覆盖
+
+我们可以用`2*1`的小矩形横着或者竖着去覆盖更大的矩形。请问用n个`2*1`的小矩形无重叠地覆盖一个`2*n`的大矩形，总共有多少种方法？
+
+思路: 递推式是: `f(n) = f(n - 1) + f(n - 2)`. 我们先把2x8的覆盖方法记为f(8)。用第一个1x2小矩阵覆盖大矩形的最左边时有两个选择，竖着放或者横着放。当竖着放的时候，右边还剩下2x7的区域，这种情况下的覆盖方法记为f(7)。接下来考虑横着放的情况。当1x2的小矩形横着放在左上角的时候，左下角和横着放一个1x2的小矩形，而在右边还剩下2x6的区域，这种情况下的覆盖方法记为f(6)。因此f(8)=f(7)+f(6)。此时我们可以看出，这仍然是[斐波那契数列](http://cuijiahua.com/blog/tag/%e6%96%90%e6%b3%a2%e9%82%a3%e5%a5%91%e6%95%b0%e5%88%97/)。
+
+代码 1:
+
+```cpp
+class Solution {
+public:
+    int rectCover(int number) {
+        if (number <= 0) return 0;
+        int a = 0, b = 1;
+        while (number --) {
+            b += a;
+            a = b - a;
+        }
+        return b; // 输出为 b
+    }
+};
+```
+
+代码 2:
+
+```cpp
+class Solution {
+public:
+    int rectCover(int number) {
+		if(number <= 2){
+            return number;
+        }
+        int first = 1, second = 2, third = 0;
+        for(int i = 3; i <= number; i++){
+            third = first + second;
+            first = second;
+            second = third;
+        }
+        return third;
+    }
+};
+```
+
+
+
+### 面试题 11: 二进制数中 1 的个数
+
+输入一个整数，输出该数二进制表示中1的个数。其中负数用补码表示。
+
+http://cuijiahua.com/blog/2017/11/basis_11.html
+
+如果一个整数不为0，那么这个整数至少有一位是1。如果我们把这个整数减1，那么原来处在整数最右边的1就会变为0，原来在1后面的所有的0都会变成1(如果最右边的1后面还有0的话)。其余所有位将不会受到影响。
+
+举个例子：一个二进制数1100，从右边数起第三位是处于最右边的一个1。减去1后，第三位变成0，它后面的两位0变成了1，而前面的1保持不变，因此得到的结果是1011.我们发现减1的结果是把最右边的一个1开始的所有位都取反了。这个时候如果我们再把原来的整数和减去1之后的结果做与运算，从原来整数最右边一个1那一位开始所有位都会变成0。如1100&1011=1000.也就是说，把一个整数减去1，再和原整数做与运算，会把该整数最右边一个1变成0.那么一个整数的二进制有多少个1，就可以进行多少次这样的操作。
+
+```cpp
+class Solution {
+public:
+     int  NumberOf1(int n) {
+         int count = 0;
+         while (n) {
+             count ++;
+             n = n & (n - 1);
+         }
+         return  count;
+     }
+};
+```
+
+
+
+### 面试题 12: 数值的整数次方
+
+给定一个double类型的浮点数base和int类型的整数exponent。求base的exponent次方。
+
+思路: 使用递归会非常方便. 注意 `power` 中第二个参数设置为 long, 是为了处理 exponent 为 `INT32_MIN` 的情况, 如果其取绝对值, 就越界了.
+
+```cpp
+class Solution {
+public:
+    double Power(double base, int exponent) {
+        if (exponent < 0) return 1. / power(base, -exponent);
+        return power(base, exponent);
+    }
+private:
+    // 这里参数中使用 long 是因为担心测试用例中可能存在
+    // exponent=INT32_MIN, 这样 -exponent 就可能越界.
+    double power(double base, long n) {
+        if (n == 0) return 1;
+        double res = 1.;
+        double half = power(base, n / 2);
+        // 如果 n 为奇数, 那么结果为 half * half * base.
+        if (n % 2) res = half * half * base;
+        else res = half * half;
+        return res;
+    }
+};
+```
+
+
+
+
 
 ### 面试题 19: 二叉树的镜像
 

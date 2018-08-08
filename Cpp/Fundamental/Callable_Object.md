@@ -1,5 +1,7 @@
 # 可调用对象
 
+[TOC]
+
 ## 2017 年 10 月 17 日
 
 ### lambda 函数
@@ -94,3 +96,114 @@
 +   相反, 通过值捕获的变量被拷贝到 lambda 中. 因此, 这种 lambda 产生的类必须为每个值捕获的变量建立对应的数据成员, **同时创建构造函数, 令其使用捕获的变量的值来初始化数据成员**.
 
 +   注意: **lambda 表达式产生的类不含默认构造函数, 赋值运算符以及默认析构函数**(如上面的 ShorterString). 而对于使用值捕获的 lambda 表达式, 其产生的类将含有数据成员以及一个用于初始化该数据成员的构造函数. 由于该类并不含默认构造函数, 所以要想使用这个类的话, 必须提供实参. (比如 `Greater(sz)` 而不能仅仅是 `Greater()`).
+
+
+
+### C++11中能否显式声明一个lambda类型的变量，而不用auto?
+
+看 primer 时写了一段代码:
+
+使用 `std::function` 保存各个可调用对象, 比如函数名 add, 函数指针 `pa`, 可调用对象 `Add()` 以及 lambda 对象 `add_a`. 但注意我在声明 `add_a` 时使用的是 auto, 那么现在的问题是, 如果不用 auto, `add_a` 的类型会是什么? 如果写 `int(int, int)` 是错误的.
+
+先给出结论, 后面说为什么: 要显式声明 lambda, 需要使用 `std::function` 一类的玩意将 `int(int, int)` 给包起来, 比如: `function<int(int, int)>`. 因为即使是一样的 lambda 表达式, 它们所代表的类型都是不一样的, 因此, 需要使用 `function` 将它们统一到一个类型中.
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <functional>
+#include <map>
+#include <unordered_map>
+
+using namespace std;
+
+
+int add(int a, int b) {
+    return a + b;
+}
+
+static int (*pa) (int, int) = add;
+
+class Add {
+public:
+    int operator()(int a, int b) {
+        return a + b;
+    }
+};
+
+using T = int(int, int);
+
+static function<int(int, int)> add_a = [] (int a, int b) { return a + b; };
+
+
+
+int main() {
+    vector<function<T>> record{add, Add(), add_a, pa};
+
+    for (auto &func : record)
+        cout << func(1, 10) << endl;
+}
+```
+
+
+
+在知乎上 https://www.zhihu.com/question/48165767 也看到了这个问题, 
+
+https://www.zhihu.com/question/48165767/answer/114686508 的回答是:
+
+> 所以，不存在符合标准的（不利用编译器内部实现特征）的显式声明lambda型变量的方法，是这样吗？
+
+是。
+
+```cpp
+#include <iostream>
+#include <typeinfo>
+
+template <typename T>
+void printType(T obj) {
+    std::cout << typeid(obj).name() << std::endl;
+}
+
+int main() {
+    printType([](){});
+    printType([](){});
+    printType(0L);
+    return 0;
+}
+```
+
+用 clang 编译后运行输出为：
+
+```bash
+Z4mainE3$_0
+Z4mainE3$_1
+l
+```
+
+你看，即使是一样的 lambda 表达式，它们的类型也是不同的。所以你只能用 `std::function` 一类的玩意把它包起来。
+
+
+
+### 条件表达式和等价的 if 语句还是有不同的
+
+比如:
+
+```cpp
+int f1(int i) { return i < 0 ? -i : i; }
+int f2(int i) {
+  	if (i < 0) return -i;
+	else return i;
+}
+```
+
+但它们的不同体现在 lambda 表达式中, 如果没有显式写出返回类型, 比如下面的例子:
+
+```cpp
+[] (int i) { return i < 0; -i : i}
+[] (int i) {
+  	if (i < 0) return -i;
+	else return i;
+}
+```
+
+那么第一种情况会将返回类型推断为 `int`, 而第二种情况推断为 `void`.

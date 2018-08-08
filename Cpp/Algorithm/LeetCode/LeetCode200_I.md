@@ -964,6 +964,46 @@ leetcode 上给出了特别详细的讨论和总结:
 
 
 
+### 90. **Subsets II
+
+https://leetcode.com/problems/subsets-ii/description/
+
+和 78 题 Subsets 不同, 含有重复数字.
+
+思路: 参考 http://www.cnblogs.com/grandyang/p/4310964.html
+
+> 拿题目中的例子[1 2 2]来分析，根据之前[ Subsets 子集合](http://www.cnblogs.com/grandyang/p/4309345.html) 里的分析可知，当处理到第一个2时，此时的子集合为[], [1], [2], [1, 2]，而这时再处理第二个2时，如果在[]和[1]后直接加2会产生重复，所以只能在上一个循环生成的后两个子集合后面加2，发现了这一点，题目就可以做了，我们用last来记录上一个处理的数字，然后判定当前的数字和上面的是否相同，若不同，则循环还是从0到当前子集的个数，若相同，则新子集个数减去之前循环时子集的个数当做起点来循环，这样就不会产生重复了，代码如下：
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> subsetsWithDup(vector<int>& nums) {
+        std::sort(nums.begin(), nums.end());
+        vector<vector<int>> res{{}};
+        int last = 0; // 记录上一个元素加入后 res 的大小
+        for (int i = 0; i < nums.size(); ++i) {
+            int start = 0;
+          	// 如果当前访问的元素前一个元素相等, 那么就令 start 等于
+          	// last, 而不是从 0 开始访问 res, 即只往 res 中部分集合
+          	// 添加 num[i]
+            if (i > 0 && nums[i] == nums[i - 1])
+                start = last;
+            int end = res.size();
+            while (start < end) {
+                vector<int> cur = res[start];
+                cur.push_back(nums[i]);
+                start ++;
+                res.push_back(cur);
+            }
+            last = end;
+        }
+        return res;
+    }
+};
+```
+
+
+
 
 
 ## 字符串
