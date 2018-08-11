@@ -150,7 +150,7 @@ public:
 struct ListNode {
     int val;
     ListNode *next;
-    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x = 0) : val(x), next(nullptr) {}
 };
 
 // 用于链表的构建, 输出与删除

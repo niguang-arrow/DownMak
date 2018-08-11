@@ -49,20 +49,26 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    int longestConsecutive(vector<int>& nums) {
-        if (nums.empty()) return 0;
-        int res = 0, pre = 0, next = 0;
-        unordered_set<int> record(nums.begin(), nums.end());
-        for (auto &a : nums) {
-            if (record.count(a)) {
-                record.erase(a);
-                pre = a - 1, next = a + 1;
-                while (record.count(pre)) record.erase(pre--);
-                while (record.count(next)) record.erase(next++);
-                res = max(res, next - pre - 1);
-            }
+    vector<int> singleNumber(vector<int>& nums) {
+        int num = 0;
+        // num 中保存两个 single number 的异或值, 并且 num 肯定不为 0,
+        // 那么找到num中位为 1 的位, 假设为 i, 那么根据第 i 位是否为 1,
+        // 可以将 nums 中的数分为两类.
+        for (auto &d : nums)
+            num ^= d;
+        unsigned i = 0;
+        while (((num >> i) & 1) != 1) i ++;
+        int one = 0, two = 0;
+        for (auto &d : nums) {
+            if (isBit_1(d, i)) one ^= d;
+            else two ^= d;
         }
-        return res;
+        return {one, two};
+    }
+private:
+    bool isBit_1(int num, unsigned i) {
+        while (i) num >>= i--;
+        return (num & 1);
     }
 };
 
@@ -87,20 +93,20 @@ int main() {
     string word = "ABCESEEEFS";
     //vector<vector<int>> nums = {{0, 0, 0}, {0, 1, 0}, {1, 1, 1}};
     //vector<int> nums1 = {1, 2, 2, 1};
-    vector<int> nums1 = {100, 1, 2, 3, 4, 100};
+    vector<int> nums1 = {1,1,2,2,3,5};
     //vector<int> nums2 = {4, 3, 5, 1, 2};
     vector<int> preorder = {9, 3, 15, 20, 7};
     vector<int> inorder = {9, 15, 7, 20, 3};
-    vector<vector<int>> nums = {{1,2,3,4}, {5,6,7,8}, {9,10,11,12}};
-    string input = "thecattlewasrattledbythebattery";
+    vector<vector<int>> nums = {{1, 2}, {3}, {3}, {}};
+    string input = "bbbab";
     vector<string> words = {"a", "banana", "app", "appl", "ap", "apply", "apple"};
-    auto res = Solution().longestConsecutive(nums1);
-    cout << res << endl;
+    auto res = Solution().singleNumber(nums1);
+    //cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
 
-    //printVector(res);
+    printVector(res);
     //printMatrix(res);
     //printLinkedList(res);
 }
