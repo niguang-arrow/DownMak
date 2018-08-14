@@ -6,7 +6,13 @@
 
 20180810: 保持城市天际线的最大增高; 编码和解码精简URL;从起点到终点的所有路径;矩阵翻转后的分数; 最长递增子序列(LIS);
 
-20180811: 今天做了多益网络与网易的笔试, 状态极差. 所以, 休息好是成功的关键, 以后尽可能早睡早起, 不要太激动! 今日刷题: 最长回文子子序列; 平板上的战船; 找到数组中的所有重复项;自定义排序的字符串; 二叉树裁剪; 位 1 的个数; 统计为 1 的个数; 单独的数字 III(剑指 Offer 原题40)
+20180811: 今天做了多益网络与网易的笔试, 状态极差. 所以, 休息好是成功的关键, 以后尽可能早睡早起, 不要太激动! 今日刷题: 最长回文子子序列; 平板上的战船; 找到数组中的所有重复项;自定义排序的字符串; 二叉树裁剪; 位 1 的个数; 统计位为 1 的个数; 单独的数字 III(剑指 Offer 原题40)
+
+20180812: 优美的排列(dfs);出现频率最高的子树和; 螺旋矩阵III; 括号的分数(字符串的题就是难, 我没有搞懂这道题, 未完)
+
+20180813: 将二叉树展开成链表; 展开多层的双向链表; 根据高度重建队列; 钥匙和房间;
+
+20180814: 最长无重复字符子序列; 最长重复字符替换; 回文子字符串的个数
 
 
 
@@ -397,7 +403,7 @@ public:
               // 肯定希望能将第一列的数全转为 1... 不懂.... 算了, 不纠结, 反正我写出来了.
                 a += A[i][j] ^ A[i][0];
             }
-          	// (1 << (n - j - 1)) 求 2^{n - i - 1} 次方
+          	// (1 << (n - j - 1)) 求 2^{n - j - 1} 次方
             res += max(a, m - a) * (1 << (n - j - 1)); 
         }
         
@@ -414,7 +420,7 @@ https://leetcode.com/problems/all-paths-from-source-to-target/description/
 
 使用 dfs 遍历邻接表, 只要注意题目中已经说明了是求从 0 到 N - 1 的所有路径.
 
-这道题用来练习 DFS 还是不错的.
+这道题用来练习 DFS 还是不错的. BFS 也可以做.
 
 ```cpp
 class Solution {
@@ -938,6 +944,644 @@ private:
     bool isBit_1(int num, unsigned i) {
         num >>= i;
         return (num & 1);
+    }
+};
+```
+
+
+
+### 526. **Beautiful Arrangement(优美的排列)
+
+https://leetcode.com/problems/beautiful-arrangement/description/
+
+1 ~ N 这 N 个数的排列要满足以下两个条件任意一个成为优美的:
+
++ 位于第 i 处(i 从 1 开始索引) 的元素能整除 i
++ i 能整除位于第 i 处的元素.
+
+参考思路: http://www.cnblogs.com/grandyang/p/6533276.html
+
+先找出全排列(使用 swap 的方法求出全排列), 然后将不符合要求的全排列给删除. 首先生成了全排列
+
+```cpp
+1 2 3 4
+```
+
+然后依次访问数组中每个元素 `nums[i]`, 并与最后一个数 n 交换, 注意到一个性质, 全排列情况下, `nums[i] == i`.
+
+那么与 n 交换之后, 就要判断 `n` 与 `nums[i]` 之间的关系.
+
+```cpp
+class Solution {
+public:
+    int countArrangement(int N) {
+        assert(N >= 1);
+        vector<int> nums;
+        for (int i = 1; i <= N; ++i) nums.push_back(i); // 产生全排列
+        return helper(N, nums);
+    }
+private:
+    // 可以举一个例子:N=4, 1 2 3 4, 产生所有全排列, 但是当访问到
+    // 比如说 2 时, 2 与 4 交换, 成 1 4 3 2, 满足 N/nums[i] 成立.
+    int helper(int n, vector<int> &nums) {
+        if (n <= 1) return 1;
+        int res = 0;
+        for (int i = 0; i < n; ++i) {
+            if ((n % nums[i] == 0) || (nums[i] % n == 0)) {
+                swap(nums[i], nums[n - 1]);
+                res += helper(n - 1, nums);
+                swap(nums[i], nums[n - 1]);
+            }
+        }
+        return res;
+    }
+};
+```
+
+
+
+思路二: 依然参考 http://www.cnblogs.com/grandyang/p/6533276.html
+
+尝试在生成一个序列的过程中, 考虑直接生成优美的序列. 将 1 ~ N 这 N 个元素放置到任意位置上, 但要满足优美序列的要求. 另外, 要使用一个额外的数组记录哪些位置被占了.
+
+```cpp
+class Solution {
+public:
+    int countArrangement(int N) {
+        assert(N >= 1);
+        vector<int> visited(N + 1, false);
+        int res = 0;
+        helper(N, visited, 1, res);
+        return res;
+    }
+private:
+    void helper(int N, vector<int> &visited, int pos, int &res) {
+        if (pos > N) { // 注意 pos 要大于 N, 因为 pos == N 还要进行判断
+            res ++;
+            return;
+        }
+        for (int i = 1; i <= N; ++i) { // 将 pos 尝试放在 N 个位置中的某一个
+            if (visited[i] == false && (i % pos == 0 || pos % i == 0)) {
+                visited[i] = true;
+                helper(N, visited, pos + 1, res);
+                visited[i] = false;
+            }
+        }
+    }
+};
+```
+
+
+
+
+
+### 508. **Most Frequent Subtree Sum(出现频率最高的子树和)
+
+https://leetcode.com/problems/most-frequent-subtree-sum/description/
+
+求所有的子树和, 找出其中出现频率最高的.
+
+思路: 使用 map 保存子树和以及对应的频率.
+
+```cpp
+class Solution {
+public:
+    vector<int> findFrequentTreeSum(TreeNode* root) {
+        postOrder(root);
+        vector<int> res;
+        int most = -1;
+      	// 找出频率最高的子树和.
+        for (auto &iter : record) {
+            if (iter.second > most) {
+                res.clear();
+                most = iter.second;
+                res.push_back(iter.first);
+            }
+            else if (iter.second == most)
+                res.push_back(iter.first);
+        }
+        return res;
+    }
+private:
+    unordered_map<int, int> record;
+  	// 子树和以及其频率保存
+    int postOrder(TreeNode *root) {
+        if (!root) return 0;
+
+        auto left = postOrder(root->left);
+        auto right = postOrder(root->right);
+        int sum = root->val + left + right;
+        record[sum] ++;
+        return sum;
+    }
+};
+```
+
+
+
+另外一种实现方法是:
+
+http://www.cnblogs.com/grandyang/p/6481682.html, 使用 cnt 记录下最大的频率, 之后查找最大频率的子树和就更方便一些.
+
+```cpp
+class Solution {
+public:
+    vector<int> findFrequentTreeSum(TreeNode* root) {
+        vector<int> res;
+        unordered_map<int, int> m;
+        int cnt = 0;
+        postorder(root, m, cnt);
+        for (auto a : m) {
+            if (a.second == cnt) res.push_back(a.first);
+        }
+        return res;
+    }
+    int postorder(TreeNode* node, unordered_map<int, int>& m, int& cnt) {
+        if (!node) return 0;
+        int left = postorder(node->left, m, cnt);
+        int right = postorder(node->right, m, cnt);
+        int sum = left + right + node->val;
+        cnt = max(cnt, ++m[sum]);
+        return sum;
+    }
+};
+```
+
+
+
+
+
+### 889. **Spiral Matrix III(螺旋矩阵 III)
+
+https://leetcode.com/problems/spiral-matrix-iii/description/
+
+思路请参考: https://leetcode.com/problems/spiral-matrix-iii/discuss/158970/C++JavaPython-112233-Steps 非常详细.
+
+摘录如下:
+
+**Intuition**:
+Take steps one by one.
+If the location is inside of grid, add it to `res`.
+But how to simulate the path?
+
+It seems to be annoying, but if we oberserve the path:
+
+move right `1` step, turn right
+move down `1` step, turn right
+move left `2` steps, turn right
+move top `2` steps, turn right,
+move right `3` steps, turn right
+move down `3` steps, turn right
+move left `4` steps, turn right
+move top `4` steps, turn right,
+
+we can find the sequence of steps: 1,1,2,2,3,3,4,4,5,5....
+
+So there are two thing to figure out:
+
+1. how to generate sequence 1,1,2,2,3,3,4,4,5,5
+2. how to turn right?
+
+**Generate sequence 1,1,2,2,3,3,4,4,5,5**
+Let `n` be index of this sequence.
+Then `A0 = 1`, `A1 = 1`, `A2 = 2` ......
+We can include that `An = n / 2 + 1`
+
+**How to turn right?**
+By cross product:
+Assume current direction is (x, y) in plane, which is (x, y, 0) in space.
+Then the direction after turn right (x, y, 0) × (0, 0, 1) = (y, -x, 0)
+Translate to code: `tmp = x; x = y; y = -tmp;`
+
+By arrays of arrays:
+The directions order is (0,1),(1,0),(0,-1),(-1,0), then repeat.
+Just define a variable.
+
+**Time Complexity**:
+O(max(M,N) ^ 2)
+
+**C++:**
+
+```cpp
+    vector<vector<int>> spiralMatrixIII(int R, int C, int r, int c) {
+        vector<vector<int>> res = {{r, c}};
+        int x = 0, y = 1, tmp;
+        for (int n = 0; res.size() < R * C; n++) {
+            for (int i = 0; i < n / 2 + 1; i++) {
+                r += x, c += y;
+                if (0 <= r && r < R && 0 <= c && c < C)
+                    res.push_back({r, c});
+            }
+            tmp = x, x = y, y = -tmp;
+        }
+        return res;
+    }
+```
+
+
+
+上面的意思是说, 注意螺旋矩阵的走法,
+
+向右移动 1 步, 右转
+
+向下移动 1 步, 右转
+
+向左移动 2 步, 右转
+
+向上移动 2 步, 右转
+
+向右移动 3 步, 右转
+
+向下移动 3 步, 右转
+
+向左移动 4 步, 右转
+
+向上移动 4 步, 右转
+
+....
+
+也就是说, 移动步数组成的序列是: 1 1 2 2 3 3 4 4 ....
+
+那这道题就可以归结为以下两个问题:
+
++ 如何表示移动步数序列 ?
++ 如何右转 ?
+
+首先观察到, 设 n 为该序列的索引, 那么 `An = n / 2 + 1`; (n 从 0 开始计数)
+
+而右转, 则使用交叉积, 由右手定则, `(x, y, 0) x (0, 0, 1) = (y, -x, 0)` **注: 其中 x 轴向右, y 轴向下, z 轴向桌面向里**, 将这个翻译成代码就是:
+
+```cpp
+tmp = x, x = y, y = -tmp;
+```
+
+对于方向, 分别是 `(0, 1) -> (1, 0) -> (0, -1) -> (-1, 0)` (注意它们刚好满足上面代码的意义).
+
+综上, 写成代码就是:
+
+第一个 for 循环使用 n 来当索引, 循环结束的条件是 res 的大小刚好等于 `R * C`. 第二个循环表示点在某个方向上一直移动, 移动的长度刚好是 `An = n / 2 + 1`, (因为 `r0 += x, c0 += y;` 这句代码表示一次移动一步) 
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> spiralMatrixIII(int R, int C, int r0, int c0) {
+        vector<vector<int>> res{{r0, c0}};
+        int x = 0, y = 1, tmp;
+        for (int n = 0; res.size() < R * C; ++n) {
+            for (int i = 0; i < n / 2 + 1; ++i) {
+                r0 += x, c0 += y; // 表示沿着一个方向一直移动
+                if (r0 >= 0 && r0 < R && c0 >= 0 && c0 < C)
+                    res.push_back({r0, c0});
+            }
+            // turn right, 使用交叉积, 注意 y 轴方向向下, x 轴方向向右, z 轴方向向桌面向里
+            // (x, y, 0) x (0, 0, 1) = (y, -x, 0)
+            tmp = x, x = y, y = -tmp;
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 856. **Score of Parentheses(括号的分数, 未完)
+
+https://leetcode.com/problems/score-of-parentheses/description/
+
+
+
+### 114. **Flatten Binary Tree to Linked List(将二叉树展开成链表)
+
+https://leetcode.com/problems/flatten-binary-tree-to-linked-list/description/
+
+将二叉树展开成链表
+
+这道题使用递归做很方便, 定义一个 Solution 的成员变量名为 `prev` 用于记录当前访问节点的前一个节点:
+
+```cpp
+class Solution {
+private:
+    // prev 用于记录已经被 flatten 的子树的根节点
+    TreeNode *prev = nullptr;
+public:
+    void flatten(TreeNode* root) {
+        if (!root)
+            return;
+        
+        flatten(root->right);
+        flatten(root->left);
+        root->right = prev;
+        root->left = nullptr;
+        prev = root;
+    }
+};
+```
+
+上面代码中最后的 `prev = root` 就是用于记录当前访问节点的前一个节点, 不过这是在有前面两行代码的前提下. 如果前两行代码没有, 那么代码本身就相当于做一个二叉树的后序遍历. 当有前两行代码, 假设 root->right 已经被 flatten 了, 那么此时 prev 就是指向右子树的根节点, 之后要对左子树进行访问, 由于是后序遍历, 那么访问的第一个节点就是左子树中最右边的节点:
+
+```bash
+      0
+    /   \
+   1     2 
+  / \
+ 3  4
+```
+
+如上面的例子, `prev` 此时指向 2, 而当前访问的节点是 `4`, 即 root 此时为 4, 那么:
+
+```cpp
+root->right = prev;
+root->left = nullptr;
+prev = root;
+```
+
+这段代码的意义就是让 `4` 指向 2, 同时令 prev 指向 4.
+
+
+
+### 430. **Flatten a Multilevel Doubly Linked List(展开多层的双向链表)
+
+https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/description/
+
+此题一开始被 114 题影响, 总想使用一个 prev 全局变量, 但这没有必要, 想半天想不清楚. 思路参考: https://leetcode.com/problems/flatten-a-multilevel-doubly-linked-list/discuss/150321/Easy-Understanding-Java-beat-95.7-with-Explanation
+
+思路: 依次访问每一个节点:
+
++ 如果当前节点没有 child, 那么访问下一个节点;
++ 直到当前节点 ptr 存在 child, 那么找到下一个 level 的最后一个节点(尾节点), 记为tmp;
++ 将尾节点 tmp 和 `ptr->next` 进行连接
++ 最后处理 ptr 和 `ptr->child` 的关系, 连接之后, 将 `ptr->child` 置为空.
+
+```cpp
+class Solution {
+public:
+    Node* flatten(Node* head) {
+        if (!head) return head;
+        auto ptr = head;
+        while (ptr) {
+            // 1. 如果没有 child 节点, 访问 next
+            if (!ptr->child) {
+                ptr = ptr->next;
+                continue;
+            }
+
+            // 2. 存在 child 节点, 查找其尾节点
+            auto tmp = ptr->child;
+            while (tmp->next) tmp = tmp->next;
+
+            // 3. 将尾节点和 ptr->next 连接
+            tmp->next = ptr->next;
+            if (ptr->next) ptr->next->prev = tmp;
+
+            // 4. 将 ptr 与 ptr->child 进行 flatten, 并删除 child
+            ptr->next = ptr->child;
+            ptr->child->prev = ptr;
+            ptr->child = nullptr;
+        }
+        return head;
+    }
+};
+```
+
+思路2: 如果要用全局变量, 也是可以的:
+
+```cpp
+class Solution {
+public:
+    Node* flatten(Node* head) {
+        if (!head) return head;
+        auto ptr = head;
+      	// 感觉这种思路与上面的思路类似, 关键在于 while (ptr) 的使用
+        while (ptr) {
+            if (ptr->child) {
+              	// 当子节点存在时, 对子节点进行展开, 然后删除子节点
+              	// tmp 保存当前节点的下一个节点
+                auto tmp = ptr->next;
+                auto child = flatten(ptr->child);
+                child->prev = ptr;
+                ptr->next = child;
+                ptr->child = nullptr;
+				
+              	// 判断 tmp 是否存在, 如果存在, 就要使用 prev 这个全局变量
+              	// 来整合 tmp.
+                if (tmp) {
+                    prev->next = tmp;
+                    tmp->prev = prev;
+                }
+            }
+            prev = ptr;
+            ptr = ptr->next;
+        }
+        return head;
+    }
+private:
+    Node *prev;
+};
+```
+
+
+
+
+
+### 406. **Queue Reconstruction by Height(根据高度重建队列)
+
+http://www.cnblogs.com/grandyang/p/5928417.html
+
+给了一个数组, 其中每个元素都是一个 pair, 第一个元素表示人的高度, 第二个表示该人前面有多少个高度比他高的人. 现在要恢复出这些人排队的样子.
+
+思路参考: http://www.cnblogs.com/grandyang/p/5928417.html
+
+首先对这波人排序, 高的人排在前面, 如果高度相等, 那么人数少的排在前面. 之后对已排序的 people,  根据 p.second 将它们插入到最后的结果中. (就是这么神奇!!!)
+
+```cpp
+class Solution {
+public:
+    vector<pair<int, int>> reconstructQueue(vector<pair<int, int>>& people) {
+        // 先根据高度和人数对数组进行排序, 高度高的站前面, 如果高度相等, 那么人数少的站前面
+        sort(people.begin(), people.end(), [] (const pair<int, int> &a, const pair<int, int> &b) {
+           return a.first > b.first || (a.first == b.first && a.second < b.second); 
+        });
+        
+        vector<pair<int, int>> res;
+        for (auto &p : people)
+            res.insert(res.begin() + p.second, p);
+        return res;
+    }
+};
+```
+
+
+
+### 841. **Keys and Rooms(钥匙和房间)
+
+https://leetcode.com/problems/keys-and-rooms/description/
+
+如果使用 stack 就是 DFS 了. `rooms[i]` 表示第 i 个房间含有的开任意房间的钥匙. 首先我们进入第一个房间: `q.push(0)`, 之后访问每一把钥匙 j, 看它是不是已经将房间 j 打开过, 如果没有打开, 那么就插入到 q 中, 准备下次去打开那个房间. for 循环中的 if 判断是提前终止.
+
+leetcode 中的官方解答: https://leetcode.com/articles/keys-and-rooms/
+
+参考: https://leetcode.com/problems/keys-and-rooms/discuss/133855/Straight-Forward
+
+```cpp
+class Solution {
+public:
+    bool canVisitAllRooms(vector<vector<int>>& rooms) {
+        queue<int> q; q.push(0);
+        unordered_set<int> seen{0};
+        while (!q.empty()) {
+            auto i = q.front(); q.pop();
+            for (auto &j : rooms[i]) {
+                if (!seen.count(j)) {
+                    q.push(j);
+                    seen.insert(j);
+                    if (seen.size() == rooms.size()) return true;
+                }
+            }
+        }
+        return seen.size() == rooms.size();
+    }
+};
+```
+
+
+
+### 3. **Longest Substring Without Repeating Characters(最长无重复字符子序列)
+
+https://leetcode.com/problems/longest-substring-without-repeating-characters/description/
+
+使用滑动窗口来写.
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int record[256] = {0};
+        int res = 0;
+        int l = 0, r = -1;
+        while (l < s.size() && (r + 1) < s.size()) {
+            if (record[s[r + 1]] == 0)
+                record[s[++r]] ++;
+            else
+                record[s[l++]] --;
+            
+            res = max(res, r - l + 1);
+        }
+        
+        return res;
+    }
+};
+```
+
+另一种写法:
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        int record[256] = {0};
+        int n = s.size();
+        int res = 0;
+        int i = 0;
+
+        for (int j = 0; j < n; ++j) {
+          	// 如果当前访问的字符在 record 中存在, 移动滑动窗口右边界.
+            while (record[s[j]]) -- record[s[i++]];
+            record[s[j]] ++;
+            res = max(res, j - i + 1);
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 424. **Longest Repeating Character Replacement(最长重复字符替换)
+
+https://leetcode.com/problems/longest-repeating-character-replacement/description/
+
+使用滑动窗口, 对于子字符串 `s[i...j]`, 统计其中出现次数最大的字符是哪个(下面代码中使用 `maxCnt` 保存该自字符串中字符最大的出现次数), 那么为了能使得对字符进行替换后, 含有重复字符的子字符串最长, 就要保证 `s[i...j]` 中的字符个数 `j - i + 1` 与最大的出现次数 `maxCnt` 之间的差值 `(j - i + 1) - maxCnt` 的大小要 `<= k`, 即如果 `(j - i + 1) - maxCnt > k`, 就说明经过 k 次替换, 也没有办法将 `s[i...j]` 内的字符都替换为相同的字符.
+
+```cpp
+class Solution {
+public:
+    int characterReplacement(string s, int k) {
+        int n = s.size();
+        int i = 0, maxCnt = 0, res = 0;
+        int count[26] = {0};
+        for (int j = 0; j < n; ++j) {
+            maxCnt = max(maxCnt, ++count[s[j] - 'A']);
+            // 移动左边界
+            while ((j - i + 1) - maxCnt > k)
+                --count[s[i++] - 'A'];
+            // 经过上面的处理 s[i...j] 中经k次替换后应该全是相同字符
+            res = max(res, j - i + 1); 
+        }
+        return res;
+    }
+};
+```
+
+  
+
+### 647. **Palindromic Substrings(回文子字符串的个数)
+
+https://leetcode.com/problems/palindromic-substrings/description/
+
+当访问到 `s[i]` 时, 可以从两个方面来统计回文子字符串的个数:
+
++ 以 `s[i]` 为中心, 向两边扩展: `count(s, i, i)`, 回文子字符串长度为奇数
++ 以 `s[i]` 与 `s[i + 1]` 为中心向两边扩展: `count(s, i, i + 1)`, 长度为偶数.
+
+```cpp
+class Solution {
+public:
+    int countSubstrings(string s) {
+        int res = 0, n = s.size();
+        for (int i = 0; i < n; ++i) {
+            res += count(s, i, i);
+            res += count(s, i, i + 1);
+        }
+        return res;
+    }
+private:
+    int count(const string &s, int l, int r) {
+        int res = 0;
+        while (l >= 0 && r < s.size() && s[l--] == s[r++])
+            res ++;
+        return res;
+    }
+};
+```
+
+可参考: 
+
++ https://leetcode.com/problems/palindromic-substrings/discuss/105688/Very-Simple-Java-Solution-with-Detail-Explanation
+
++ https://leetcode.com/problems/palindromic-substrings/discuss/105689/Java-solution-8-lines-extendPalindrome
+
+  Idea is start from each index and try to extend palindrome for both odd and even length.
+
+下面是使用动态规划的做法, 使用 dp 数组来保存 `s[i...j]` 范围内的字符串是不是回文字符串:
+
+类似于 516 题 最长回文子序列中的递推写法, i 首先初始化为 n - 1, 当然也可以从 0 初始化.
+
+`dp[i][j]` 要为 true 的话, 需要判断 `s[i] == s[j]` 是否成立, 另一方面, 如果只有 1 ~ 3 个字符, 比如 `a`, `aa`, 或 `aba`, 那也是可以的, 这就是 `j - i < 3` 的意义, 或者字符串很长, 就需要保证 `dp[i + 1][j - 1]` 为 true, 即 `s[i + 1....j-1]` 为回文字符串.
+
+参考: https://leetcode.com/problems/palindromic-substrings/discuss/105707/Java-DP-solution-based-on-longest-palindromic-substring
+
+```cpp
+class Solution {
+public:
+    int countSubstrings(string s) {
+        int res = 0, n = s.size();
+        vector<vector<bool>> dp(n, vector<bool>(n, false));
+        for (int i = n - 1; i >= 0; --i)
+            for (int j = i; j < n; ++j) {
+                dp[i][j] = s[i] == s[j] && (j - i < 3 || dp[i + 1][j - 1]);
+                if (dp[i][j]) ++ res;
+            }
+        return res;
     }
 };
 ```

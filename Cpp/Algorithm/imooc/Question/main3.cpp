@@ -46,38 +46,38 @@ void preOrder(TreeNode *root) {
     preOrder(root->right);
 }
 
-
 class Solution {
 public:
-    vector<int> singleNumber(vector<int>& nums) {
-        int num = 0;
-        // num 中保存两个 single number 的异或值, 并且 num 肯定不为 0,
-        // 那么找到num中位为 1 的位, 假设为 i, 那么根据第 i 位是否为 1,
-        // 可以将 nums 中的数分为两类.
-        for (auto &d : nums)
-            num ^= d;
-        unsigned i = 0;
-        while (((num >> i) & 1) != 1) i ++;
-        int one = 0, two = 0;
-        for (auto &d : nums) {
-            if (isBit_1(d, i)) one ^= d;
-            else two ^= d;
+    // 解答来自leetcode
+    string longestPalindrome(string s) {
+        int n = s.size();
+        string res;
+        for (int i = 0; i < n; ++i) {
+            auto s1 = extend(s, i, i);
+            auto s2 = extend(s, i, i + 1);
+            cout << i << " " << s1 << " " << s2 << endl;
+            res = s1.size() > res.size() ? s1 : res;
+            res = s2.size() > res.size() ? s2 : res;
         }
-        return {one, two};
+        return res;
     }
 private:
-    bool isBit_1(int num, unsigned i) {
-        while (i) num >>= i--;
-        return (num & 1);
+    string extend(const string &s, int l, int r) {
+        cout << "before : l: " << l << " r: " << r << endl;
+        while (l >= 0 && r < s.size() && s[l--] == s[r++]);
+        cout << "after : l: " << l << " r: " << r << endl;
+        return s.substr(l+2, (r - 2) - (l + 2));
     }
 };
 
+
+
 int main() {
-    TreeNode *root = new TreeNode(1);
-    //root->left = new TreeNode(1);
-    root->right = new TreeNode(2);
+    TreeNode *root = new TreeNode(5);
+    root->left = new TreeNode(2);
+    root->right = new TreeNode(-5);
     //root->left->left = new TreeNode(1);
-    root->right->left = new TreeNode(2);
+    //root->right->left = new TreeNode(2);
     //root->right->right = new TreeNode(6);
     //root->left->right->left = new TreeNode(7);
     //root->left->right->right = new TreeNode(9);
@@ -100,13 +100,13 @@ int main() {
     vector<vector<int>> nums = {{1, 2}, {3}, {3}, {}};
     string input = "bbbab";
     vector<string> words = {"a", "banana", "app", "appl", "ap", "apply", "apple"};
-    auto res = Solution().singleNumber(nums1);
-    //cout << res << endl;
+    auto res = Solution().longestPalindrome("accb");
+    cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
     //cout << endl;
 
-    printVector(res);
+    //printVector(res);
     //printMatrix(res);
     //printLinkedList(res);
 }
