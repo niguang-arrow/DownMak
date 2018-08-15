@@ -2,9 +2,9 @@
 
 \newcommand{\name}{张梦磊}
 %\newcommand{\job}{算法研发工程师} % 讯飞 大疆
-\newcommand{\job}{算法工程师} % ThoughtWorks
+%\newcommand{\job}{算法工程师} % ThoughtWorks
 %\newcommand{\job}{算法工程师-图像图形}
-%\newcommand{\job}{算法工程师-计算机视觉}
+\newcommand{\job}{\hspace*{-6cm}算法工程师\\[-.3cm] {\hspace*{1.86cm}\zihao{-4}计算机视觉方向}}
 %\newcommand{\job}{算法研发工程师}
 %\newcommand{\job}{人工智能工程师}
 %\newcommand{\job}{算法实习生}
@@ -71,7 +71,7 @@
 \begin{document}
 
 \newcommand{\namey}{-1.43}
-\newcommand{\joby}{\namey - 1.1}
+\newcommand{\joby}{\namey - 1.4}
 \newcommand{\photoy}{\namey - 1.17}
 \newcommand{\emaily}{\namey + 0.23}
 \newcommand{\phoney}{\emaily - 0.55}
@@ -82,7 +82,7 @@
 
 \begin{tikzpicture}[remember picture,overlay]
 	\tNode{name}{([shift={(2.7, \namey)}]current page.north west)}{\MyName{\name}};
-	\node[textNodeStyle,anchor=west] (job) at ([shift={(1.15, \joby)}]current page.north west) {\MyJob{\job}};
+	\node[textNodeStyle,anchor=west,text width=5cm,align=left] (job) at ([shift={(-.65, \joby)}]current page.north west) {\MyJob{\job}};
 	\node(photo) at ([shift={(-2.7, \photoy)}]current page.north east)			
 	{\includegraphics[width=2.2cm,height=3.2cm]{\photo}};
 	\node[fit=(photo),draw=headings,rectangle,inner sep=-2pt,shift={(-.005, .01)}] {};
