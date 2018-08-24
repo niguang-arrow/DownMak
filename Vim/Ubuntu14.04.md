@@ -310,6 +310,11 @@
   # 的头文件和动态链接库（*.so）. 由于 GCC 早已安装好了这些库是没有问题的, 对应到 clang 的标准库，
   # libc++（接口层）和 libc++abi（实现层）也需要安装头文件和动态链接库（*.so）。头文件和动态链接库只能源码安装：
   # 注意这里的处理方式和原文中的不一样是因为我发现 libcxx 文件夹中有 CMakeLists.txt 文件
+
+  ## 另外, 最近装过一次, 发现会报 svn Error Refused by peer... 这样的错误, 可以通过
+  ## 到 Github 上下载 libcxx 和 libcxxabi 进行修正:
+  ## https://github.com/llvm-mirror/libcxx
+  ## https://github.com/llvm-mirror/libcxxabi
   cd ~/Programs/ 
   svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
   mkdir build   
@@ -539,6 +544,8 @@
          ./set_light.sh
          ```
 
+         ​
+
      +   安装新的字体
 
          +   将它们拷贝至 `~/.local/share/fonts` 文件夹即可. 选择 Powerline 字体, 我使用的是 Source Code Pro for Powerline Medium.
@@ -577,86 +584,99 @@
          ```
 
 
-         +   安装 YouCompleteMe (编译好 clang 之后再装 YCM)
++   安装 YouCompleteMe (编译好 clang 之后再装 YCM)
 
-         ```bash
-         # 使用 Vundle 安装好 YCM
-         # 编辑 .vimrc 文件
-         Plugin 'Valloric/YouCompleteMe'
-    
-         :PluginInstall # 在 vim 中使用命令
-         # 要保证安装完成后 YCM 没有给出什么出错的信息, 没有信息就是好消息!!!
-         # 之后还要编译 YCM, 首先安装必要的编译工具和库
-         #sudo apt-get install build-essential cmake
-         sudo apt-get install python-dev python3-dev
-    
-         # Compiling YCM with semantic support for C-family languages:
-         cd ~/.vim/bundle/YouCompleteMe
-         ./install.py --clang-completer
-         # 成功! 体验太棒了!!! 
-    
-         #####################
-         # 注意意外情况
-         #####################
-         # 下面这个意外情况是我在服务器上安装时遇到的,
-         # 前面已经成功使用 Vundle 安装 YCM, 但是在使用 ./install.py --clang-completer
-         # 时, 出现 Your C++ compiler doesnot support C++11
-         # 当时 log 显示我使用的是 g++ 4.8.4 
-         # 于是参考 https://github.com/Valloric/YouCompleteMe/issues/2596
-         # 发现可以通过下面的方式解决, 注意我已经按照下面步骤中讲述的安装好了 clang
-         # clang --version 的版本为 5.0.0
-         # 解决方法如下:
-         $ which clang++
-         /usr/local/bin/clang++
-         $ which clang
-         /usr/local/bin/clang
-         $ CXX=/usr/local/bin/clang++ CC=/usr/local/bin/clang ./install.py --clang-completer
-         # 成功!
-         ```
-          +   对于 Vim 中的 ctrlsf 等包, 需要安装 ack, ag 等 (查看 `Vim/refer.md`), 还有 ctags 也要装一下. ipynb 插件需要 notedown. (**由于我最终会使用 pyenv, 所以到时候还需要装 notedown**)
-    
-              ```bash
-              cpan App::Ack # 安装 ack, 有个选项是选 sudo
-              sudo apt-get install silversearcher-ag # 安装 ag
-              # 通过源码装 ctags, 略... ./configure && make && sudo make install
-              sudo pip install notedown 
-              ```
+```bash
+     # 使用 Vundle 安装好 YCM
+     # 编辑 .vimrc 文件
+     Plugin 'Valloric/YouCompleteMe'
+
+     :PluginInstall # 在 vim 中使用命令
+     # 要保证安装完成后 YCM 没有给出什么出错的信息, 没有信息就是好消息!!!
+     # 之后还要编译 YCM, 首先安装必要的编译工具和库
+     #sudo apt-get install build-essential cmake
+     sudo apt-get install python-dev python3-dev
+
+     # Compiling YCM with semantic support for C-family languages:
+     cd ~/.vim/bundle/YouCompleteMe
+     ./install.py --clang-completer
+     # 成功! 体验太棒了!!! 
+     
+     #####################
+     # 注意意外情况 1
+     #####################
+     # 出现 DOWNLOAD HASH mismatch
+     # 参考: https://github.com/Valloric/YouCompleteMe/issues/1711
+     ## 从 http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+     ## 下载 clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz 文件放到
+     ## ~/.vim/bundle/YouCompleteMe/third_party/ycmd/clang_archives 目录下,
+     ## 然后直接运行 ./install.py 文件即可.
+     
+     
+
+     #####################
+     # 注意意外情况 2
+     #####################
+     # 下面这个意外情况是我在服务器上安装时遇到的,
+     # 前面已经成功使用 Vundle 安装 YCM, 但是在使用 ./install.py --clang-completer
+     # 时, 出现 Your C++ compiler doesnot support C++11
+     # 当时 log 显示我使用的是 g++ 4.8.4 
+     # 于是参考 https://github.com/Valloric/YouCompleteMe/issues/2596
+     # 发现可以通过下面的方式解决, 注意我已经按照下面步骤中讲述的安装好了 clang
+     # clang --version 的版本为 5.0.0
+     # 解决方法如下:
+     $ which clang++
+     /usr/local/bin/clang++
+     $ which clang
+     /usr/local/bin/clang
+     $ CXX=/usr/local/bin/clang++ CC=/usr/local/bin/clang ./install.py --clang-completer
+     # 成功!
+```
+
++ 对于 Vim 中的 ctrlsf 等包, 需要安装 ack, ag 等 (查看 `Vim/refer.md`), 还有 ctags 也要装一下. ipynb 插件需要 notedown. (**由于我最终会使用 pyenv, 所以到时候还需要装 notedown**)
+
+ ```bash
+          cpan App::Ack # 安装 ack, 有个选项是选 sudo
+          sudo apt-get install silversearcher-ag # 安装 ag
+          # 通过源码装 ctags, 略... ./configure && make && sudo make install
+          sudo pip install notedown 
+ ```
 
 
-         +   安装 ranger, 然后使用 vim 中的 ranger.vim 实现在 vim 中使用 ranger.
-             +   地址:  https://github.com/ranger/ranger
++ 安装 ranger, 然后使用 vim 中的 ranger.vim 实现在 vim 中使用 ranger.
+  + 地址:  https://github.com/ranger/ranger
 
+```bash
+          # 下载 UniCurses-1.2, https://sourceforge.net/projects/pyunicurses/
+          cd UniCurses-1.2
+          python setup.py install # python -c "import curses" 检验
 
-              ```bash
-              # 下载 UniCurses-1.2, https://sourceforge.net/projects/pyunicurses/
-              cd UniCurses-1.2
-              python setup.py install # python -c "import curses" 检验
-    
-              # 安装 w3m
-              sudo apt-get install w3m-img
-    
-              # 安装其他配件
-              sudo apt-get install caca-utils highlight atool bsdtar unrar lynx w3m-img elinks poppler-utils transmission-cli transmission-common transmission-daemon mediainfo exiftool odt2txt
-    
-              # 安装必要的 python 库
-              pip install pytest 
-              pip install flake8
-              sudo pip install pytest 
-              sudo pip install flake8
-    
-              # 安装 ranger
-              cd Programs
-              git clone https://github.com/ranger/ranger 
-              cd ranger
-              sudo make install
-    
-              # 在 .zshrc 中加入如下的关于 ranger 的配置 (当然不加也可以)
-              # ranger config
-              # in case ~/.config/ranger/rc.conf to be loaded twice
-              export RANGER_LOAD_DEFAULT_RC=FALSE
-    
-              # 最后可以完成 vim 中 ranger.vim 插件的安装
-              ```
+          # 安装 w3m
+          sudo apt-get install w3m-img
+
+          # 安装其他配件
+          sudo apt-get install caca-utils highlight atool bsdtar unrar lynx w3m-img elinks poppler-utils transmission-cli transmission-common transmission-daemon mediainfo exiftool odt2txt
+
+          # 安装必要的 python 库
+          pip install pytest 
+          pip install flake8
+          sudo pip install pytest 
+          sudo pip install flake8
+
+          # 安装 ranger
+          cd Programs
+          git clone https://github.com/ranger/ranger 
+          cd ranger
+          sudo make install
+
+          # 在 .zshrc 中加入如下的关于 ranger 的配置 (当然不加也可以)
+          # ranger config
+          # in case ~/.config/ranger/rc.conf to be loaded twice
+          export RANGER_LOAD_DEFAULT_RC=FALSE
+
+          # 最后可以完成 vim 中 ranger.vim 插件的安装
+```
+   
 
 
 

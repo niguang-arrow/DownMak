@@ -2,6 +2,10 @@
 
 2018 年 3 月 10 日
 
+[TOC]
+
+
+
 ## 重要博客
 
 + http://cuijiahua.com/blog/2018/02/basis_67.html
@@ -32,6 +36,8 @@
 ## 第四章 解决面试题的思路
 
 ### 面试题 1: 二维数组中的查找
+
+已在牛客 AC.
 
 在一个二维数组中，每一行都按照从左到右递增的顺序排序，每一列都按照从上到下递增的顺序排序。请完成一个函数，输入这样的一个二维数组和一个整数，判断数组中是否含有该整数。
 
@@ -101,6 +107,8 @@ public:
 
 输入一个链表，返回一个反序的链表。
 
+已在牛客 AC.
+
 思路 1: 将链表翻转后, 再重新遍历一遍.
 
 ```cpp
@@ -159,6 +167,8 @@ public:
 
 输入某二叉树的前序遍历和中序遍历的结果，请重建出该二叉树。假设输入的前序遍历和中序遍历的结果中都不含重复的数字。例如输入前序遍历序列{1,2,4,7,3,5,6,8}和中序遍历序列{4,7,2,1,5,3,8,6}，则重建二叉树并返回。
 
+已在牛客 AC.
+
 思路: 递归来做, 前向遍历第一个节点为根节点, 然后从中序遍历中找到根节点, 计算左右子树的节点个数. 本来在 leetcode 上使用 `unordered_map` 可以加快在中序遍历中查找根节点的速度, 然而在牛客上使用这种方法会影响空间的使用导致通不过, 所以这里就使用顺序查找.
 
 ```cpp
@@ -192,6 +202,8 @@ private:
 ### 面试题 5: 用两个栈实现队列
 
 用两个栈来实现一个队列，完成队列的Push和Pop操作。 队列中的元素为int类型。
+
+已在牛客 AC.
 
 思路: push 时将元素插入 s1 中, 而 pop 时将 s2 中的元素进行 pop; 如果 s2 为空, 那就先将 s1 中的元素全部 push 到 s2 中.
 
@@ -227,6 +239,8 @@ private:
 
 把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。 输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。 例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。 NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
 
+已在牛客 AC.
+
 思路 1: `search` 函数查找无重复数字的旋转数组中的最小数字, 而 `minNumberInRotateArray` 中的 while 循环是为了处理末尾的重复数字, 比如 `4 5 6 1 2 3 4 4 4`.
 
 ```cpp
@@ -259,7 +273,7 @@ http://cuijiahua.com/blog/2017/11/basis_6.html 还给出了一种思路.
 
 ### 面试题 7: 斐波拉切数列
 
-大家都知道斐波那契数列，现在要求输入一个整数n，请你输出斐波那契数列的第n项（从0开始，第0项为0）。 n<=39
+大家都知道斐波那契数列，现在要求输入一个整数n，请你输出斐波那契数列的第n项（从0开始，第0项为0）。 n<=39. 已AC.
 
 ```cpp
 class Solution {
@@ -280,6 +294,8 @@ public:
 
 
 ### 面试题 8: 跳台阶 
+
+已在牛客 AC.
 
 一只青蛙一次可以跳上1级台阶，也可以跳上2级。求该青蛙跳上一个n级的台阶总共有多少种跳法（先后次序不同算不同的结果）。
 
@@ -305,6 +321,8 @@ public:
 
 一只青蛙一次可以跳上1级台阶，也可以跳上2级……它也可以跳上n级。求该青蛙跳上一个n级的台阶总共有多少种跳法。
 
+已在牛客 AC.
+
 先确认递推式是: $f(n) = 2f(n - 1) = 2^{(n - 1)}f(1) = 2^{(n - 1)}$.
 
 ```cpp
@@ -322,6 +340,8 @@ public:
 ### 面试题 10: 矩形覆盖
 
 我们可以用`2*1`的小矩形横着或者竖着去覆盖更大的矩形。请问用n个`2*1`的小矩形无重叠地覆盖一个`2*n`的大矩形，总共有多少种方法？
+
+已在牛客 AC.
 
 思路: 递推式是: `f(n) = f(n - 1) + f(n - 2)`. 我们先把2x8的覆盖方法记为f(8)。用第一个1x2小矩阵覆盖大矩形的最左边时有两个选择，竖着放或者横着放。当竖着放的时候，右边还剩下2x7的区域，这种情况下的覆盖方法记为f(7)。接下来考虑横着放的情况。当1x2的小矩形横着放在左上角的时候，左下角和横着放一个1x2的小矩形，而在右边还剩下2x6的区域，这种情况下的覆盖方法记为f(6)。因此f(8)=f(7)+f(6)。此时我们可以看出，这仍然是[斐波那契数列](http://cuijiahua.com/blog/tag/%e6%96%90%e6%b3%a2%e9%82%a3%e5%a5%91%e6%95%b0%e5%88%97/)。
 
@@ -372,6 +392,8 @@ http://cuijiahua.com/blog/2017/11/basis_11.html
 
 如果一个整数不为0，那么这个整数至少有一位是1。如果我们把这个整数减1，那么原来处在整数最右边的1就会变为0，原来在1后面的所有的0都会变成1(如果最右边的1后面还有0的话)。其余所有位将不会受到影响。
 
+已在牛客 AC.
+
 举个例子：一个二进制数1100，从右边数起第三位是处于最右边的一个1。减去1后，第三位变成0，它后面的两位0变成了1，而前面的1保持不变，因此得到的结果是1011.我们发现减1的结果是把最右边的一个1开始的所有位都取反了。这个时候如果我们再把原来的整数和减去1之后的结果做与运算，从原来整数最右边一个1那一位开始所有位都会变成0。如1100&1011=1000.也就是说，把一个整数减去1，再和原整数做与运算，会把该整数最右边一个1变成0.那么一个整数的二进制有多少个1，就可以进行多少次这样的操作。
 
 ```cpp
@@ -393,6 +415,8 @@ public:
 ### 面试题 12: 数值的整数次方
 
 给定一个double类型的浮点数base和int类型的整数exponent。求base的exponent次方。
+
+已在牛客 AC.
 
 思路: 使用递归会非常方便. 注意 `power` 中第二个参数设置为 long, 是为了处理 exponent 为 `INT32_MIN` 的情况, 如果其取绝对值, 就越界了.
 
@@ -420,168 +444,292 @@ private:
 
 
 
+### 面试题 13: 调整数组顺序使奇数位于偶数前面
+
+已在牛客 AC.
+
+输入一个整数数组，实现一个函数来调整该数组中数字的顺序，使得所有的奇数位于数组的前半部分，所有的偶数位于数组的后半部分，并保证奇数和奇数，偶数和偶数之间的相对位置不变。
+
+思路 1: 类似于插入排序的思路. 如果当前元素为奇数而它前面的元素为偶数,那么就将它插到合适的位置
+
+```cpp
+class Solution {
+public:
+    // 类似于插入排序的思路,如果当前元素为奇数而它前面的元素为偶数,
+    // 那么就将它插到合适的位置
+    void reOrderArray(vector<int> &array) {
+        for (int i = 1; i < array.size(); ++i) {
+            int tmp = array[i];
+            int j = i - 1;
+            while (j >= 0 && (tmp % 2 == 1) && (array[j] % 2 == 0)) {
+                array[j + 1] = array[j];
+                -- j;
+            }
+            array[j + 1] = tmp;
+        }
+    }
+};
+```
 
 
-### 面试题 19: 二叉树的镜像
+
+思路 2: 感觉下面的方法更为简洁, 更快, 我在看 STL 源码剖析的时候, 发现 copy 以及 `copy_backward` 会对整数的复制做优化, 底层可能调用 `memmove` 对数据进行复制.
+
+```cpp
+class Solution {
+public:
+		// array[0...k] 用于保存奇数, 而 array[k+1...n] 用于保存偶数,
+  		// 如果 array[i] 是偶数, 那么 continue; 否则将 array[i] 插入到
+  		// array[k+1] 处(k 初始化为 -1), 插入前, 需要将 array[k+1...i-1] 范围
+  		// 内的元素后移一位. 为什么 copy_backward 中的参数是那样, 可以看算法定义以及
+  		// 参数要求, 画个图更好理解.
+        void reOrderArray(vector<int> &array) {
+        int k = -1;
+        for (int i = 0; i < array.size(); ++i) {
+            if ((array[i] & 1) == 0) continue;
+            auto tmp = array[i];
+            copy_backward(array.begin() + k + 1, array.begin() + i, 
+                          array.begin() + i + 1);
+            array[++k] = tmp;
+        }
+
+    }
+};
+```
+
+
+
+思路 3: 使用双向队列, http://cuijiahua.com/blog/2017/11/basis_13.html
+
+```cpp
+class Solution {
+public:
+    void reOrderArray(vector<int> &array) {
+        deque<int> result;
+        int num = array.size();
+        for(int i = 0; i < num; i++){
+            if(array[num - i - 1] % 2 == 1){
+                result.push_front(array[num - i - 1]);
+            }
+            if(array[i] % 2 == 0){
+                result.push_back(array[i]);
+            }
+        }
+        array.assign(result.begin(),result.end());
+    }
+};
+```
+
+
+
+
+
+### 面试题 14: 链表中倒数第 k 个结点
+
+牛客上已AC.
+
+参考: http://cuijiahua.com/blog/2017/12/basis_14.html
+
+```cpp
+class Solution {
+public:
+    ListNode* FindKthToTail(ListNode* head, unsigned int k) {
+        if (!head || k == 0) return nullptr;
+        auto ps = head, pe = head;
+        for (int i = 0; i < k - 1; ++i) {
+            if (pe->next)
+                pe = pe->next;
+            else
+                return nullptr;
+        }
+        while (pe->next) {
+            ps = ps->next;
+            pe = pe->next;
+        }
+        return ps;
+    }
+};
+```
+
+
+
+### 面试题 15: 反转链表
+
+牛客上已AC.
+
+```cpp
+class Solution {
+public:
+    ListNode* ReverseList(ListNode* pHead) {
+        ListNode *prev = nullptr;
+        while (pHead) {
+            auto tmp = pHead->next;
+            pHead->next = prev;
+            prev = pHead;
+            pHead = tmp;
+        }
+        return prev;
+    }
+};
+```
+
+
+
+### 面试题 16: 合并两个排序的链表
+
+牛客上已AC.
+
+```cpp
+class Solution {
+public:
+    ListNode* Merge(ListNode* pHead1, ListNode* pHead2) {
+        ListNode *dummy = new ListNode(0);
+        auto ptr = dummy, p1 = pHead1, p2 = pHead2;
+        while (p1 && p2) {
+            if (p1->val < p2->val) {
+                ptr->next = p1;
+                p1 = p1->next;
+            }
+            else {
+                ptr->next = p2;
+                p2 = p2->next;
+            }
+            ptr = ptr->next;
+        }
+        ptr->next = p1 ? p1 : p2;
+        return dummy->next;
+    }
+};
+```
+
+
+
+### 面试题 17: 树的子结构
+
+牛客上已AC.
+
+leetcode 中的 572. Subtree of Another Tree 中的代码是去掉了 `isSame` 函数中的第二条 if 语句, leetcode 中的 572 题要求 t 与 s 的子树完全匹配才行.
+
+```cpp
+// 这道题和 leetcode 中的 572. Subtree of Another Tree 不同,
+// 如果 s 的中间部分(未必要到叶子节点)的结构和 t 的结构相同, 那么
+// 仍然返回 true.
+class Solution {
+public:
+    bool HasSubtree(TreeNode* s, TreeNode* t) {
+        if (!s || !t) return false;
+        return isSame(s, t) || HasSubtree(s->left, t) || HasSubtree(s->right, t);
+    }
+private:
+    // 判断两棵树是不是相同, 下面代码会判断:
+    // [2, 1, 4, 4, 3] 与 [2, 1, 4] 两棵树是相同的.
+    // 即只要 t 是 s 在一开始的部分是相同的即可, 不需要完全匹配,
+    // 要完全匹配的话, 只需要删除函数中第二个 if 语句.
+    bool isSame(TreeNode *s, TreeNode *t) {
+        if (!s || !t) return (s == t);
+        if (!t->left && !t->right && t->val == s->val) return true;
+        return (s->val == t->val) && isSame(s->left, t->left) && isSame(s->right, t->right);
+    }
+};
+```
+
+
+
+
+
+### 面试题 18: 二叉树的镜像
 
 题目: 请完成一个函数, 输入一个二叉树, 该函数输出它的镜像.
 
-我为了写好测试用例, 还实现了一棵二叉搜索树中的部分操作. 之后, 我会把这个实现放到 `function.h` 文件中, 如果以后这本书还有相关的题, 就直接使用, 不用再重新写了.
+牛客上已 AC.
 
 ```cpp
-#include <iostream>
-#include <vector>
-#include <initializer_list>
-using namespace std;
-
-// 二叉树的节点
-template <typename T>
-struct BinaryTreeNode {
-    T val;
-    BinaryTreeNode *left;
-    BinaryTreeNode *right;
-    BinaryTreeNode(T v) : val(v), left(nullptr), right(nullptr) {}
-};
-
-// 二分搜索树, 只实现了插入, 深度优先遍历, 以及题目要求的求
-// 二叉树的镜像 reverse() 函数.
-template <typename T>
-class BSTree {
-private:
-    BinaryTreeNode<T> *root;
-    int count;
-	
-  	// 注意插入的时候, 要维护 count 的数值.
-    BinaryTreeNode<T>* insert(BinaryTreeNode<T> *node, T val) {
-        if (node == nullptr) {
-            count++;
-            return new BinaryTreeNode<T>(val);
-        }
-
-        if (val == node->val)
-            node->val = val;
-        else if (val < node->val)
-            node->left = insert(node->left, val);
-        else
-            node->right = insert(node->right, val);
-
-        return node;
-    }
-	
-  	// 注意 public 的 preOrder 使用了 const, 那么这里也需要 const
-  	// 否则编译无法通过.
-    void preOrder(BinaryTreeNode<T> *node) const {
-        if (node) {
-            cout << node->val << " ";
-            preOrder(node->left);
-            preOrder(node->right);
-        }
-    }
-
-    void inOrder(BinaryTreeNode<T> *node ) const {
-        if (node) {
-            inOrder(node->left);
-            cout << node->val << " ";
-            inOrder(node->right);
-        }
-    }
-
-    void postOrder(BinaryTreeNode<T> *node ) const {
-        if (node) {
-            postOrder(node->left);
-            postOrder(node->right);
-            cout << node->val << " ";
-        }
-    }
-	
-  	// 用于 BSTree 的析构, 使用后向遍历的思路
-    void clear(BinaryTreeNode<T> *node) {
-        if (node) {
-            clear(node->left);
-            clear(node->right);
-            delete node;
-        }
-    }
-	
-  	// reverse 的思路是, 遍历非叶子节点, 判断条件是: 当前节点不为空, 
-  	// 并且总有一个孩子(也就是左右孩子不能同时为 nullptr)
-  	// 将非叶子节点的左右孩子进行交换.
-    void reverse(BinaryTreeNode<T> *node) {
-        if (!node || (!node->left && !node->right))
-            return;
-        BinaryTreeNode<T> *temp = node->left;
-        node->left = node->right;
-        node->right = temp;
-        reverse(node->left);
-        reverse(node->right);
-    }
-
+class Solution {
 public:
-    BSTree() : root(nullptr), count(0) {}
-    BSTree(initializer_list<T> ls) : root(nullptr), count(0) {
-        for (const auto &d : ls)
-            insert(d);
+    void Mirror(TreeNode *pRoot) {
+        pRoot = setMirror(pRoot);
+        return;
     }
-    ~BSTree() {
-        clear(root);
-    }
-
-    int size() const {
-        return count;
-    }
-
-    bool empty() const {
-        return count == 0;
-    }
-    void insert(T val) {
-        root = insert(root, val);
-    }
-
-    void preOrder() const {
-        preOrder(root);
-        cout << endl;
-    }
-
-    void inOrder() const {
-        inOrder(root);
-        cout << endl;
-    }
-
-    void postOrder() const {
-        postOrder(root);
-        cout << endl;
-    }
-
-    void reverse() {
-        reverse(root);
+private:
+    TreeNode* setMirror(TreeNode *root) {
+        if (!root) return nullptr;
+        std::swap(root->left, root->right);
+        root->left = setMirror(root->left);
+        root->right = setMirror(root->right);
+        return root;
     }
 };
-
-
-int main() {
-    BSTree<int> tree = {4, 5, 2, 3, 1, 0, 6};
-    cout << tree.size() << endl;
-    tree.preOrder();
-    tree.inOrder();
-    tree.postOrder();
-    tree.reverse();
-    tree.preOrder();
-    tree.inOrder();
-    tree.postOrder();
-    return 0;
-}
-
-// Output:
-7
-// 翻转前的结果
-4 2 1 0 3 5 6 
-0 1 2 3 4 5 6 
-0 1 3 2 6 5 4 
-// 翻转后的结果
-4 5 6 2 3 1 0 
-6 5 4 3 2 1 0 
-6 5 3 0 1 2 4
 ```
+
+
+
+### 面试题 19: 顺时针打印矩阵
+
+牛客上已 AC.
+
+这道题就是要输出螺旋矩阵.
+
+输入一个矩阵，按照从外向里以顺时针的顺序依次打印出每一个数字，例如，如果输入如下4 X 4矩阵： 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 则依次打印出数字1,2,3,4,8,12,16,15,14,13,9,5,6,7,11,10. 
+
+螺旋矩阵的圈数 `c = min((m + 1)/2, (n + 1)/2)`, `m` 和 `n` 是每一圈矩阵的高度和宽度, 每一圈要 `-= 2`, 另外注意, 当 `m == 1` 或 `n == 1` 时要 break 出来, 因为当前只有一行或一列, if 语句前面的 for 循环就可以将这一行或一列的数据处理完.
+
+```cpp
+class Solution {
+public:
+    vector<int> printMatrix(vector<vector<int> > matrix) {
+        if (matrix.empty() || matrix[0].empty()) return {};
+        vector<int> res;
+        int m = matrix.size(), n = matrix[0].size();
+        int c = min((m + 1), (n + 1)) / 2;
+        for (int i = 0; i < c; ++i, m -= 2, n -= 2) {
+            for (int col = i; col < i + n; ++col) // 列增
+                res.push_back(matrix[i][col]);
+            for (int row = i + 1; row < i + m; ++row)
+                res.push_back(matrix[row][i + n - 1]); // 行增
+            if (m == 1 || n == 1) break;
+            for (int col = i + n - 2; col >= i; --col)// 列减
+                res.push_back(matrix[i + m - 1][col]);
+            for (int row = i + m - 2; row > i; --row) // 行减
+                res.push_back(matrix[row][i]);
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 面试题 21: 包含 min 函数的栈
+
+定义栈的数据结构，请在该类型中实现一个能够得到栈中所含最小元素的min函数（时间复杂度应为O（1））。
+
+牛客上已 AC.
+
+```cpp
+class Solution {
+private:
+    stack<int> s1;
+    stack<int> s2;
+public:
+    void push(int value) {
+        s1.push(value);
+        if (s2.empty() || value < s2.top()) s2.push(value);
+        else s2.push(s2.top()); 
+    }
+    void pop() {
+        s1.pop();
+        s2.pop();
+    }
+    int top() {
+        return s1.top();
+    }
+    int min() {
+        return s2.top();
+    }
+};
+```
+
+
 
 
 
@@ -648,7 +796,8 @@ public:
                     s.push(pushV[j]);
                     if (pushV[j] == popV[k]) break; 
                 }
-                if (j >= pushV.size()) return false;
+              	// 在 pushV[i...n] 中没有找到 popV[k]
+                if (j >= pushV.size()) return false; 
                 i = j + 1;
             }
             else {
@@ -671,33 +820,26 @@ public:
 
 这就是二叉树的广度优先遍历, 实现方法是引入一个队列, 将要访问的节点入队, 然后判断队列是否为空, 若不为空, 则将节点出队, 并将该节点的左右孩子入队; 重复以上过程直到队列为空;
 
-将下面的代码加在面试题 19: 二叉树的镜像中的 public 代码中. 
+牛客上已AC.
 
 ```cpp
-    // 广度优先遍历
-    void BreadthFirst() {
-        queue<BinaryTreeNode<T>*> que;
-        if (root) {
-            que.push(root);
-            while (!que.empty()) {
-                BinaryTreeNode<T> *node = que.front();
-                que.pop();
-                if (node) {
-                    cout << node->val << " ";
-                    que.push(node->left);
-                    que.push(node->right);
-                }
-            }
-            cout << endl;
+class Solution {
+public:
+    vector<int> PrintFromTopToBottom(TreeNode* root) {
+        if (!root) return {};
+        vector<int> res;
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            auto root = q.front();
+            q.pop();
+            res.push_back(root->val);
+            if (root->left) q.push(root->left);
+            if (root->right) q.push(root->right);
         }
+        return res;
     }
-
-// 测试
-int main() {
-    BSTree<int> tree = {4, 5, 2, 3, 1, 0, 6};
-    tree.BreadthFirst();
-    return 0;
-} //Output: 4 2 5 1 3 6 0
+};
 ```
 
 
@@ -705,6 +847,49 @@ int main() {
 ### 面试题 24: 二叉搜索树的后序遍历
 
 题目: 输入一个整数数组, 判断该数组是不是某二叉搜索树的后序遍历的结果. 如果是则返回 true, 否则返回 false. 假设输入的数组中任意两个数字都互不相同.
+
+下面代码在牛客上 AC.
+
+```cpp
+class Solution {
+public:
+    bool VerifySquenceOfBST(vector<int> sequence) {
+        if (sequence.empty()) return false;
+        return VerifySquenceOfBST(sequence, 0, sequence.size() - 1, INT32_MIN, INT32_MAX);
+    }
+private:
+    bool VerifySquenceOfBST(vector<int> &nums, int i, int j, int imin, int imax) {
+        if (i > j) return true;
+        if (!(imin < nums[j] && nums[j] < imax)) return false;
+        int idx = binarySearch(nums, i, j - 1, nums[j]);
+        if (idx == -1) return VerifySquenceOfBST(nums, i, j - 1, nums[j], imax);
+        return VerifySquenceOfBST(nums, i, idx, imin, nums[j]) &&
+            VerifySquenceOfBST(nums, idx + 1, j - 1, nums[j], imax);
+    }
+    int search(vector<int> &nums, int l, int r, int target) {
+        for (int i = r; i >= l; --i) {
+            if (nums[i] < target) return i;
+        }
+        return -1;
+    }
+    int binarySearch(vector<int> &nums, int l, int r, int target) {
+        if (l > r) return -1;
+        int start = l;
+        while (l <= r) {
+            int mid = l + (r - l) / 2;
+            if (nums[mid] < target) l = mid + 1;
+            else r = mid - 1;
+        }
+        if (r < start) return -1;
+        return l - 1;
+    }
+
+};
+```
+
+
+
+下面这种方法应该是对的, 没有在牛客上测试过.
 
 思路是注意二叉搜索树本身的递归结构, 后序遍历的最后一个节点是根节点, 然后它前面的节点是它的左右子树; 接下来要在它前面的节点中将左右子树分开, 只需要找到第一个小于它的节点, 就是左右子树的分界点. 然后再对左右子树递归操作.
 
@@ -1453,6 +1638,86 @@ public:
     }
 };
 ```
+
+
+
+
+
+### 面试题 40: 数组中只出现一次的数字
+
+一个整型数组里除了两个数字之外，其他的数字都出现了偶数次。请写程序找出这两个只出现一次的数字。
+
+思路参考: http://cuijiahua.com/blog/2018/01/basis_40.html
+
+```cpp
+class Solution {
+public:
+    // 根据整个数组 data 中所有元素的异或结果(设为 num), 将 data 中的元素分为两个部分, 
+  	// 具体分法是:
+    // 由于 num 肯定不为 0, 那么首先找到 num 的二进制表示中为 1 的某一位, 比如说是第 n 位,
+    // 然后根据第 n 位是否为 1 将 data 中的元素分成两个部分,
+  	// 这样, 每个部分中都只含有一个只出现一次
+    // 的数字, 最后只要分别对这两个部分中的元素进行异或, 就能得到 data 中两个只出现一次的数字
+    void FindNumsAppearOnce(vector<int> data,int* num1,int *num2) {
+        if (data.size() < 2) return;
+        int res = 0;
+        for (auto &d : data) res ^= d; // 1. 首先求出所有元素的异或结果
+        auto idxBit = findFirstBitIs1(res); // 2. 找到二进制res中为 1 的位.
+        *num1 = *num2 = 0;
+        for (auto &d : data) { // 3. 将元素按照 idxBit 这一位是否为 1 进行分组
+            if (isBit1(d, idxBit)) *num1 ^= d; // 4. 将同一组的元素进行异或
+            else *num2 ^= d;
+        }
+    }
+private:    
+    // 找到二进制数num第一个为1的位数，比如0010，第一个为1的位数是2
+    // while 循环中约束条件为 2 个, 首先要判断 num 中是否存在为 1 的位,
+    // 其次 num 的向右移位最多移动 8 * sizeof(unsigned int)
+    // 还有就是下面代码容易出现一个难以察觉的 bug, 我当时把 (num & 1) == 0
+    // 写成了 (num & 1 == 0), 总是通不过测试, 我想原因是后者相当于
+    // num & (1 == 0).
+    unsigned int findFirstBitIs1(int num) {
+        unsigned int indexBit = 0;
+        while ((num & 1) == 0 && (indexBit < 8 * sizeof(unsigned int))) {
+            num >>= 1;
+            indexBit ++;
+        }
+        return indexBit;
+    }
+    
+    // 判断第indexBit位是否为1
+    bool isBit1(int num, unsigned int indexBit) {
+         return ((num >> indexBit) & 1);  
+    }
+};
+```
+
+但联想到 **面试题 11: 二进制数中 1 的个数** 这道题, 我在 LeetCode 上写过这道题, 并写了详细的笔记, 其中一个结论为: `n & (n - 1)` 与 `n` 的差别是, 前者中 1 的个数比 n 少一个, 并且是最右边的那个. 比如 `n` 二进制可能是 `XXXX1000`, 那么 `n & (n - 1)` 就是 `XXXX0000`, 这样的话, 上面代码的思路是, 先得到数组中所有数的异或值 `res`, 然后根据 res 的二进制表示中 1 的位置, 将数组中的元素分为两部分, 上面代码使用的 while 循环将 `num >> 1` 进行查找, 那这里可以利用上面的结论来搞定, 首先得到 mask 为 `(n & (n - 1)) ^ n`, mask 的结果就是 `00001000`, 然后对数组中的每个元素, 使用这个 mask 去判断相应的位是不是 1:
+
+```cpp
+class Solution {
+public:
+    void FindNumsAppearOnce(vector<int> data,int* num1,int *num2) {
+        if (data.size() < 2) return;
+        int res = 0;
+        for (auto &d : data) res ^= d; // 1. 首先求出所有元素的异或结果
+        int mask = ((res & (res - 1)) ^ res);
+        *num1 = *num2 = 0;
+        for (auto &d : data) { // 3. 将元素按照 idxBit 这一位是否为 1 进行分组
+            if (isBit1(d, mask)) *num1 ^= d; // 4. 将同一组的元素进行异或
+            else *num2 ^= d;
+        }
+    }
+private:    
+    bool isBit1(int num, int mask) {
+         return (num & mask); // 使用 mask 判断相应位是不是 1, 哈哈, 是不是特别简洁!
+    }
+};
+```
+
+上面代码在牛客上 AC 了.
+
+
 
 
 

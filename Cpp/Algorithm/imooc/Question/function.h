@@ -2,13 +2,29 @@
 #define FUNCTION_H
 
 #include <iostream>
-#include <stack>
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <iomanip>
+#include <string>
+#include <map>
+#include <set>
+#include <sstream>
+#include <cassert>
+#include <algorithm>
+#include <iterator>
+#include <list>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
+#include <utility>
+#include <cmath>
 #include <random>
 #include <ctime>
-#include <vector>
 #include <queue>
 #include <stack>
 #include <initializer_list>
+
 using namespace std;
 
 // 二分搜索树

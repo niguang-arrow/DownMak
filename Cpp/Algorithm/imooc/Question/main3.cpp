@@ -1,25 +1,6 @@
 // BOBO : leetcode 
-#include <iostream>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
-#include <iomanip>
-#include "function.h"
-#include <queue>
-#include <string>
-#include <map>
-#include <set>
-#include <sstream>
-#include <cassert>
-#include <algorithm>
-#include <iterator>
-#include <list>
-#include <cstdlib>
-#include <cstring>
-#include <climits>
-#include <utility>
-#include <cmath>
 
+#include "function.h"
 
 using namespace std;
 
@@ -48,29 +29,45 @@ void preOrder(TreeNode *root) {
 
 class Solution {
 public:
-    // 解答来自leetcode
-    string longestPalindrome(string s) {
-        int n = s.size();
-        string res;
-        for (int i = 0; i < n; ++i) {
-            auto s1 = extend(s, i, i);
-            auto s2 = extend(s, i, i + 1);
-            cout << i << " " << s1 << " " << s2 << endl;
-            res = s1.size() > res.size() ? s1 : res;
-            res = s2.size() > res.size() ? s2 : res;
+    int countPrimes(int n) {
+        if (n < 3) return 0;
+
+        vector<int> count(n, 1);
+        count[0] = count[1] = 0;
+        for (int i = 2; i <= (int)sqrt(n); ++i) {
+            if (!count[i]) continue;
+            for (int j = i * i; j < n; j += i)
+                count[j] = 0;
         }
-        return res;
-    }
-private:
-    string extend(const string &s, int l, int r) {
-        cout << "before : l: " << l << " r: " << r << endl;
-        while (l >= 0 && r < s.size() && s[l--] == s[r++]);
-        cout << "after : l: " << l << " r: " << r << endl;
-        return s.substr(l+2, (r - 2) - (l + 2));
+        printVector(count);
+        return std::accumulate(count.begin(), count.end(), 0);
     }
 };
 
 
+//class Solution {
+//public:
+     ////解答来自leetcode
+    //string longestPalindrome(string s) {
+        //int n = s.size();
+        //string res;
+        //for (int i = 0; i < n; ++i) {
+            //auto s1 = extend(s, i, i);
+            //auto s2 = extend(s, i, i + 1);
+            //cout << i << " " << s1 << " " << s2 << endl;
+            //res = s1.size() > res.size() ? s1 : res;
+            //res = s2.size() > res.size() ? s2 : res;
+        //}
+        //return res;
+    //}
+//private:
+    //string extend(const string &s, int l, int r) {
+        //cout << "before : l: " << l << " r: " << r << endl;
+        //while (l >= 0 && r < s.size() && s[l--] == s[r++]);
+        //cout << "after : l: " << l << " r: " << r << endl;
+        //return s.substr(l+2, (r - 2) - (l + 2));
+    //}
+//};
 
 int main() {
     TreeNode *root = new TreeNode(5);
@@ -100,7 +97,8 @@ int main() {
     vector<vector<int>> nums = {{1, 2}, {3}, {3}, {}};
     string input = "bbbab";
     vector<string> words = {"a", "banana", "app", "appl", "ap", "apply", "apple"};
-    auto res = Solution().longestPalindrome("accb");
+    //auto res = Solution().longestPalindrome("accb");
+    auto res = Solution().countPrimes(10);
     cout << res << endl;
     //cout << std::boolalpha << res << endl;
     //preOrder(res);
