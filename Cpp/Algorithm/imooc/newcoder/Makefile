@@ -2,7 +2,7 @@ CC = clang++
 CFLAGS = -Wall -std=c++0x
 CLINKS = 
 
-NAME = main
+NAME = meituan
 SRC = $(NAME).cpp
 TAR = $(NAME).out
 

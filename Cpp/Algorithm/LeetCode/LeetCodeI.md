@@ -565,6 +565,29 @@ public:
 };
 ```
 
+解法三: (20180914 更新)
+
+将 `s[l...r)` 区间内的元素进行翻转.
+
+```cpp
+class Solution {
+public:
+    string reverseWords(string s) {
+        int l = 0, r = -1;
+        while (l < s.size()) {
+            while (l < s.size() && s[l] == ' ') l ++; // 处理空格
+            r = l;
+            while (r < s.size() && s[r] != ' ') r ++; // 处理空格
+            std::reverse(s.begin() + l, s.begin() + r);
+            l = r + 1;
+        }
+        return s;
+    }
+};
+```
+
+
+
 看 leetcode 上有不使用 stringstream 的解法:
 
 ```cpp
