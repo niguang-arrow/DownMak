@@ -103,7 +103,7 @@ let g:airline#extensions#tabline#left_alt_sep = '⮀'
 let g:airline#extensions#whitespace#enabled = 0
 
 set list
-set listchars=tab:▸\ ,eol:¬
+set listchars=
 
 "set guifont=YaHei\ Consolas\ Hybrid\ 14
 set t_Co=256 "terminal color: http://vim.wikia.com/wiki/Switch_color_schemes
