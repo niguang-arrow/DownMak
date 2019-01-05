@@ -1,0 +1,446 @@
+" The configuration of Vundle
+set nocompatible              " required
+filetype off                  " required
+
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'gmarik/Vundle.vim'
+
+" Add all your plugins here (note older versions of Vundle used Bundle instead of Plugin)
+Plugin 'vim-scripts/indentpython.vim' " autoindent
+Plugin 'Valloric/YouCompleteMe'       " auto completion
+"Plugin 'scrooloose/syntastic'
+Plugin 'tell-k/vim-autopep8'
+Plugin 'Yggdroot/indentLine'
+Plugin 'scrooloose/nerdtree'
+Plugin 'scrooloose/nerdcommenter'
+Plugin 'kien/rainbow_parentheses.vim'
+Plugin 'kien/ctrlp.vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+Plugin 'nathanaelkane/vim-indent-guides'
+Plugin 'jiangmiao/auto-pairs'
+Plugin 'ervandew/supertab'
+Plugin 'octol/vim-cpp-enhanced-highlight'
+Plugin 'derekwyatt/vim-fswitch'
+Plugin 'kshenoy/vim-signature'
+Plugin 'xuhdev/vim-latex-live-preview'
+Plugin 'vim-scripts/Conque-Shell'
+Plugin 'majutsushi/tagbar'
+Plugin 'dyng/ctrlsf.vim'
+Plugin 'terryma/vim-multiple-cursors'
+Plugin 'christoomey/vim-tmux-navigator'
+Plugin 'skywind3000/asyncrun.vim'
+Plugin 'SirVer/ultisnips'
+Plugin 'honza/vim-snippets'
+Plugin 'francoiscabrol/ranger.vim'
+Plugin 'goerz/ipynb_notedown.vim'
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin indent on    " required
+
+fun! ToggleFullscreen()
+    call system("wmctrl -ir " . v:windowid . " -b toggle,fullscreen")
+endf
+map <silent> <F11> :call ToggleFullscreen()<CR>
+
+autocmd BufWritePost $MYVIMRC source $MYVIMRC | AirlineRefresh
+
+set timeoutlen=1000 ttimeoutlen=20
+
+let g:airline_powerline_fonts = 1
+"let g:airline_theme='luna'
+"let g:airline_theme='base16_monokai'
+"let g:airline_theme='base16_harmonic16'
+let g:airline_theme='base16_isotope'
+
+let g:airline#extensions#tabline#buffer_nr_show = 1
+
+if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+endif
+
+" unicode symbols
+let g:airline_left_sep = '»'
+let g:airline_left_sep = '▶'
+let g:airline_right_sep = '«'
+let g:airline_right_sep = '◀'
+let g:airline_symbols.linenr = '␊'
+let g:airline_symbols.linenr = '␤'
+let g:airline_symbols.linenr = '¶'
+let g:airline_symbols.branch = '⎇'
+let g:airline_symbols.paste = 'ρ'
+let g:airline_symbols.paste = 'Þ'
+let g:airline_symbols.paste = '∥'
+let g:airline_symbols.whitespace = 'Ξ'
+
+" airline symbols
+let g:airline_left_sep = '⮀'
+let g:airline_left_alt_sep = '⮁'
+let g:airline_right_sep = '⮂'
+let g:airline_right_alt_sep = '⮃'
+"let g:airline_left_sep = ''
+"let g:airline_left_alt_sep = ''
+"let g:airline_right_sep = ''
+"let g:airline_right_alt_sep = ''
+let g:airline_right_alt_sep = ''
+let g:airline_symbols.branch = ''
+let g:airline_symbols.readonly = ''
+let g:airline_symbols.linenr = ''
+
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#left_sep = '⮀'
+let g:airline#extensions#tabline#left_alt_sep = '⮀'
+"let g:airline#extensions#tabline#left_sep = ''
+"let g:airline#extensions#tabline#left_alt_sep = ''
+let g:airline#extensions#whitespace#enabled = 0
+
+set list
+set listchars=tab:▸\ ,eol:¬
+
+"set guifont=YaHei\ Consolas\ Hybrid\ 14
+set t_Co=256 "terminal color: http://vim.wikia.com/wiki/Switch_color_schemes
+" set guifont=SourceCodePro\ for\ Powerline\ 12.8  " terminal 12.6
+"set guifont=SourceCodePro\ for\ Powerline\ 13.8
+set guifont=SourceCodePro\ for\ Powerline\ 13.2
+
+set background=dark
+"colorscheme solarized
+"https://github.com/flazz/vim-colorschemes/tree/prep
+"http://vimcolors.com/
+"colorscheme molokai
+"colorscheme phd
+"colorscheme zenburn
+"colorscheme new-railscasts
+if has('gui_running')
+    colorscheme solarized
+else
+    colorscheme solarized
+    set t_Co=16
+    let g:solarized_termcolors=16
+    let g:solarized_termtrans=1
+endif
+
+if &term =~ "xterm\\|rxvt"
+  let &t_SI = "\<Esc>]12;orange\x7"
+  let &t_EI = "\<Esc>]12;white\x7"
+  silent !echo -ne "\033]12;gray\007"
+  autocmd VimLeave * silent !echo -ne "\033]112\007"
+endif
+
+filetype on
+filetype plugin on
+let mapleader=";"
+nmap LB 0
+nmap LE $
+nmap <Leader>q :q<CR>
+nmap <Leader>w :w<CR>
+nmap <Leader>WQ :wa<CR>:q<CR>
+nnoremap <leader>v "+p
+nnoremap <leader>V "+P
+vnoremap <leader>c "+y
+vnoremap <leader>x "+x
+nnoremap <leader>n <ESC>:tabnew<CR>
+nnoremap <leader>c <ESC>:tabclose<CR>
+map <C-s> <ESC>:w<CR>
+imap <C-S-s> <ESC>:browse confirm saveas<CR>
+nmap <Leader>a <ESC>ggVG"+y<ESC>
+nnoremap nw <ESC><C-w><C-w>
+nnoremap <Leader>l <C-W>l
+nnoremap <Leader>h <C-W>h
+nnoremap <Leader>k <C-W>k
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+nnoremap [b :bp<CR>
+nnoremap ]b :bn<CR>
+map <leader>1 :b 1<CR>
+map <leader>2 :b 2<CR>
+map <leader>3 :b 3<CR>
+map <leader>4 :b 4<CR>
+map <leader>5 :b 5<CR>
+map <leader>6 :b 6<CR>
+map <leader>7 :b 7<CR>
+map <leader>8 :b 8<CR>
+map <leader>9 :b 9<CR>
+
+nnoremap <Leader>sf :CtrlSF<CR>
+
+inoremap <C-e> <C-o>A
+
+set sessionoptions="blank,buffers,globals,localoptions,tabpages,sesdir,folds,help,options,resize,winpos,winsize"
+set undodir=~/.undo_history/
+set undofile
+map <leader>ss :mksession! my.vim<cr> :wviminfo! my.viminfo<cr>
+map <leader>rs :source my.vim<cr> :rviminfo my.viminfo<cr>
+
+set splitbelow
+set splitright
+set showcmd
+set gcr=a:block-blinkon0
+set guioptions-=l
+set guioptions-=L
+set guioptions-=r
+set guioptions-=R
+set guioptions-=m
+set guioptions-=T
+set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
+set termencoding=utf-8
+set encoding=utf-8
+set fileencodings=ucs-bom,utf-8,cp936
+set fileencoding=utf-8
+set mouse=a
+set selection=exclusive
+set selectmode=mouse,key
+set laststatus=2
+set ruler
+set number
+function! NumberToggle()
+    if(&relativenumber == 1)
+        set number
+    else
+        set relativenumber
+    endif
+endfunc
+nnoremap <leader>r :call NumberToggle()<CR>
+set cursorline
+set cursorcolumn
+set nohlsearch
+set nowrap
+set showmatch
+set scrolloff=5
+set incsearch
+set ignorecase
+set nocompatible
+set wildmenu
+set clipboard+=unnamed
+set nobackup
+set noswapfile
+set autoread
+set autowrite
+set confirm
+syntax enable
+syntax on
+filetype indent on
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+set fileformat=unix
+set fillchars=vert:\ ,stl:\ ,stlnc:\
+set linespace=0
+set autoindent
+set smarttab
+set cindent
+set smartindent
+set expandtab
+set backspace=2
+set foldmethod=syntax 
+set nofoldenable
+
+
+let g:indentLine_char='┆'
+let g:indentLine_enabled = 1
+"let g:indentLine_leadingSpaceEnabled=1
+"let g:indentLine_leadingSpaceChar='.'
+
+"autopep8"
+let g:autopep8_disable_show_diff=1
+
+" vim-fswitch
+nmap <silent> <leader>sw :FSHere<CR>
+
+" vim-signature
+let g:SignatureMap = {
+        \ 'Leader'             :  "m",
+        \ 'PlaceNextMark'      :  "m,",
+        \ 'ToggleMarkAtLine'   :  "m.",
+        \ 'PurgeMarksAtLine'   :  "m-",
+        \ 'DeleteMark'         :  "dm",
+        \ 'PurgeMarks'         :  "mda",
+        \ 'PurgeMarkers'       :  "m<BS>",
+        \ 'GotoNextLineAlpha'  :  "']",
+        \ 'GotoPrevLineAlpha'  :  "'[",
+        \ 'GotoNextSpotAlpha'  :  "`]",
+        \ 'GotoPrevSpotAlpha'  :  "`[",
+        \ 'GotoNextLineByPos'  :  "]'",
+        \ 'GotoPrevLineByPos'  :  "['",
+        \ 'GotoNextSpotByPos'  :  "mn",
+        \ 'GotoPrevSpotByPos'  :  "mp",
+        \ 'GotoNextMarker'     :  "[+",
+        \ 'GotoPrevMarker'     :  "[-",
+        \ 'GotoNextMarkerAny'  :  "]=",
+        \ 'GotoPrevMarkerAny'  :  "[=",
+        \ 'ListLocalMarks'     :  "ms",
+        \ 'ListLocalMarkers'   :  "m?"
+        \ }
+
+""""rainbow_parentheses
+let g:rbpt_colorpairs = [
+    \ ['black',       'SeaGreen3'],
+    \ ['brown',       'RoyalBlue3'],
+    \ ['Darkblue',    'SeaGreen3'],
+    \ ['darkgray',    'DarkOrchid3'],
+    \ ['darkgreen',   'firebrick3'],
+    \ ['darkcyan',    'RoyalBlue3'],
+    \ ['darkred',     'SeaGreen3'],
+    \ ['darkmagenta', 'DarkOrchid3'],
+    \ ['brown',       'firebrick3'],
+    \ ['gray',        'RoyalBlue3'],
+    \ ['darkmagenta', 'DarkOrchid3'],
+    \ ['Darkblue',    'firebrick3'],
+    \ ['darkgreen',   'RoyalBlue3'],
+    \ ['darkcyan',    'SeaGreen3'],
+    \ ['darkred',     'DarkOrchid3'],
+    \ ['red',         'firebrick3'],
+    \ ]
+
+let g:rbpt_max = 16
+au VimEnter * RainbowParenthesesToggle
+au Syntax * RainbowParenthesesLoadRound
+au Syntax * RainbowParenthesesLoadSquare
+au Syntax * RainbowParenthesesLoadBraces
+
+"""""" NERDTree
+map <F2> :NERDTreeToggle<CR>
+let NERDTreeChDirMode=1
+let NERDTreeShowBookmarks=1
+let NERDTreeIgnore=['\~$', '\.pyc$', '\.swp$']
+let NERDTreeWinSize=25
+
+"""" nerdcommenter
+map <F4> <leader>ci 
+
+let g:indent_guides_enable_on_vim_startup=1
+let g:indent_guides_start_level=2
+let g:indent_guides_guide_size=1
+:nmap <silent> <Leader>i <Plug>IndentGuidesToggle 
+
+set foldmethod=syntax
+set nofoldenable
+
+
+au BufNewFile,BufRead *.js, *.html, *.css
+\ set tabstop=2
+\ set softtabstop=2
+\set shiftwidth=2
+
+" tagbar
+let tagbar_right=1 
+nmap <F9> :TagbarToggle<CR>
+let tagbar_width=32 
+let g:tagbar_compact=1
+let g:tagbar_type_cpp = {
+    \ 'kinds' : [
+         \ 'c:classes:0:1',
+         \ 'd:macros:0:1',
+         \ 'e:enumerators:0:0', 
+         \ 'f:functions:0:1',
+         \ 'g:enumeration:0:1',
+         \ 'l:local:0:1',
+         \ 'm:members:0:1',
+         \ 'n:namespaces:0:1',
+         \ 'p:functions_prototypes:0:1',
+         \ 's:structs:0:1',
+         \ 't:typedefs:0:1',
+         \ 'u:unions:0:1',
+         \ 'v:global:0:1',
+         \ 'x:external:0:1'
+     \ ],
+     \ 'sro'        : '::',
+     \ 'kind2scope' : {
+         \ 'g' : 'enum',
+         \ 'n' : 'namespace',
+         \ 'c' : 'class',
+         \ 's' : 'struct',
+         \ 'u' : 'union'
+     \ },
+     \ 'scope2kind' : {
+         \ 'enum'      : 'g',
+         \ 'namespace' : 'n',
+         \ 'class'     : 'c',
+         \ 'struct'    : 's',
+         \ 'union'     : 'u'
+     \ }
+\ }
+
+" vim-tmux-navigator
+"https://github.com/christoomey/vim-tmux-navigator
+"--------------------------
+"<ctrl-h> => Left
+"<ctrl-j> => Down
+"<ctrl-k> => Up
+"<ctrl-l> => Right
+"<ctrl-\> => Previous split
+"---------------------------
+
+
+" YouCompleteMe
+"highlight Pmenu ctermfg=2 ctermbg=3 guifg=#005f87 guibg=#EEE8D5
+"highlight PmenuSel ctermfg=2 ctermbg=3 guifg=#AFD700 guibg=#106900
+let g:ycm_complete_in_comments=1
+let g:ycm_confirm_extra_conf=0
+let g:ycm_collect_identifiers_from_tags_files=1
+let g:ycm_global_ycm_extra_conf = '~/.vim/.ycm_extra_conf.py'
+inoremap <leader>; <C-x><C-o>
+set completeopt-=preview
+let g:ycm_min_num_of_chars_for_completion=1
+let g:ycm_cache_omnifunc=0
+let g:ycm_seed_identifiers_with_syntax=1
+nnoremap <leader>jc :YcmCompleter GoToDeclaration<CR>
+nnoremap <leader>jd :YcmCompleter GoToDefinition<CR>
+
+" asyncrun.vim
+nnoremap <F5> :call <SID>compile_and_run()<CR>
+
+augroup SPACEVIM_ASYNCRUN
+    autocmd!
+    " Automatically open the quickfix window
+    autocmd User AsyncRunStart call asyncrun#quickfix_toggle(15, 1)
+augroup END
+
+function! s:compile_and_run()
+    exec 'w'
+    if &filetype == 'c'
+        exec "AsyncRun! gcc % -o %<; time ./%<"
+    elseif &filetype == 'cpp'
+       exec "AsyncRun! g++ -std=c++11 % -o %<; time ./%<"
+    elseif &filetype == 'java'
+       exec "AsyncRun! javac %; time java %<"
+    elseif &filetype == 'sh'
+       exec "AsyncRun! time bash %"
+    elseif &filetype == 'python'
+       exec "AsyncRun! time python %"
+    endif
+endfunction
+
+
+" vim-multiple-cursors
+"let g:multi_cursor_next_key='<S-n>'
+"let g:multi_cursor_skip_key='<S-k>'
+"
+"
+
+" SirVer/ultisnips
+" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+"let g:UltiSnipsExpandTrigger="<c-g>"
+let g:UltiSnipsExpandTrigger="<c-g>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
+
+" 'francoiscabrol/ranger.vim'
+let g:ranger_map_keys = 0
+map <leader>f :Ranger<CR>
